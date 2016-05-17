@@ -1,61 +1,58 @@
 {
   "name": "whale-island",
   "version": "0.0.0",
-  "main": "server/app.js",
-  "dependencies": {
-    "express": "~4.9.0",
-    "morgan": "~1.0.0",
-    "body-parser": "~1.5.0",
-    "method-override": "~1.0.0",
-    "cookie-parser": "~1.0.1",
-    "express-session": "~1.0.2",
-    "errorhandler": "~1.0.0",
-    "compression": "~1.0.1",
-    "lodash": "~2.4.1",
-    "composable-middleware": "^0.3.0",
-    "connect-mongo": "^0.8.1"
+  "description": "Websockets, Bluetooth and Web3 services for Animist IOT node",
+  "homepage": "https://github.com/animist-io/whale-island",
+  "author": {
+    "name": "cgewecke",
+    "email": "christophergewecke@gmail.com",
+    "url": "https://github.com/cgewecke"
   },
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.js",
+  "keywords": [
+    "ethereum",
+    "ble",
+    "ios",
+    "android",
+    "animist.io",
+    "IOT",
+    "bluetooth"
+  ],
   "devDependencies": {
-    "grunt": "~0.4.4",
-    "grunt-autoprefixer": "~0.7.2",
-    "grunt-wiredep": "~1.8.0",
-    "grunt-concurrent": "~0.5.0",
-    "grunt-contrib-clean": "~0.5.0",
-    "grunt-contrib-concat": "~0.4.0",
-    "grunt-contrib-copy": "~0.5.0",
-    "grunt-contrib-watch": "~0.6.1",
-    "grunt-google-cdn": "~0.4.0",
-    "grunt-newer": "~0.7.0",
-    "grunt-ng-annotate": "^0.2.3",
-    "grunt-rev": "~0.1.0",
-    "grunt-svgmin": "~0.4.0",
-    "grunt-usemin": "~2.1.1",
-    "grunt-env": "~0.4.1",
-    "grunt-node-inspector": "~0.1.5",
-    "grunt-nodemon": "~0.2.0",
-    "grunt-angular-templates": "^0.5.4",
-    "grunt-dom-munger": "^3.4.0",
-    "grunt-protractor-runner": "^1.1.0",
-    "grunt-injector": "~0.5.4",
-    "grunt-build-control": "~0.4.0",
-    "grunt-mocha-test": "~0.10.2",
-    "jit-grunt": "^0.5.0",
-    "time-grunt": "~0.3.1",
-    "grunt-express-server": "~0.4.17",
-    "grunt-open": "~0.2.3",
-    "open": "~0.0.4",
-    "jshint-stylish": "~0.1.5",
-    "connect-livereload": "~0.4.0",
-    "requirejs": "~2.1.11",
-    "supertest": "~0.11.0",
-    "should": "~3.3.1"
+    "eslint": "^2.1.0",
+    "eslint-config-xo-space": "^0.13.0",
+    "babel-eslint": "^4.1.8",
+    "eslint-plugin-babel": "^3.1.0",
+    "gulp": "^3.9.0",
+    "gulp-eslint": "^2.0.0",
+    "gulp-exclude-gitignore": "^1.0.0",
+    "gulp-line-ending-corrector": "^1.0.1",
+    "gulp-istanbul": "^0.10.3",
+    "gulp-mocha": "^2.0.0",
+    "gulp-plumber": "^1.0.0",
+    "gulp-nsp": "^2.1.0",
+    "gulp-babel": "^5.1.0",
+    "del": "^2.0.2",
+    "babel-core": "^5.5.0",
+    "isparta": "^3.0.3"
   },
-  "engines": {
-    "node": ">=0.10.0"
+  "eslintConfig": {
+    "extends": "xo-space",
+    "env": {
+      "mocha": true
+    }
   },
+  "repository": "https://github.com/animist-io/whale-island.git",
   "scripts": {
-    "start": "node server/app.js",
-    "test": "grunt test"
+    "prepublish": "gulp prepublish",
+    "test": "gulp"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "bleno": "^0.4.0",
+    "socket.io": "^1.4.6"
+  }
 }

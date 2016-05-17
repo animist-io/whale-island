@@ -1,4 +1,3 @@
 node_modules
-.idea
-/server/config/local.env.js
-npm-debug.log
+coverage
+dist
