@@ -1,8 +1,12 @@
-import assert from 'assert';
 import whaleIsland from '../lib';
+
+var chai = require('chai');
+var expect = chai.expect;
+
+console.log(expect);
 
 describe('whale-island', function () {
   it('should have unit test!', function () {
-    assert(false, 'we expected this package author to add actual unit tests.');
+    expect('has a unit test').to.equal(true);
   });
 });
