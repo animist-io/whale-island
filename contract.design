@@ -1,0 +1,75 @@
+Data:
+
+Endpoints  [Addresses]
+Authority  Address  // 
+Payment    Address  // A funded escrow contract
+User    
+State       int
+FinishState int
+
+EndpointsAtState [] [0] [Any/0]
+                         [1] [Startpoint or Any/0]
+                         [2] [Throughpoint or Any/0]
+                         [3] [Endpoint or Any/0]
+isAuthorized int
+
+
+
+Every endpoint needs an existing notification contract. The creator of this contract
+calls it and it fires an event. The endpoints watch their contract and maintain a DB
+of outstanding contracts
+
+// Init() Required to proceed
+init(){
+
+   if state == 0
+
+      forEach Endpoint:
+         
+         forEach state endpoint must authorize: 
+            fees++
+         
+         feetxHash = pay endpoint contract fees 
+         endpointContract.notify( thisContractId, user, authority, feeTxHash); 
+
+   state = 1
+
+};
+
+getState constant(){
+   return state
+}
+
+getEndpointForState constant(){
+   return endpointAtState[state]
+}
+
+authAdvance( authorizedUser){
+   
+   if (msg.sender == endpointAtState[state + 1] AND 
+         isAuthorized == state - 1  AND
+            authorizedUser == User )
+
+      isAuthorized += 1;
+
+}
+
+advance(){
+
+   if(msg.sender == authority  AND 
+      isAuthorized == state + 1 )
+
+      state +=1;
+
+   if(state == finishState)
+      finish();
+}
+
+finish(){
+   
+   // Do something special, pay people, give them tokens etc.
+   payment.payUser();
+   termination event
+   commit suicide
+
+}
