@@ -7,13 +7,12 @@ User
 State       int
 FinishState int
 
-EndpointsAtState [] [0] [Any/0]
-                         [1] [Startpoint or Any/0]
-                         [2] [Throughpoint or Any/0]
-                         [3] [Endpoint or Any/0]
+stateMap [] [0] { paid: true, endpoint: address OR 0 (meaning 'any') }
+                    [1] { status: false, endpoint: address OR 0 (meaning 'any') }
+                    etc . . .     
+
+// Tracks state in lockstep . . .                         
 isAuthorized int
-
-
 
 Every endpoint needs an existing notification contract. The creator of this contract
 calls it and it fires an event. The endpoints watch their contract and maintain a DB
@@ -22,17 +21,30 @@ of outstanding contracts
 // Init() Required to proceed
 init(){
 
-   if state == 0
+    // THIS NEEDS WORK . . .
+    if state == 0
 
       forEach Endpoint:
          
+         // Endpoints will have to query chain for transactions that paid 
+         // the pool and demand money from the pool when they execute 
+         // on its behalf. . . . 
+
+         // Assume they will pay (cheaper than running another loop on success)
          forEach state endpoint must authorize: 
             fees++
-         
-         feetxHash = pay endpoint contract fees 
-         endpointContract.notify( thisContractId, user, authority, feeTxHash); 
+            stateMap[state].status = true;
 
-   state = 1
+         success = pay endpoint contract fees OR pay pool contract if 'ANY'
+
+         // Undo payment auth if it fails
+         if (!success)
+           forEach state endpoint must authorize:
+              stateMap[state].status = false;
+
+         endpoint.notify( user, authority, address(this) ); 
+
+      state = 1
 
 };
 
@@ -40,18 +52,27 @@ getState constant(){
    return state
 }
 
-getEndpointForState constant(){
-   return endpointAtState[state]
+getEndpointForState constant(state){
+   return stateMap[state].endpoint
+}
+
+getStatusForState constant (state){
+  return stateMap[state].status
 }
 
 authAdvance( authorizedUser){
    
-   if (msg.sender == endpointAtState[state + 1] AND 
-         isAuthorized == state - 1  AND
-            authorizedUser == User )
+   // Check that sender is endpoint
+   // Check that previous state was authorized
+   // Check that the detected user matches this contract
+   // Check that Animist got paid to do this
+
+   if (msg.sender == stateMap[state + 1].endpoint AND 
+       isAuthorized == state - 1                  AND
+       authorizedUser == User                     AND 
+       stateMap[state + 1].status == true)
 
       isAuthorized += 1;
-
 }
 
 advance(){

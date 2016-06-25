@@ -1,7 +1,7 @@
 {
   "name": "whale-island",
   "version": "0.0.0",
-  "description": "Websockets, Bluetooth and Web3 services for Animist IOT node",
+  "description": "Bluetooth and Ethereum Web3 server for Animist IOT node",
   "homepage": "https://github.com/animist-io/whale-island",
   "author": {
     "name": "cgewecke",
@@ -54,8 +54,8 @@
   "private": true,
   "dependencies": {
     "bleno": "^0.4.0",
+    "eth-lightwallet": "^2.4.3",
     "node-uuid": "^1.4.7",
-    "socket.io": "^1.4.6",
     "web3": "^0.16.0"
   }
 }
