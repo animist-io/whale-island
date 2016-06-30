@@ -1,0 +1,8 @@
+// Generates a mock client wallet to test requests against
+
+// Convert obj rep of key (this came from console.log) to array
+let obj = {0: 12, 1: 37, 2: 184, 3: 176, 4: 141, 5: 255, 6: 15, 7: 70, 8: 189, 9: 195, 10: 206, 11: 218, 12: 109, 13: 172, 14: 141, 15: 233, 16: 117, 17: 114, 18: 2, 19: 10, 20: 156, 21: 57, 22: 255, 23: 102, 24: 37, 25: 66, 26: 2, 27: 177, 28: 82, 29: 70, 30: 1, 31: 246};
+let key_array = Object.keys(obj).map(function (key) {return obj[key]});
+
+module.exports.keystore = {"defaultHdPathString":"m/0'/0'/0'","ksData":{"m/0'/0'/0'":{"info":{"curve":"secp256k1","purpose":"sign"},"encHdPathPriv":{"encStr":"cTnAtJZlNH7DvmUgzZJBlO8eadIRCkSyz4v9L42bjCk1IM801fNAzgvlu0FB1qIV69Ijr6akJqdDN/i0jy5z+/nheQPvKmQ+Ko5d+6oLYAm2TFfvQA7CgEXpchgto0CD0qSTjBzqLweGTJCwrJwMq3svzaLhyEOGCf4iqxIrzw==","nonce":"WC7xsk0pOJEzDyviqpAgqfT+Jtum63b3"},"hdIndex":1,"encPrivKeys":{"294ccf7d489af10f2f5678397f8662991ba51198":{"key":"4zgGa84AnJyBeERnlAhbPo0GogAUA5pJgigxzoXI3FpF1yUmaLMyjO5GRDky4aWo","nonce":"T8BAQF0vHgZ7guTq+8iuqbaeVyBpI0pT"}},"addresses":["294ccf7d489af10f2f5678397f8662991ba51198"]}},"encSeed":{"encStr":"lrUM7EaeIKgs9/WCfOTuvMfhc/sPig3vi+G3OO2CncDAFF3rSwTJZdPI3JGuWSraSwNGYm/uWXvrXNzGZSblgQ9OoIPfFq/4aI9lSXomE6V5IOKeFAdTPpbnimXqbcSQ8l/4enTc7RjY/zSz6ALDJVWzsDUlrWXGiBrgwdYBlRpz86gsaofAgA==","nonce":"uhGvBk+aGz6u5ctOERsLka6G7Ah4tsXB"},"encHdRootPriv":{"encStr":"acA1u4j+mTeOQxldW72bw6KG4QdaMQDmvK0IqXOGSJupEdja9VenWH2yhqd4+GXsjix6oD5eeuvs/qgh1ncDV8MWk7a6NzCo6sbIy7Cl0E/2+n1ixhlDuZ9byxCp4Uk3SEMO5nCRepbQcmQ+aTLdSpVChnk42KLMLrI5AkOWIw==","nonce":"WkRYmAuXjMMkSFc5/FXme6FAlwe16HyJ"},"version":2};
+module.exports.key = new Uint8Array(key_array);

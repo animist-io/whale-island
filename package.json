@@ -25,6 +25,7 @@
     "babel-core": "^5.5.0",
     "babel-eslint": "^4.1.8",
     "chai": "^3.5.0",
+    "chai-spies": "^0.7.1",
     "del": "^2.0.2",
     "eslint": "^2.1.0",
     "eslint-config-xo-space": "^0.13.0",
@@ -56,6 +57,7 @@
     "bleno": "^0.4.0",
     "eth-lightwallet": "^2.4.3",
     "node-uuid": "^1.4.7",
+    "randomstring": "^1.1.5",
     "web3": "^0.16.0"
   }
 }

@@ -6,10 +6,10 @@ Basic commands:
 
 ```
 (Test)
-% grunt test:server
+% gulp watch  // or $ gulp test (single run) 
 
-(Serve to localhost:9000)
-% grunt serve
+(Serve)
+% node lib/server.js start
 ```
 
 A Rasberry Pi iBeacon and Node.js server that authenticates Animist mobile clients and intermediates between them and an Ethereum node. 
