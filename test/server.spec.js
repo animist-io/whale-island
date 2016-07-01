@@ -1,6 +1,6 @@
 let config = require('../lib/config.js');
+let server = require('../lib/server.js');
 
-const server = require('../lib/server.js');
 const account = require('../test/mocks/wallet.js');
 const wallet = require('eth-lightwallet');
 
@@ -11,7 +11,6 @@ const expect = chai.expect;
 chai.use(spies);
 
 // Set up a keystore and wallet
-
 
 describe('Bluetooth Server', () => {
     
@@ -33,7 +32,6 @@ describe('Bluetooth Server', () => {
             it('should transform input into buffers of MAX_SIZE & put them on the send stack',()=>{
                 
                 // Testing 11 chars/4 byte packets: 
-                // Stack size should be 3, last element should have length: 3
                 tx = "12341234123";
                 old_config = config.MAX_SEND;
                 config.MAX_SEND = 4;
@@ -109,27 +107,23 @@ describe('Bluetooth Server', () => {
             });
 
         });
-
-
     });
 
     describe('Characteristic Request Handlers', () => {
 
-        var animist, fns = {};
-        
-        
-        before(() => {
-            
-        });
-
-        // Instantiate a new server before each test
+        var animist; 
+ 
+        // Instantiate new server before each test
         beforeEach(() => { 
             animist = new server.AnimistServer();
         });
 
         describe('onPinRead', () => {
+
+
           it('should respond to request w/ the current pin', () => {
             
+            let fns = {};
             let codes = config.codes;
             let pin_to_buffer = new Buffer(animist.getPin());
             fns.callback = (code, pin) => {};
@@ -144,6 +138,103 @@ describe('Bluetooth Server', () => {
 
         describe('onHasTxWrite', () => {
             
+            var req, fns = {};
+
+            // Mocks
+            before(()=>{
+                
+                // Mock request
+                req = wallet.signing.signMsg( keystore, account.key, animist.getPin(), address); 
+                req = JSON.stringify(req);
+                
+                // Mock byte callback
+                fns.callback = (code) => {};
+
+                 // Mock address
+                config.fakeTx.authority = address;
+
+                
+            });
+
+            // Clear state & mock updateValueCallback
+            beforeEach(()=>{
+                animist.resetSendStack();
+                animist.hasTxCharacteristic.updateValueCallback = (val) => {};
+            })
+
+            it('should respond w/ RESULT_SUCCESS if a tx matching the address is found', (done)=>{
+
+                config.fakeTx.authority = address;
+                chai.spy.on(fns, 'callback');
+                server.onHasTxWrite(req, null, null, fns.callback)
+                
+                expect(fns.callback).to.have.been.called.with(config.codes.RESULT_SUCCESS);
+                setTimeout(done, 50);
+
+            });
+
+            it('should push the tx onto the send stack', (done) => {
+
+                let initial_stack_size, new_stack_size;
+
+                initial_stack_size = animist.getSendStack().length;
+                config.fakeTx.authority = address;
+            
+                server.onHasTxWrite(req, null, null, fns.callback)
+                new_stack_size = animist.getSendStack().length;
+
+                expect(initial_stack_size).to.equal(0);
+                expect(new_stack_size).to.be.gt(0);
+                setTimeout(done, 50);
+
+            });
+
+            it('should begin writing/processing the send stack', (done) => {
+
+                let tx, full_stack, full_stack_size, new_stack_size, expected_stack_size;
+                
+                // Get a stack copy
+                tx = server.getTx(address);
+                server.stackTx(tx);
+                full_stack = animist.getSendStack();
+                full_stack_size = full_stack.length;
+                expected_stack_size = full_stack_size - 1;
+
+                // Clean up
+                animist.resetSendStack();
+               
+                // Test
+                chai.spy.on(animist.hasTxCharacteristic, 'updateValueCallback');
+                server.onHasTxWrite(req, null, null, fns.callback);
+
+                setTimeout(() => {
+                    new_stack_size = animist.getSendStack().length;
+                    expect(animist.hasTxCharacteristic.updateValueCallback).to.have.been.called.with(full_stack[0]);
+                    expect(new_stack_size).to.equal(expected_stack_size);
+                    done();
+                }, 50);
+                
+            });
+
+            it('should respond w/ NO_TX_FOUND if there is no tx matching the address', ()=>{
+                    
+                config.fakeTx.authority = 'not_this_address';
+                chai.spy.on(fns, 'callback');
+                server.onHasTxWrite(req, null, null, fns.callback)
+                
+                expect(fns.callback).to.have.been.called.with(config.codes.NO_TX_FOUND);
+
+            });
+
+            it('should respond w/ correct error code if req is un-parseable', ()=>{
+
+                req = "0x5[w,r,0,,n,g";
+                chai.spy.on(fns, 'callback');
+
+                server.onHasTxWrite(req, null, null, fns.callback);
+                expect(fns.callback).to.have.been.called.with(config.codes.INVALID_JSON_IN_REQUEST);
+                
+            });
 
         });
 
