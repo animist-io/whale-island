@@ -9,8 +9,6 @@ addons:
     - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
-before_install:
-  - sh -e /etc/init.d/xvfb start
 script: gulp test
 before_script:
     - npm install
