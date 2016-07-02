@@ -24,18 +24,23 @@ describe('Bluetooth Server', () => {
 
     describe('Utilites', () => {
 
+        var animist;
+
+        beforeEach( () => { 
+            animist = new server.AnimistServer();
+        });
+
         describe('queueTx(tx)', ()=>{
-            var tx, queue, animist, old_config;
+            var tx, queue, old_config;
             
-            it('should transform input into buffers of MAX_SIZE & put them in the send queue',()=>{
+            it('should transform input into buffers of MAX_SIZE & queue them',()=>{
                 
                 // Testing 11 chars/4 byte packets: 
                 tx = "12341234123";
                 old_config = config.MAX_SEND;
                 config.MAX_SEND = 4;
                 
-                animist = new server.AnimistServer();
-                server.queueTx(tx);
+                animist.queueTx(tx);
                 queue = animist.getSendQueue();
         
                 expect(queue.length).to.equal(3);
@@ -49,13 +54,13 @@ describe('Bluetooth Server', () => {
         });
 
         describe('resetPin', ()=>{
-            var animist, new_pin, old_pin;
+            var new_pin, old_pin;
 
             it('should generate & set a new 32 character pin', ()=>{
-                animist = new server.AnimistServer();
+        
                 old_pin = animist.getPin();
 
-                server.resetPin();
+                animist.resetPin();
                 new_pin = animist.getPin();
 
                 expect( typeof old_pin).to.equal('string');
@@ -77,7 +82,7 @@ describe('Bluetooth Server', () => {
                 req = wallet.signing.signMsg( keystore, account.key, msg, address); 
                 req = JSON.stringify(req);
                 
-                output = server.parseHasTxRequest(req);
+                output = animist.parseHasTxRequest(req);
 
                 expect( output.status).to.equal(1);
                 expect( typeof output.val).to.equal('object');
@@ -87,8 +92,8 @@ describe('Bluetooth Server', () => {
             });
 
             it('should return error if req is not parse-able as a signed msg', ()=>{
-                req = '{\"signed\": \"I am like not even signed LOL!!!\"}';
-                output = server.parseHasTxRequest(req);
+                req = '{\"signed\": \"I am like not even signed\"}';
+                output = animist.parseHasTxRequest(req);
 
                 expect(output.status).to.equal(0);
                 expect(output.val).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
@@ -97,7 +102,7 @@ describe('Bluetooth Server', () => {
             it('should return error if req is not JSON formatted', ()=>{
 
                 req = "0x5[w,r,0,,n,g";
-                output = server.parseHasTxRequest(req);
+                output = animist.parseHasTxRequest(req);
 
                 expect(output.status).to.equal(0);
                 expect(output.val).to.equal(config.codes.INVALID_JSON_IN_REQUEST);
@@ -127,7 +132,7 @@ describe('Bluetooth Server', () => {
             fns.callback = (code, pin) => {};
             
             chai.spy.on(fns, 'callback');
-            server.onPinRead(null, fns.callback);
+            animist.onPinRead(null, fns.callback);
 
             expect(fns.callback).to.have.been.called.with(codes.RESULT_SUCCESS, pin_to_buffer);
 
@@ -163,7 +168,7 @@ describe('Bluetooth Server', () => {
 
                 config.fakeTx.authority = address;
                 chai.spy.on(fns, 'callback');
-                server.onHasTxWrite(req, null, null, fns.callback)
+                animist.onHasTxWrite(req, null, null, fns.callback)
                 
                 expect(fns.callback).to.have.been.called.with(config.codes.RESULT_SUCCESS);
                 setTimeout(done, 50);
@@ -177,7 +182,7 @@ describe('Bluetooth Server', () => {
                 initial_queue_size = animist.getSendQueue().length;
                 config.fakeTx.authority = address;
             
-                server.onHasTxWrite(req, null, null, fns.callback)
+                animist.onHasTxWrite(req, null, null, fns.callback)
                 new_queue_size = animist.getSendQueue().length;
 
                 expect(initial_queue_size).to.equal(0);
@@ -192,7 +197,7 @@ describe('Bluetooth Server', () => {
                 
                 // Get a queue copy
                 tx = server.getTx(address);
-                server.queueTx(tx);
+                animist.queueTx(tx);
                 full_queue = animist.getSendQueue();
                 full_queue_size = full_queue.length;
                 expected_queue_size = full_queue_size - 1;
@@ -202,7 +207,7 @@ describe('Bluetooth Server', () => {
                
                 // Run
                 chai.spy.on(animist.hasTxCharacteristic, 'updateValueCallback');
-                server.onHasTxWrite(req, null, null, fns.callback);
+                animist.onHasTxWrite(req, null, null, fns.callback);
 
                 // Test
                 setTimeout(() => {
@@ -218,7 +223,7 @@ describe('Bluetooth Server', () => {
                     
                 config.fakeTx.authority = 'not_this_address';
                 chai.spy.on(fns, 'callback');
-                server.onHasTxWrite(req, null, null, fns.callback)
+                animist.onHasTxWrite(req, null, null, fns.callback)
                 
                 expect(fns.callback).to.have.been.called.with(config.codes.NO_TX_FOUND);
 
@@ -229,7 +234,7 @@ describe('Bluetooth Server', () => {
                 req = "0x5[w,r,0,,n,g";
                 chai.spy.on(fns, 'callback');
 
-                server.onHasTxWrite(req, null, null, fns.callback);
+                animist.onHasTxWrite(req, null, null, fns.callback);
                 expect(fns.callback).to.have.been.called.with(config.codes.INVALID_JSON_IN_REQUEST);
                 
             });
@@ -258,7 +263,7 @@ describe('Bluetooth Server', () => {
             beforeEach((done)=>{
                 animist.resetSendQueue();
                 animist.hasTxCharacteristic.updateValueCallback = (val) => {};
-                server.onHasTxWrite(req, null, null, fns.callback);
+                animist.onHasTxWrite(req, null, null, fns.callback);
                 setTimeout(done, 50);
             });
 
@@ -269,7 +274,7 @@ describe('Bluetooth Server', () => {
                 let initial_queue_element = queue[0];
 
                 chai.spy.on(animist.hasTxCharacteristic, 'updateValueCallback');
-                server.onHasTxIndicate();
+                animist.onHasTxIndicate();
 
                 setTimeout(()=>{
                     queue = animist.getSendQueue();
@@ -286,7 +291,7 @@ describe('Bluetooth Server', () => {
                 chai.spy.on(animist.hasTxCharacteristic, 'updateValueCallback');
 
                 animist.resetSendQueue();
-                server.onHasTxIndicate();
+                animist.onHasTxIndicate();
 
                 setTimeout(()=>{
                     expect(animist.hasTxCharacteristic.updateValueCallback).to.have.been.called.with(expected);
@@ -299,13 +304,13 @@ describe('Bluetooth Server', () => {
 
                 // Run EOF
                 animist.resetSendQueue();
-                server.onHasTxIndicate();
+                animist.onHasTxIndicate();
 
                 setTimeout(()=>{
                     
                     // Post EOF
                     chai.spy.on(animist.hasTxCharacteristic, 'updateValueCallback');
-                    server.onHasTxIndicate();
+                    animist.onHasTxIndicate();
 
                     setTimeout(() =>{
                         expect(animist.hasTxCharacteristic.updateValueCallback).not.to.have.been.called();
