@@ -3,5 +3,6 @@ node_js:
     - v5
 script: gulp test
 before_script:
+    - apt-get install build-essential
     - npm install
 
