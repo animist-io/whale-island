@@ -1,7 +1,7 @@
 
 
 //let config = require('../lib/config.js');
-//let server = require('../lib/server.js');
+let server = require('../lib/server.js');
 
 const account = require('../test/mocks/wallet.js');
 const wallet = require('eth-lightwallet');
