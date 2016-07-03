@@ -17,20 +17,13 @@ describe('Bluetooth Server', () => {
     var keystore, address;
 
     // Prep a single keystore/account for all tests
-    /*before(()=>{
+    before(() => {
         let json = JSON.stringify(account.keystore);
         keystore = wallet.keystore.deserialize(json);  
         keystore.generateNewAddress(account.key, 1);
         address = keystore.getAddresses()[0];
-    })*/
-
-    it('should work on Travis CI', function(){
-        expect(true).to.be.true;
     });
 
-});
-
-/*
     describe('Utilites', () => {
 
         var animist;
@@ -205,7 +198,7 @@ describe('Bluetooth Server', () => {
                 let tx, full_queue, full_queue_size, new_queue_size, expected_queue_size;
                 
                 // Get a queue copy
-                tx = server.getTx(address);
+                tx = animist.getTx(address);
                 animist.queueTx(tx);
                 full_queue = animist.getSendQueue();
                 full_queue_size = full_queue.length;
@@ -329,4 +322,4 @@ describe('Bluetooth Server', () => {
             });
         });
     });
-});*/
+});

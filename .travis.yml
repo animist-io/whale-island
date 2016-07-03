@@ -2,15 +2,11 @@ language: node_js
 node_js:
   - "5"
 env:
-  - CXX=g++-4.8
+  - CXX=g++-4.8 TRAVIS=true
 addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
-    - bluetooth
-    - bluez
-    - libbluetooth-dev 
-    - libudev-dev
     packages:
     - g++-4.8
 script: gulp test

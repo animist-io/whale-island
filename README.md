@@ -6,7 +6,12 @@ Basic commands:
 
 ```
 (Test)
-% gulp watch  // or $ gulp test (single run) 
+$ gulp test (single run) 
+
+(Run tests for Travis CI context)
+$ export TRAVIS=true
+$ gulp test
+$ unset TRAVIS
 
 (Serve)
 % node lib/server.js start
