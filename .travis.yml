@@ -7,6 +7,10 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
+    - bluetooth
+    - bluez
+    - libbluetooth-dev 
+    - libudev-dev
     packages:
     - g++-4.8
 script: gulp test
