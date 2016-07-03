@@ -1,6 +1,6 @@
 
 
-//let config = require('../lib/config.js');
+let config = require('../lib/config.js');
 let server = require('../lib/server.js');
 
 const account = require('../test/mocks/wallet.js');
