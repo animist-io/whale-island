@@ -17,12 +17,12 @@ describe('Bluetooth Server', () => {
     var keystore, address;
 
     // Prep a single keystore/account for all tests
-    before(()=>{
+    /*before(()=>{
         let json = JSON.stringify(account.keystore);
         keystore = wallet.keystore.deserialize(json);  
         keystore.generateNewAddress(account.key, 1);
         address = keystore.getAddresses()[0];
-    })
+    })*/
 
     it('should work on Travis CI', function(){
         expect(true).to.be.true;
