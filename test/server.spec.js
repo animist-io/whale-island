@@ -1,10 +1,10 @@
 
 
-//let config = require('../lib/config.js');
-//let server = require('../lib/server.js');
+let config = require('../lib/config.js');
+let server = require('../lib/server.js');
 
-//const account = require('../test/mocks/wallet.js');
-//const wallet = require('eth-lightwallet');
+const account = require('../test/mocks/wallet.js');
+const wallet = require('eth-lightwallet');
 
 const chai = require('chai');
 const spies = require('chai-spies');
@@ -12,12 +12,6 @@ const expect = chai.expect;
 
 chai.use(spies);
 
-describe('Travis Test', function(){
-    it('should work on Travis CI', function(){
-        expect(true).to.be.true;
-    })
-})
-/*
 describe('Bluetooth Server', () => {
     
     var keystore, address;
@@ -30,6 +24,13 @@ describe('Bluetooth Server', () => {
         address = keystore.getAddresses()[0];
     })
 
+    it('should work on Travis CI', function(){
+        expect(true).to.be.true;
+    });
+
+});
+
+/*
     describe('Utilites', () => {
 
         var animist;
