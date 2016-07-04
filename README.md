@@ -23,7 +23,6 @@ $ add-cors-to-couchdb
 ```
 Basic commands:
 
-```
 // Test
 $ gulp test (single run) 
 
