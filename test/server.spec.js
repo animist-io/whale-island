@@ -94,7 +94,7 @@ describe('Bluetooth Server', () => {
             });
 
             it('should return error if req is not parse-able as a signed msg', ()=>{
-                req = '{\"signed\": \"I am like not even signed\"}';
+                req = '{\"signed\": \"I am not signed\"}';
                 output = animist.parseHasTxRequest(req);
 
                 expect(output.status).to.equal(0);
@@ -118,7 +118,7 @@ describe('Bluetooth Server', () => {
 
         var animist; 
  
-        // Instantiate new server before each test
+        // New server per test
         beforeEach(() => { 
             animist = new server.AnimistServer();
         });
@@ -198,7 +198,7 @@ describe('Bluetooth Server', () => {
                 let tx, full_queue, full_queue_size, new_queue_size, expected_queue_size;
                 
                 // Get a queue copy
-                tx = animist.getTx(address);
+                tx = JSON.stringify(config.fakeTx);
                 animist.queueTx(tx);
                 full_queue = animist.getSendQueue();
                 full_queue_size = full_queue.length;
