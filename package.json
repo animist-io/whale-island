@@ -57,6 +57,7 @@
     "bleno": "^0.4.0",
     "cli-color": "^1.1.0",
     "eth-lightwallet": "^2.4.3",
+    "minimatch": "^3.0.2",
     "node-uuid": "^1.4.7",
     "pouchdb": "^5.4.5",
     "randomstring": "^1.1.5",
