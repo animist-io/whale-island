@@ -1,4 +1,5 @@
 # whale-island
+[![Build Status](https://travis-ci.org/animist-io/whale-island.svg?branch=master)](https://travis-ci.org/animist-io/whale-island)
 
 (This repo is in the earliest stages of development. TDD is being done.)
 
