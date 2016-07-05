@@ -5,12 +5,16 @@ let server = require('../lib/server.js');
 
 const account = require('../test/mocks/wallet.js');
 const wallet = require('eth-lightwallet');
+const pouchdb = require('pouchdb');
 
 const chai = require('chai');
 const spies = require('chai-spies');
+const chaiAsPromised = require("chai-as-promised");
 const expect = chai.expect;
+const should = chai.should;
 
 chai.use(spies);
+chai.use(chaiAsPromised);
 
 describe('Bluetooth Server', () => {
     
@@ -112,6 +116,47 @@ describe('Bluetooth Server', () => {
             });
 
         });
+
+        describe('isValidSession(id)', function(){
+
+            let db;
+            
+            // DB creation and cleanup
+            beforeEach(()=>{ 
+                db = new pouchdb('session'); 
+            });
+
+            afterEach((done)=>{ 
+                db.destroy().then(()=>{done()}) 
+            });
+
+            it('should resolve if session id exists in the db', function(done){
+                let doc = {_id: '55555', val: '12345' };
+                let promise;
+
+                db.put(doc).then(()=>{
+                    expect(animist.isValidSession('55555')).to.eventually.include.keys('_id').notify(done);        
+                }).catch((err) => {
+                    expect('Test should not error').to.equal('true');
+                });
+
+            });
+
+            it('should reject if the id param is not a string', function(done){
+                expect(animist.isValidSession({obj: 5})).to.be.rejected.notify(done);
+            });
+
+            it('should reject if the record is not found in the sessions DB', function(){
+                let doc = {_id: '55555', val: '12345' };
+                let promise;
+
+                db.put(doc).then(()=>{
+                    expect(animist.isValidSession('77777')).to.be.rejected.notify(done);        
+                }).catch((err) => {
+                    expect('Test should not error').to.equal('true');
+                });
+            });
+        })
     });
 
     describe('Request Handlers', () => {
