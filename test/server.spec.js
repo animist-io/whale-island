@@ -3,6 +3,7 @@
 let config = require('../lib/config.js');
 let server = require('../lib/server.js');
 
+const Promise = require('bluebird');
 const account = require('../test/mocks/wallet.js');
 const wallet = require('eth-lightwallet');
 const pouchdb = require('pouchdb');
@@ -233,13 +234,21 @@ describe('Bluetooth Server', () => {
 
     });
 
-    /*describe('Request Handlers', () => {
+    describe('Request Handlers', () => {
 
-        var animist; 
+        var animist, db; 
  
         // New server per test
         beforeEach(() => { 
             animist = new server.AnimistServer();
+            db = new pouchdb('sessions'); 
+            animist.setDB(db);
+        });
+
+        afterEach((done)=>{ 
+            db.destroy().then(()=>{
+                done()
+            }) 
         });
 
         describe('onPinRead', () => {
@@ -262,7 +271,7 @@ describe('Bluetooth Server', () => {
 
         describe('onHasTxWrite', () => {
             
-            var req, fns = {};
+            var req, hasTxWrite, fns = {};
 
             // Mocks
             before(()=>{
@@ -271,28 +280,28 @@ describe('Bluetooth Server', () => {
                 req = wallet.signing.signMsg( keystore, account.key, animist.getPin(), address); 
                 req = JSON.stringify(req);
                 
-                // Mock byte callback
-                fns.callback = (code) => {};
-
                  // Mock address
                 config.fakeTx.authority = address;
- 
+
             });
 
             // Clear state & mock updateValueCallback
             beforeEach(()=>{
                 animist.resetSendQueue();
                 animist.hasTxCharacteristic.updateValueCallback = (val) => {};
+                fns.callback = (code) => {}; 
             })
 
             it('should respond w/ RESULT_SUCCESS if a tx matching the address is found', (done)=>{
 
-                chai.spy.on(fns, 'callback');
-                animist.onHasTxWrite(req, null, null, fns.callback)
+                // Run through callback
+                fns.callback = (code) => { 
+                    expect(code).to.equal(config.codes.RESULT_SUCCESS);
+                    done(); 
+                };
+        
+                animist.onHasTxWrite(req, null, null, fns.callback);
                 
-                expect(fns.callback).to.have.been.called.with(config.codes.RESULT_SUCCESS);
-                setTimeout(done, 50);
-
             });
 
             it('should push the tx into the send queue', (done) => {
@@ -300,15 +309,19 @@ describe('Bluetooth Server', () => {
                 let initial_queue_size, new_queue_size;
 
                 initial_queue_size = animist.getSendQueue().length;
-                config.fakeTx.authority = address;
+                
+                // Test state in success callback
+                fns.callback = (code) => { 
+                    expect(code).to.equal(config.codes.RESULT_SUCCESS);
+                    new_queue_size = animist.getSendQueue().length;
+                    expect(initial_queue_size).to.equal(0);
+                    expect(new_queue_size).to.be.gt(0);
+                    done(); 
+                };
             
+                // Run fn
                 animist.onHasTxWrite(req, null, null, fns.callback)
-                new_queue_size = animist.getSendQueue().length;
-
-                expect(initial_queue_size).to.equal(0);
-                expect(new_queue_size).to.be.gt(0);
-                setTimeout(done, 50);
-
+        
             });
 
             it('should begin writing/processing the send queue', (done) => {
@@ -316,11 +329,9 @@ describe('Bluetooth Server', () => {
                 let tx, full_queue, full_queue_size, new_queue_size, expected_queue_size;
                 
                 // Get a queue copy
-                tx = JSON.stringify(config.fakeTx);
-                animist.queueTx(tx);
+                animist.queueTx(config.fakeTx);
                 full_queue = animist.getSendQueue();
                 full_queue_size = full_queue.length;
-                expected_queue_size = full_queue_size - 1;
 
                 // Clean up
                 animist.resetSendQueue();
@@ -333,13 +344,14 @@ describe('Bluetooth Server', () => {
                 setTimeout(() => {
                     new_queue_size = animist.getSendQueue().length;
                     expect(animist.hasTxCharacteristic.updateValueCallback).to.have.been.called.with(full_queue[0]);
-                    expect(new_queue_size).to.equal(expected_queue_size);
+                    expect(new_queue_size).to.be.lt(full_queue_size);
                     done();
-                }, 50);
+                }, 55);
                 
             });
 
-            it('should respond w/ NO_TX_FOUND if there is no tx matching the address', ()=>{
+            // **** FIX WHEN GETTX IS ACTUALLY WRITTEN - E.G. WE CAN MOCK NO DISCOVERY ******
+            /*it('should respond w/ NO_TX_FOUND if there is no tx matching the address', ()=>{
                     
                 config.fakeTx.authority = 'not_this_address';
                 chai.spy.on(fns, 'callback');
@@ -347,7 +359,7 @@ describe('Bluetooth Server', () => {
                 
                 expect(fns.callback).to.have.been.called.with(config.codes.NO_TX_FOUND);
 
-            });
+            });*/
 
             it('should respond w/ error code if req is un-parseable', ()=>{
 
@@ -372,7 +384,7 @@ describe('Bluetooth Server', () => {
                 req = JSON.stringify(req);
                 
                 // Mock byte callback
-                fns.callback = (code) => {};
+                //fns.callback = (code) => {};
 
                  // Mock address
                 config.fakeTx.authority = address;
@@ -381,10 +393,14 @@ describe('Bluetooth Server', () => {
 
             // Run hasTxWrite: Clear state & mock updateValueCallback
             beforeEach((done)=>{
+
+                // Hit callback before running timeout
+                fns.callback = (code) => { setTimeout(done, 50) }
+                
                 animist.resetSendQueue();
                 animist.hasTxCharacteristic.updateValueCallback = (val) => {};
                 animist.onHasTxWrite(req, null, null, fns.callback);
-                setTimeout(done, 50);
+
             });
 
             it('should de-queue & send the next packet', (done)=>{
@@ -401,7 +417,7 @@ describe('Bluetooth Server', () => {
                     expect(animist.hasTxCharacteristic.updateValueCallback).to.have.been.called.with(initial_queue_element);
                     expect(queue.length).to.equal(initial_queue_size - 1);
                     done();
-                },10);
+                },0);
 
             });
 
@@ -439,5 +455,5 @@ describe('Bluetooth Server', () => {
                 },0);
             });
         });
-    });*/
+    });
 });
