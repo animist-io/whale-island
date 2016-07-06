@@ -23,6 +23,7 @@ gulp.task('static', function () {
 });
 
 gulp.task('nsp', function (cb) {
+  // stopOnError disabled to temporarily manage issue #14: DO NOT DO THIS.
   nsp({package: path.resolve('package.json'), stopOnError: false }, cb);
 });
 
@@ -39,7 +40,8 @@ gulp.task('pre-test', function () {
 gulp.task('test', ['pre-test'], function (cb) {
   var mochaErr;
 
-  gulp.src('test/**/*.js')
+  // Exclude files by adding: '!test/...etc' to array : , '!test/server.spec.js'
+  gulp.src(['test/**/*.js'])
     .pipe(plumber())
     .pipe(mocha({reporter: 'spec'}))
     .on('error', function (err) {

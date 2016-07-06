@@ -1,7 +1,7 @@
 
-
 let config = require('../lib/config.js');
 let server = require('../lib/server.js');
+let eth = require('../lib/eth.js');
 
 const Promise = require('bluebird');
 const account = require('../test/mocks/wallet.js');
@@ -12,7 +12,6 @@ const chai = require('chai');
 const spies = require('chai-spies');
 const chaiAsPromised = require("chai-as-promised");
 const expect = chai.expect;
-const should = chai.should;
 
 chai.use(spies);
 chai.use(chaiAsPromised);
@@ -271,33 +270,47 @@ describe('Bluetooth Server', () => {
 
         describe('onHasTxWrite', () => {
             
-            var req, hasTxWrite, fns = {};
-
+            let req, eth_db, mock_contract, fns = {};
+    
             // Mocks
             before(()=>{
                 
                 // Mock request
                 req = wallet.signing.signMsg( keystore, account.key, animist.getPin(), address); 
                 req = JSON.stringify(req);
-                
-                 // Mock address
-                config.fakeTx.authority = address;
 
+                mock_contract = { _id: address, authority: address, contract: config.fakeTx.code };
+                
             });
 
-            // Clear state & mock updateValueCallback
-            beforeEach(()=>{
+            // Clear state, set a contract to find,  & mock updateValueCallback
+            beforeEach((done)=>{
+
+                eth_db = new pouchdb('contracts'); 
+                eth.units.setDB(eth_db);
+
                 animist.resetSendQueue();
                 animist.hasTxCharacteristic.updateValueCallback = (val) => {};
                 fns.callback = (code) => {}; 
-            })
+
+                eth_db.put(mock_contract).then(() => {
+                    done();
+                });
+            });
+
+            afterEach((done)=>{ 
+                // Clean up
+                animist.resetSendQueue();
+                eth_db.destroy().then(() => { done() });
+            }); 
 
             it('should respond w/ RESULT_SUCCESS if a tx matching the address is found', (done)=>{
 
-                // Run through callback
+                 // Test state in success callback - make sure you run the timeout too
+                // or it will f the subsequent tests
                 fns.callback = (code) => { 
                     expect(code).to.equal(config.codes.RESULT_SUCCESS);
-                    done(); 
+                    setTimeout(done, 55); 
                 };
         
                 animist.onHasTxWrite(req, null, null, fns.callback);
@@ -310,13 +323,14 @@ describe('Bluetooth Server', () => {
 
                 initial_queue_size = animist.getSendQueue().length;
                 
-                // Test state in success callback
+                // Test state in success callback - make sure you run the timeout too
+                // or it will f the subsequent tests
                 fns.callback = (code) => { 
                     expect(code).to.equal(config.codes.RESULT_SUCCESS);
                     new_queue_size = animist.getSendQueue().length;
                     expect(initial_queue_size).to.equal(0);
                     expect(new_queue_size).to.be.gt(0);
-                    done(); 
+                    setTimeout(done, 55); 
                 };
             
                 // Run fn
@@ -328,25 +342,28 @@ describe('Bluetooth Server', () => {
 
                 let tx, full_queue, full_queue_size, new_queue_size, expected_queue_size;
                 
-                // Get a queue copy
-                animist.queueTx(config.fakeTx);
-                full_queue = animist.getSendQueue();
-                full_queue_size = full_queue.length;
-
                 // Clean up
                 animist.resetSendQueue();
-               
-                // Run
-                chai.spy.on(animist.hasTxCharacteristic, 'updateValueCallback');
-                animist.onHasTxWrite(req, null, null, fns.callback);
+            
+                // Test post callback . . . in a timeout.
+                fns.callback = (code) => { 
 
-                // Test
-                setTimeout(() => {
-                    new_queue_size = animist.getSendQueue().length;
-                    expect(animist.hasTxCharacteristic.updateValueCallback).to.have.been.called.with(full_queue[0]);
-                    expect(new_queue_size).to.be.lt(full_queue_size);
-                    done();
-                }, 55);
+                    full_queue = animist.getSendQueue();
+                    full_queue_size = full_queue.length;
+            
+                    chai.spy.on(animist.hasTxCharacteristic, 'updateValueCallback');
+
+                    setTimeout(() => {
+                        expect(code).to.equal(config.codes.RESULT_SUCCESS);
+                        new_queue_size = animist.getSendQueue().length;
+                        expect(animist.hasTxCharacteristic.updateValueCallback).to.have.been.called();
+                        expect(new_queue_size).to.equal(full_queue_size - 1);
+                        done();
+                    }, 55);
+                };
+
+                // Run
+                animist.onHasTxWrite(req, null, null, fns.callback);
                 
             });
 
@@ -376,30 +393,13 @@ describe('Bluetooth Server', () => {
         describe('onHasTxIndicate', ()=>{
             var req, fns = {};
 
-            // Mocks
-            before(()=>{
-                
-                // Mock request
-                req = wallet.signing.signMsg( keystore, account.key, animist.getPin(), address); 
-                req = JSON.stringify(req);
-                
-                // Mock byte callback
-                //fns.callback = (code) => {};
-
-                 // Mock address
-                config.fakeTx.authority = address;
- 
-            });
 
             // Run hasTxWrite: Clear state & mock updateValueCallback
-            beforeEach((done)=>{
+            beforeEach(() =>{
 
-                // Hit callback before running timeout
-                fns.callback = (code) => { setTimeout(done, 50) }
-                
                 animist.resetSendQueue();
                 animist.hasTxCharacteristic.updateValueCallback = (val) => {};
-                animist.onHasTxWrite(req, null, null, fns.callback);
+                animist.queueTx(config.fakeTx);
 
             });
 
