@@ -41,17 +41,26 @@ describe('Bluetooth Server', () => {
             
             it('should transform input into buffers of MAX_SIZE & queue them',()=>{
                 
-                // Testing 11 chars/4 byte packets: 
-                tx = "12341234123";
+                // Testing 11 chars (including "" from JSON stringify) /4 byte packets: 
+                tx = "123412341";
                 old_config = config.MAX_SEND;
                 config.MAX_SEND = 4;
                 
                 animist.queueTx(tx);
                 queue = animist.getSendQueue();
-        
+                
                 expect(queue.length).to.equal(3);
                 expect(Buffer.isBuffer(queue[0])).to.be.true;
                 expect(queue[2].length).to.equal(3);
+
+                // Testing 3 chars (including "" from JSON stringify) /4 byte packets:
+                tx = '1';
+                animist.resetSendQueue();
+                animist.queueTx(tx);
+                queue = animist.getSendQueue();
+
+                expect(queue.length).to.equal(1);
+                expect(queue[0].length).to.equal(3);
 
                 // Cleanup 
                 config.MAX_SEND = old_config;
@@ -117,17 +126,21 @@ describe('Bluetooth Server', () => {
 
         });
 
+        
         describe('isValidSession(id)', function(){
 
             let db;
             
             // DB creation and cleanup
-            beforeEach(()=>{ 
-                db = new pouchdb('session'); 
+            beforeEach(() => { 
+                db = new pouchdb('sessions'); 
+                animist.setDB(db);
             });
 
             afterEach((done)=>{ 
-                db.destroy().then(()=>{done()}) 
+                db.destroy().then(()=>{
+                    done();
+                }) 
             });
 
             it('should resolve if session id exists in the db', function(done){
@@ -142,11 +155,7 @@ describe('Bluetooth Server', () => {
 
             });
 
-            it('should reject if the id param is not a string', function(done){
-                expect(animist.isValidSession({obj: 5})).to.be.rejected.notify(done);
-            });
-
-            it('should reject if the record is not found in the sessions DB', function(){
+            it('should reject if the record is not found in the DB', function(done){
                 let doc = {_id: '55555', val: '12345' };
                 let promise;
 
@@ -156,10 +165,75 @@ describe('Bluetooth Server', () => {
                     expect('Test should not error').to.equal('true');
                 });
             });
-        })
+
+            it('should reject if the id param is not a string', function(done){
+                expect(animist.isValidSession({obj: 5})).to.be.rejected.notify(done);
+            });
+
+            
+        });
+
+        describe('startSession(tx)', function(){
+
+           let db, orig_session;
+            
+            // DB creation and cleanup
+            beforeEach(()=>{ 
+                db = new pouchdb('sessions'); 
+                animist.setDB(db);
+            });
+
+            afterEach((done)=>{ 
+                db.destroy().then(()=>{
+                    done()
+                }) 
+            });
+            
+            it('should bind a session id and expiration time to the param object', (done) => {
+
+                let fakeTx = config.fakeTx;
+
+                animist.startSession(fakeTx).then(()=>{
+                    expect(fakeTx.sessionId).to.be.a.string;
+                    expect(fakeTx.expires).to.be.gt(Date.now());
+                    done();
+                });
+            });
+
+            it('should save session data to the DB', function(done){
+
+                let fakeTx = config.fakeTx;
+
+                animist.startSession(fakeTx).then(()=>{
+                    let expected = {_id: fakeTx.sessionId, expires: fakeTx.expires }
+                    expect(db.get(fakeTx.sessionId)).to.eventually.include(expected).notify(done);
+                });
+
+            });
+
+            it('should delete the session data after a specified time', function(done){
+                let fakeTx = config.fakeTx;
+                let original = config.SESSION_LENGTH;
+
+                animist.setSessionLength(10);
+
+                animist.startSession(fakeTx).then((doc)=>{
+                    
+                    setTimeout(()=>{
+                        
+                        expect(db.get(fakeTx.sessionId)).to.eventually.be.rejected.notify(done);
+                        animist.setSessionLength(original);
+                        
+                    }, 15);
+                });
+            });
+
+
+        });
+
     });
 
-    describe('Request Handlers', () => {
+    /*describe('Request Handlers', () => {
 
         var animist; 
  
@@ -213,7 +287,6 @@ describe('Bluetooth Server', () => {
 
             it('should respond w/ RESULT_SUCCESS if a tx matching the address is found', (done)=>{
 
-                config.fakeTx.authority = address;
                 chai.spy.on(fns, 'callback');
                 animist.onHasTxWrite(req, null, null, fns.callback)
                 
@@ -366,5 +439,5 @@ describe('Bluetooth Server', () => {
                 },0);
             });
         });
-    });
+    });*/
 });

@@ -19,6 +19,7 @@ calls it and it fires an event. The endpoints watch their contract and maintain 
 of outstanding contracts
 
 // Init() Required to proceed
+
 init(){
 
     // THIS NEEDS WORK . . .

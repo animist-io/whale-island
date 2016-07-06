@@ -1,3 +1,5 @@
+'use strict'
+
 // Bleno mocks for Travis CI build
 exports.Characteristic = class Characteristic{ constructor(obj){} };
 exports.PrimaryService = class PrimaryService{ constructor(obj){} };
