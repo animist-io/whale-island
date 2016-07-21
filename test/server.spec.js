@@ -144,31 +144,44 @@ describe('Bluetooth Server', () => {
             });
 
             it('should resolve if session id exists in the db', function(done){
-                let doc = {_id: '55555', val: '12345' };
-                let promise;
-
-                db.put(doc).then(()=>{
-                    expect(animist.isValidSession('55555')).to.eventually.include.keys('_id').notify(done);        
+                let doc = {_id: '55555', expires: '12345', account: "0x25345454564545"  };
+                let tx = { caller: "0x25345454564545" };
+        
+                db.put(doc).then(()=>{ 
+                    expect(animist.isValidSession('55555', tx)).to.be.fulfilled.notify(done);        
                 }).catch((err) => {
                     expect('Test should not error').to.equal('true');
                 });
 
-            });
-
-            it('should reject if the record is not found in the DB', function(done){
-                let doc = {_id: '55555', val: '12345' };
-                let promise;
-
-                db.put(doc).then(()=>{
-                    expect(animist.isValidSession('77777')).to.be.rejected.notify(done);        
-                }).catch((err) => {
-                    expect('Test should not error').to.equal('true');
-                });
             });
 
             it('should reject if the id param is not a string', function(done){
                 expect(animist.isValidSession({obj: 5})).to.be.rejected.notify(done);
             });
+
+            it('should reject if the record is not found in the DB', function(done){
+                let doc = {_id: '55555', expires: '12345', account: "0x25345454564545"  };
+                let tx = { caller: "0x25345454564545" };
+
+                db.put(doc).then(()=>{
+                    expect(animist.isValidSession('77777', tx)).to.be.rejected.notify(done);        
+                }).catch((err) => {
+                    expect('Test should not error').to.equal('true');
+                });
+            });
+
+            it('should reject if the sessionId was not issue to the caller', function(done){
+                let doc = {_id: '55555', expires: '12345', account: "0x25345454564545"  };
+                let tx = { caller: "0x00000000" };
+
+                db.put(doc).then(()=>{
+                    expect(animist.isValidSession('55555', tx)).to.be.rejected.notify(done);        
+                }).catch((err) => {
+                    expect('Test should not error').to.equal('true');
+                });
+            });
+
+            
 
             
         });
@@ -200,12 +213,13 @@ describe('Bluetooth Server', () => {
                 });
             });
 
-            it('should save session data to the DB', function(done){
+            it('should save session data associated w/ caller account to the DB', function(done){
 
                 let fakeTx = config.fakeTx;
+                fakeTx.caller = "0x25345454564545";
 
                 animist.startSession(fakeTx).then(()=>{
-                    let expected = {_id: fakeTx.sessionId, expires: fakeTx.expires }
+                    let expected = {_id: fakeTx.sessionId, expires: fakeTx.expires, account: fakeTx.caller }
                     expect(db.get(fakeTx.sessionId)).to.eventually.include(expected).notify(done);
                 });
 
@@ -300,7 +314,6 @@ describe('Bluetooth Server', () => {
 
             afterEach((done)=>{ 
                 // Clean up
-                animist.resetSendQueue();
                 eth_db.destroy().then(() => { done() });
             }); 
 
@@ -367,16 +380,16 @@ describe('Bluetooth Server', () => {
                 
             });
 
-            // **** FIX WHEN GETTX IS ACTUALLY WRITTEN - E.G. WE CAN MOCK NO DISCOVERY ******
-            /*it('should respond w/ NO_TX_FOUND if there is no tx matching the address', ()=>{
+            // **** FIX WHEN GETTX IS ACTUALLY WRITTEN - E.G. WE CAN MOCK NO DISCOVERY 
+            //it('should respond w/ NO_TX_FOUND if there is no tx matching the address', ()=>{
                     
-                config.fakeTx.authority = 'not_this_address';
-                chai.spy.on(fns, 'callback');
-                animist.onHasTxWrite(req, null, null, fns.callback)
+            //    config.fakeTx.authority = 'not_this_address';
+            //    chai.spy.on(fns, 'callback');
+            //    animist.onHasTxWrite(req, null, null, fns.callback)
                 
-                expect(fns.callback).to.have.been.called.with(config.codes.NO_TX_FOUND);
+            //    expect(fns.callback).to.have.been.called.with(config.codes.NO_TX_FOUND);
 
-            });*/
+            //});
 
             it('should respond w/ error code if req is un-parseable', ()=>{
 

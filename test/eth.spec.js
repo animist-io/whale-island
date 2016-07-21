@@ -40,7 +40,7 @@ describe('Eth Client', function(){
                 expect(result).to.equal(address);
             });
 
-            it('should return undefined if there is an error', ()=>{
+            it('should return undefined if there is an error', () => {
                 let msg, result;
 
                 msg = 'a message';
@@ -79,16 +79,22 @@ describe('Eth Client', function(){
             it('should resolve a contract if it finds one matching the acct. address', (done) =>{
 
                 let mock = { _id: address, authority: address, contract: '12345'};
-
                 db.put(mock).then(()=>{
                     expect(eth.getTx(pins, signed)).to.eventually.include(mock).notify(done);
                 })
 
             });
 
+            it('should append a "caller" field to the contract (the addr. recovered from the pin)', (done) => {
+                let mock = { _id: address, authority: address, contract: '12345'};
+                let expected = { caller: address };
+                db.put(mock).then(()=>{
+                    expect(eth.getTx(pins, signed)).to.eventually.include(expected).notify(done);
+                });
+            });
+
             it('should work if signed message used the deprecated pin', () => {
                 let mock = { _id: address, authority: address, contract: '12345'};
-
                 signed = wallet.signing.signMsg( keystore, account.key, pins[1], address);
 
                 db.put(mock).then(()=>{
@@ -107,7 +113,6 @@ describe('Eth Client', function(){
             it('should reject if it is unable to extract an address from the signed msg', (done)=>{
                 
                 let garbage = 'garbage';
-
                 expect(eth.getTx(pins, garbage)).to.eventually.be.rejected.notify(done);
             });
 
