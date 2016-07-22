@@ -10,7 +10,8 @@ module.exports = {
     "images/": "images/"
   },
   deploy: [
-    "AnimistAPI"
+    "AnimistAPI",
+    "TestContract"
   ],
   rpc: {
     host: "localhost",

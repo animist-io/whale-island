@@ -9,7 +9,9 @@ addons:
     - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
-script: gulp test
+script: truffle test
 before_script:
-    - npm install
-
+  - npm install -g truffle@1.0.3
+  - npm install -g ethereumjs-testrpc
+  - npm install
+  - testrpc > /dev/null & 

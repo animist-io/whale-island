@@ -19,14 +19,15 @@ chai.use(chaiAsPromised);
 
 describe('Bluetooth Server', () => {
     
-    var keystore, address;
+    var keystore, address, hexAddress;
 
     // Prep a single keystore/account for all tests
     before(() => {
         let json = JSON.stringify(account.keystore);
         keystore = wallet.keystore.deserialize(json);  
         keystore.generateNewAddress(account.key, 1);
-        address = keystore.getAddresses()[0];
+        address = keystore.getAddresses()[0]; // Lightwallets addresses are not prefixed.
+        hexAddress = '0x' + address;          // Eth's are - we recover them as this.
     });
 
     describe('Utilites', () => {
@@ -294,7 +295,7 @@ describe('Bluetooth Server', () => {
                 req = wallet.signing.signMsg( keystore, account.key, animist.getPin(), address); 
                 req = JSON.stringify(req);
 
-                mock_contract = { _id: address, authority: address, contract: config.fakeTx.code };
+                mock_contract = { _id: hexAddress, authority: hexAddress, contract: config.fakeTx.code };
                 
             });
 

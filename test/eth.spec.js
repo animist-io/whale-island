@@ -2,7 +2,7 @@
 
 let config = require('../lib/config.js');
 const eth = require('../lib/eth.js')
-
+const util = require('ethereumjs-util')
 const account = require('../test/mocks/wallet.js');
 const wallet = require('eth-lightwallet');
 const pouchdb = require('pouchdb');
@@ -17,14 +17,15 @@ chai.use(chaiAsPromised);
 
 describe('Eth Client', function(){
 
-    var keystore, address;
+    var keystore, address, hexAddress;
 
-    // Prep a single keystore/account for all tests
+    // Prep a single keystore/account for all eth-lightwallet tests
     before(() => {
         let json = JSON.stringify(account.keystore);
         keystore = wallet.keystore.deserialize(json);  
         keystore.generateNewAddress(account.key, 1);
-        address = keystore.getAddresses()[0];
+        address = keystore.getAddresses()[0]; // Lightwallets addresses are not prefixed.
+        hexAddress = util.addHexPrefix(address); // Eth's are - we recover them as this.
     });
 
     describe('Utilities', ()=> {
@@ -39,7 +40,7 @@ describe('Eth Client', function(){
                 signed = wallet.signing.signMsg( keystore, account.key, msg, address); 
                 
                 result = eth.recover(msg, signed);
-                expect(result).to.equal(address);
+                expect(result).to.equal(hexAddress);
             });
 
             it('should return undefined if there is an error', () => {
@@ -69,7 +70,7 @@ describe('Eth Client', function(){
             }) 
         });
 
-        describe('getTx([pin, lastPin], signed)', ()=>{
+       describe('getTx([pin, lastPin], signed)', ()=>{
 
             let pins, signed;
 
@@ -80,15 +81,15 @@ describe('Eth Client', function(){
 
             it('should resolve a contract if it finds one matching the acct. address', (done) =>{
 
-                let mock = { _id: address, authority: address, contract: '12345'};
+                let mock = { _id: hexAddress, authority: hexAddress, contract: '12345'};
                 db.put(mock).then(()=>{
                     expect(eth.getTx(pins, signed)).to.eventually.include(mock).notify(done);
                 });
             });
 
             it('should append callers address to the contract', (done) => {
-                let mock = { _id: address, authority: address, contract: '12345'};
-                let expected = { caller: address };
+                let mock = { _id: hexAddress, authority: hexAddress, contract: '12345'};
+                let expected = { caller: hexAddress };
                 db.put(mock).then(()=>{
                     expect(eth.getTx(pins, signed)).to.eventually.include(expected).notify(done);
                 });
@@ -96,7 +97,7 @@ describe('Eth Client', function(){
 
 
             it('should reject if it cant find a contract matching the acct. address', (done)=>{
-                let mock = { _id: 'do_not_exist', authority: address, contract: '12345'};
+                let mock = { _id: 'do_not_exist', authority: hexAddress, contract: '12345'};
 
                 db.put(mock).then(()=>{
                     expect(eth.getTx(pins, signed)).to.eventually.be.rejected.notify(done);
@@ -111,13 +112,35 @@ describe('Eth Client', function(){
 
         });
 
-        describe('authTx([pin, lastPin], signed)', () =>{
+        contract('authTx([pin, lastPin], signed)', (accounts) =>{
 
-            it('should call auth on the contract', ()=>{
+            let pin, signed, msgHash, client = accounts[1]; 
 
+            // Apparently contracts get processed first.
+            before(()=>{
+                pin = ['1234'];
+                msgHash = util.addHexPrefix(util.sha3(pin[0]).toString('hex'));
+                signed =  web3.eth.sign(client, msgHash);               
             });
 
-            it('should reject if it cant find the contract', ()=>{
+            it('should call verifyPresence on relevant contract and resolve a valid tx hash', (done)=>{
+                let tx;
+                let block_before = web3.eth.blockNumber;
+                let contractAddress = TestContract.deployed().address;
+                let mock = { _id: client, authority: client, contract: contractAddress };
+                
+                Promise.all([
+                    db.put(mock),
+                    eth.authTx(pin, signed)
+                ]).then( results => {
+                    tx = web3.eth.getTransaction(results[1]);
+                    expect(tx.hash).to.equal(results[1]);
+                    expect(tx.blockNumber).to.equal(block_before + 1);
+                    done();
+                })
+            });
+
+            it('should reject if it cant find the contract address', ()=>{
 
             })
 
