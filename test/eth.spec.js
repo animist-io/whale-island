@@ -1,3 +1,5 @@
+'use strict'
+
 let config = require('../lib/config.js');
 const eth = require('../lib/eth.js')
 
@@ -81,7 +83,8 @@ describe('Eth Client', function(){
                 let mock = { _id: address, authority: address, contract: '12345'};
                 db.put(mock).then(()=>{
                     expect(eth.getTx(pins, signed)).to.eventually.include(mock).notify(done);
-                })
+                });
+                //done();
 
             });
 
@@ -93,14 +96,6 @@ describe('Eth Client', function(){
                 });
             });
 
-            it('should work if signed message used the deprecated pin', () => {
-                let mock = { _id: address, authority: address, contract: '12345'};
-                signed = wallet.signing.signMsg( keystore, account.key, pins[1], address);
-
-                db.put(mock).then(()=>{
-                    expect(eth.getTx(pins, signed)).to.eventually.include(mock).notify(done);
-                })
-            })
 
             it('should reject if it cant find a contract matching the acct. address', (done)=>{
                 let mock = { _id: 'do_not_exist', authority: address, contract: '12345'};

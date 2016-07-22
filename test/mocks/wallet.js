@@ -1,4 +1,5 @@
 // A mock keystore & pwDerived key to test requests against
+'use strict'
 
 // Convert obj rep of key (this came from console.log) to array
 let obj = {0: 12, 1: 37, 2: 184, 3: 176, 4: 141, 5: 255, 6: 15, 7: 70, 8: 189, 9: 195, 10: 206, 11: 218, 12: 109, 13: 172, 14: 141, 15: 233, 16: 117, 17: 114, 18: 2, 19: 10, 20: 156, 21: 57, 22: 255, 23: 102, 24: 37, 25: 66, 26: 2, 27: 177, 28: 82, 29: 70, 30: 1, 31: 246};
