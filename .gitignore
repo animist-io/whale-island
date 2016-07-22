@@ -1,3 +1,4 @@
+environments/development
 node_modules
 coverage
 dist

@@ -84,11 +84,9 @@ describe('Eth Client', function(){
                 db.put(mock).then(()=>{
                     expect(eth.getTx(pins, signed)).to.eventually.include(mock).notify(done);
                 });
-                //done();
-
             });
 
-            it('should append a "caller" field to the contract (the addr. recovered from the pin)', (done) => {
+            it('should append callers address to the contract', (done) => {
                 let mock = { _id: address, authority: address, contract: '12345'};
                 let expected = { caller: address };
                 db.put(mock).then(()=>{
@@ -113,11 +111,7 @@ describe('Eth Client', function(){
 
         });
 
-        describe('authTx', ()=>{
-
-            it('should find the contract', ()=>{
-
-            })
+        describe('authTx([pin, lastPin], signed)', () =>{
 
             it('should call auth on the contract', ()=>{
 
@@ -127,9 +121,10 @@ describe('Eth Client', function(){
 
             })
 
-            it('should error if it hasnt been paid to auth', ()=>{
+            it('should resolve the transaction hash', ()=>{
 
             });
+
         });
     });
 });
