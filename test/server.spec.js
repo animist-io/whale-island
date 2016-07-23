@@ -161,7 +161,7 @@ describe('Bluetooth Server', () => {
                 expect(animist.isValidSession({obj: 5})).to.be.rejected.notify(done);
             });
 
-            it('should reject if the record is not found in the DB', function(done){
+            it('should reject if the session record is not found in the DB', function(done){
                 let doc = {_id: '55555', expires: '12345', account: "0x25345454564545"  };
                 let tx = { caller: "0x25345454564545" };
 
@@ -232,7 +232,6 @@ describe('Bluetooth Server', () => {
                 let original = config.SESSION_LENGTH;
 
                 animist.setSessionLength(10);
-
                 animist.startSession(fakeTx).then((doc)=>{
                     
                     setTimeout(()=>{
@@ -252,7 +251,8 @@ describe('Bluetooth Server', () => {
     describe('Request Handlers', () => {
 
         var animist, db; 
- 
+        
+
         // New server per test
         beforeEach(() => { 
             animist = new server.AnimistServer();
@@ -292,6 +292,7 @@ describe('Bluetooth Server', () => {
             before(()=>{
                 
                 // Mock request
+                animist = new server.AnimistServer();
                 req = wallet.signing.signMsg( keystore, account.key, animist.getPin(), address); 
                 req = JSON.stringify(req);
 
@@ -315,19 +316,17 @@ describe('Bluetooth Server', () => {
             });
 
             afterEach((done)=>{ 
-                // Clean up
                 eth_db.destroy().then(() => { done() });
             }); 
 
             it('should respond w/ RESULT_SUCCESS if a tx matching the address is found', (done)=>{
 
-                 // Test state in success callback - make sure you run the timeout too
+                // Test state in success callback - make sure you run the timeout too
                 // or it will f the subsequent tests
                 fns.callback = (code) => { 
                     expect(code).to.equal(config.codes.RESULT_SUCCESS);
                     setTimeout(done, 55); 
                 };
-        
                 animist.onHasTxWrite(req, null, null, fns.callback);
                 
             });
@@ -369,8 +368,8 @@ describe('Bluetooth Server', () => {
                     chai.spy.on(animist.hasTxCharacteristic, 'updateValueCallback');
 
                     setTimeout(() => {
-                        expect(code).to.equal(config.codes.RESULT_SUCCESS);
                         new_queue_size = animist.getSendQueue().length;
+                        expect(code).to.equal(config.codes.RESULT_SUCCESS);
                         expect(animist.hasTxCharacteristic.updateValueCallback).to.have.been.called();
                         expect(new_queue_size).to.equal(full_queue_size - 1);
                         done();
@@ -382,16 +381,20 @@ describe('Bluetooth Server', () => {
                 
             });
 
-            // **** FIX WHEN GETTX IS ACTUALLY WRITTEN - E.G. WE CAN MOCK NO DISCOVERY 
-            //it('should respond w/ NO_TX_FOUND if there is no tx matching the address', ()=>{
-                    
-            //    config.fakeTx.authority = 'not_this_address';
-            //    chai.spy.on(fns, 'callback');
-            //    animist.onHasTxWrite(req, null, null, fns.callback)
+            it('should respond w/ NO_TX_DB_ERR if there is no tx matching the address', (done)=>{
                 
-            //    expect(fns.callback).to.have.been.called.with(config.codes.NO_TX_FOUND);
-
-            //});
+                // Setup: delete mock from contracts DB
+                eth_db.get(hexAddress)
+                    .then( doc => { return eth_db.remove(doc) })
+                    .then( () => {
+                        chai.spy.on(fns, 'callback');
+                        setTimeout(() => {
+                            expect(fns.callback).to.have.been.called.with(config.codes.NO_TX_DB_ERR);
+                            done();
+                        }, 55)
+                        animist.onHasTxWrite(req, null, null, fns.callback);
+                     })
+            });
 
             it('should respond w/ error code if req is un-parseable', ()=>{
 

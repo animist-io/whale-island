@@ -8,7 +8,7 @@
     abi: [{"constant":false,"inputs":[{"name":"client","type":"address"},{"name":"time","type":"uint64"}],"name":"verifyPresence","outputs":[],"type":"function"}],
     binary: "6060604052601e8060106000396000f3606060405260e060020a60003504636e7b57888114601a575b005b601856",
     unlinked_binary: "6060604052601e8060106000396000f3606060405260e060020a60003504636e7b57888114601a575b005b601856",
-    address: "0xd710a7103adb87570b95f0a74c15cb4ab716ef62",
+    address: "0xa40c571681ccb984b3993d03065ad6253cf25b63",
     generated_with: "2.0.9",
     contract_name: "AnimistAPI"
   };

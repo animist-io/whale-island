@@ -43,7 +43,7 @@ describe('Eth Client', function(){
                 expect(result).to.equal(hexAddress);
             });
 
-            it('should return undefined if there is an error', () => {
+            it('should return undefined if ethereumjs-util throws an error', () => {
                 let msg, result;
 
                 msg = 'a message';
@@ -70,7 +70,9 @@ describe('Eth Client', function(){
             }) 
         });
 
-       describe('getTx([pin, lastPin], signed)', ()=>{
+        // -------------------------------- getContract ---------------------------------------------
+
+        describe('getTx([pin, lastPin], signed)', ()=>{
 
             let pins, signed;
 
@@ -112,6 +114,8 @@ describe('Eth Client', function(){
 
         });
 
+        // ----------------------------------- authTx ---------------------------------------------
+
         contract('authTx([pin, lastPin], signed)', (accounts) =>{
 
             let pin, signed, msgHash, client = accounts[1]; 
@@ -140,14 +144,21 @@ describe('Eth Client', function(){
                 })
             });
 
-            it('should reject if it cant find the contract address', ()=>{
+            it('should reject if it cant find a contract matching the acct. address', (done)=>{
+                let mock = { _id: 'do_not_exist', authority: hexAddress, contract: '12345'};
 
-            })
-
-            it('should resolve the transaction hash', ()=>{
-
+                db.put(mock).then(()=>{
+                    expect(eth.getTx(pin, signed)).to.eventually.be.rejected.notify(done);
+                });
             });
 
+            it('should reject if it is unable to extract an address from the signed msg', (done)=>{
+                
+                let garbage = 'garbage';
+                expect(eth.getTx(pin, garbage)).to.eventually.be.rejected.notify(done);
+            });
         });
+
+
     });
 });
