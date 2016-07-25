@@ -80,7 +80,7 @@ describe('Eth Client', function(){
         afterEach( () => { return db.destroy() });
 
         // -------------------------------- getContract ------------------------------------
-        describe('getTx([pin, lastPin], signed)', ()=>{
+        describe('getContract([pin, lastPin], signed)', ()=>{
 
             let pins, signed;
 
@@ -93,7 +93,7 @@ describe('Eth Client', function(){
             it('should resolve a contract if it finds one matching the acct. address', (done) =>{
                 let mock = { _id: hexAddress, authority: hexAddress, contract: '12345'};
                 db.put(mock).then(()=>{
-                    eth.getTx(pins, signed).should.eventually.include(mock).notify(done);
+                    eth.getContract(pins, signed).should.eventually.include(mock).notify(done);
                 });
             });
 
@@ -101,7 +101,7 @@ describe('Eth Client', function(){
                 let mock = { _id: hexAddress, authority: hexAddress, contract: '12345'};
                 let expected = { caller: hexAddress };
                 db.put(mock).then(()=>{
-                    eth.getTx(pins, signed).should.eventually.include(expected).notify(done);
+                    eth.getContract(pins, signed).should.eventually.include(expected).notify(done);
                 });
             });
 
@@ -109,13 +109,13 @@ describe('Eth Client', function(){
             it('should reject if it cant find a contract matching the acct. address', (done)=>{
                 let mock = { _id: 'do_not_exist', authority: hexAddress, contract: '12345'};
                 db.put(mock).then(()=>{
-                    eth.getTx(pins, signed).should.eventually.be.rejected.notify(done);
+                    eth.getContract(pins, signed).should.eventually.be.rejected.notify(done);
                 });
             });
 
             it('should reject if it is unable to extract an address from the signed msg', ()=>{
                 let garbage = 'garbage';
-                return eth.getTx(pins, garbage).should.eventually.be.rejected;
+                return eth.getContract(pins, garbage).should.eventually.be.rejected;
             });
         });
         describe( 'authTx([pin, lastPin], signed)', () => {

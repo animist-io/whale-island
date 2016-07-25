@@ -89,7 +89,7 @@ describe('Bluetooth Server', () => {
 
         });
 
-        describe('parseHasTxRequest(req)', () =>{
+        describe('parseGetContractRequest(req)', () =>{
 
             var req, output, msg;
 
@@ -99,7 +99,7 @@ describe('Bluetooth Server', () => {
                 req = wallet.signing.signMsg( keystore, account.key, msg, address); 
                 req = JSON.stringify(req);
                 
-                output = animist.parseHasTxRequest(req);
+                output = animist.parseGetContractRequest(req);
 
                 expect( output.status).to.equal(1);
                 expect( typeof output.val).to.equal('object');
@@ -110,7 +110,7 @@ describe('Bluetooth Server', () => {
 
             it('should return error if req is not parse-able as a signed msg', ()=>{
                 req = '{\"signed\": \"I am not signed\"}';
-                output = animist.parseHasTxRequest(req);
+                output = animist.parseGetContractRequest(req);
 
                 expect(output.status).to.equal(0);
                 expect(output.val).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
@@ -119,7 +119,7 @@ describe('Bluetooth Server', () => {
             it('should return error if req is not JSON formatted', ()=>{
 
                 req = "0x5[w,r,0,,n,g";
-                output = animist.parseHasTxRequest(req);
+                output = animist.parseGetContractRequest(req);
 
                 expect(output.status).to.equal(0);
                 expect(output.val).to.equal(config.codes.INVALID_JSON_IN_REQUEST);
@@ -281,7 +281,7 @@ describe('Bluetooth Server', () => {
           });
         });
 
-        describe('onHasTxWrite', () => {
+        describe('onGetContractWrite', () => {
             
             let req, eth_db, mock_contract, fns = {};
     
@@ -304,7 +304,7 @@ describe('Bluetooth Server', () => {
                 eth.units.setDB(eth_db);
 
                 animist.resetSendQueue();
-                animist.hasTxCharacteristic.updateValueCallback = (val) => {};
+                animist.getContractCharacteristic.updateValueCallback = (val) => {};
                 fns.callback = (code) => {}; 
 
                 eth_db.put(mock_contract).then(() => {
@@ -324,7 +324,7 @@ describe('Bluetooth Server', () => {
                     expect(code).to.equal(config.codes.RESULT_SUCCESS);
                     setTimeout(done, 55); 
                 };
-                animist.onHasTxWrite(req, null, null, fns.callback);
+                animist.onGetContractWrite(req, null, null, fns.callback);
                 
             });
 
@@ -345,7 +345,7 @@ describe('Bluetooth Server', () => {
                 };
             
                 // Run fn
-                animist.onHasTxWrite(req, null, null, fns.callback)
+                animist.onGetContractWrite(req, null, null, fns.callback)
         
             });
 
@@ -362,19 +362,19 @@ describe('Bluetooth Server', () => {
                     full_queue = animist.getSendQueue();
                     full_queue_size = full_queue.length;
             
-                    chai.spy.on(animist.hasTxCharacteristic, 'updateValueCallback');
+                    chai.spy.on(animist.getContractCharacteristic, 'updateValueCallback');
 
                     setTimeout(() => {
                         new_queue_size = animist.getSendQueue().length;
                         expect(code).to.equal(config.codes.RESULT_SUCCESS);
-                        expect(animist.hasTxCharacteristic.updateValueCallback).to.have.been.called();
+                        expect(animist.getContractCharacteristic.updateValueCallback).to.have.been.called();
                         expect(new_queue_size).to.equal(full_queue_size - 1);
                         done();
                     }, 55);
                 };
 
                 // Run
-                animist.onHasTxWrite(req, null, null, fns.callback);
+                animist.onGetContractWrite(req, null, null, fns.callback);
                 
             });
 
@@ -389,7 +389,7 @@ describe('Bluetooth Server', () => {
                             expect(fns.callback).to.have.been.called.with(config.codes.NO_TX_DB_ERR);
                             done();
                         }, 55)
-                        animist.onHasTxWrite(req, null, null, fns.callback);
+                        animist.onGetContractWrite(req, null, null, fns.callback);
                      })
             });
 
@@ -398,22 +398,22 @@ describe('Bluetooth Server', () => {
                 req = "0x5[w,r,0,,n,g";
                 chai.spy.on(fns, 'callback');
 
-                animist.onHasTxWrite(req, null, null, fns.callback);
+                animist.onGetContractWrite(req, null, null, fns.callback);
                 expect(fns.callback).to.have.been.called.with(config.codes.INVALID_JSON_IN_REQUEST);
                 
             });
 
         });
 
-        describe('onHasTxIndicate', ()=>{
+        describe('onGetContractIndicate', ()=>{
             var req, fns = {};
 
 
-            // Run hasTxWrite: Clear state & mock updateValueCallback
+            // Run getContractWrite: Clear state & mock updateValueCallback
             beforeEach(() =>{
 
                 animist.resetSendQueue();
-                animist.hasTxCharacteristic.updateValueCallback = (val) => {};
+                animist.getContractCharacteristic.updateValueCallback = (val) => {};
                 animist.queueTx(config.fakeTx);
 
             });
@@ -424,12 +424,12 @@ describe('Bluetooth Server', () => {
                 let initial_queue_size = queue.length;
                 let initial_queue_element = queue[0];
 
-                chai.spy.on(animist.hasTxCharacteristic, 'updateValueCallback');
-                animist.onHasTxIndicate();
+                chai.spy.on(animist.getContractCharacteristic, 'updateValueCallback');
+                animist.onGetContractIndicate();
 
                 setTimeout(()=>{
                     queue = animist.getSendQueue();
-                    expect(animist.hasTxCharacteristic.updateValueCallback).to.have.been.called.with(initial_queue_element);
+                    expect(animist.getContractCharacteristic.updateValueCallback).to.have.been.called.with(initial_queue_element);
                     expect(queue.length).to.equal(initial_queue_size - 1);
                     done();
                 },0);
@@ -439,13 +439,13 @@ describe('Bluetooth Server', () => {
             it('should send EOF signal if queue is empty', (done)=>{
 
                 let expected = new Buffer(config.codes.EOF);
-                chai.spy.on(animist.hasTxCharacteristic, 'updateValueCallback');
+                chai.spy.on(animist.getContractCharacteristic, 'updateValueCallback');
 
                 animist.resetSendQueue();
-                animist.onHasTxIndicate();
+                animist.onGetContractIndicate();
 
                 setTimeout(()=>{
-                    expect(animist.hasTxCharacteristic.updateValueCallback).to.have.been.called.with(expected);
+                    expect(animist.getContractCharacteristic.updateValueCallback).to.have.been.called.with(expected);
                     done();
                 },10);
 
@@ -455,16 +455,16 @@ describe('Bluetooth Server', () => {
 
                 // Run EOF
                 animist.resetSendQueue();
-                animist.onHasTxIndicate();
+                animist.onGetContractIndicate();
 
                 setTimeout(()=>{
                     
                     // Post EOF
-                    chai.spy.on(animist.hasTxCharacteristic, 'updateValueCallback');
-                    animist.onHasTxIndicate();
+                    chai.spy.on(animist.getContractCharacteristic, 'updateValueCallback');
+                    animist.onGetContractIndicate();
 
                     setTimeout(() =>{
-                        expect(animist.hasTxCharacteristic.updateValueCallback).not.to.have.been.called();
+                        expect(animist.getContractCharacteristic.updateValueCallback).not.to.have.been.called();
                         done();
                      },0)
                 },0);
