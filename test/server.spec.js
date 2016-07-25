@@ -242,10 +242,7 @@ describe('Bluetooth Server', () => {
                     }, 15);
                 });
             });
-
-
         });
-
     });
 
     describe('Request Handlers', () => {

@@ -1,6 +1,6 @@
 
 // Test contract deployed by unit tests to validate mgmt of contract API endpoints.
-contract TestContract {
+contract Test {
 
     address client;
     uint state;

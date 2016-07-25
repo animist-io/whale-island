@@ -1,9 +1,9 @@
 # whale-island
 [![Build Status](https://travis-ci.org/animist-io/whale-island.svg?branch=master)](https://travis-ci.org/animist-io/whale-island)
 
-(This repo is in the earliest stages of development. TDD is being done.)
+(This repo is in the earliest stages of development. Unusable.)
 
-A Rasberry Pi iBeacon and Node.js server that authenticates Animist mobile clients and intermediates between them and an Ethereum node. 
+A micro-computer based Ethereum client and Bluetooth beacon that connects to mobile devices with a BLE server. Its API targets contract contingencies about location. 
 
 ``` 
 Installation Notes:
@@ -26,7 +26,7 @@ Basic commands:
 // Test
 $ gulp test (single run) 
 
-// Tests in the Travis CI context / bsh shell
+// Tests in Travis CI context / bsh shell
 $ export TRAVIS=true
 $ gulp test
 $ unset TRAVIS

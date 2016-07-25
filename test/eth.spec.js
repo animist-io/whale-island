@@ -1,20 +1,36 @@
 'use strict'
 
+// ----------------------------------- Imports -----------------------------------------
+
+// Local
 let config = require('../lib/config.js');
-const eth = require('../lib/eth.js')
-const util = require('ethereumjs-util')
+const eth = require('../lib/eth.js');
+const contracts = require('../contracts/Test.js');
 const account = require('../test/mocks/wallet.js');
+
+// Ethereum
+const util = require('ethereumjs-util')
 const wallet = require('eth-lightwallet');
+const Web3 = require('web3');
+const provider = new Web3.providers.HttpProvider('http://localhost:8545');
+const web3 = new Web3(provider);
+const newContract = require('eth-new-contract').default(provider);
+
+// DB
 const pouchdb = require('pouchdb');
 
+// Testing
 const chai = require('chai');
 const spies = require('chai-spies');
 const chaiAsPromised = require("chai-as-promised");
-const expect = chai.expect;
 
+// ----------------------------------- Setup -----------------------------------------
+const expect = chai.expect;
 chai.use(spies);
 chai.use(chaiAsPromised);
+chai.should();
 
+// ----------------------------------- Tests -----------------------------------------
 describe('Eth Client', function(){
 
     var keystore, address, hexAddress;
@@ -24,54 +40,46 @@ describe('Eth Client', function(){
         let json = JSON.stringify(account.keystore);
         keystore = wallet.keystore.deserialize(json);  
         keystore.generateNewAddress(account.key, 1);
-        address = keystore.getAddresses()[0]; // Lightwallets addresses are not prefixed.
+        address = keystore.getAddresses()[0];    // Lightwallets addresses are not prefixed.
         hexAddress = util.addHexPrefix(address); // Eth's are - we recover them as this.
     });
 
+    // -----------------------------  Utilities ----------------------------------------
     describe('Utilities', ()=> {
 
         describe('recover(rawMsg, signed)', ()=>{
             let db;
 
             it ('should extract and return string address from signed message', () =>{
-                let msg, signed, result;
-
-                msg = 'a message';
-                signed = wallet.signing.signMsg( keystore, account.key, msg, address); 
-                
-                result = eth.recover(msg, signed);
-                expect(result).to.equal(hexAddress);
+                let msg = 'message', signed, result;
+        
+                signed = wallet.signing.signMsg( keystore, account.key, msg, address);         
+                eth.recover(msg, signed).should.equal(hexAddress);
+        
             });
 
-            it('should return undefined if ethereumjs-util throws an error', () => {
-                let msg, result;
-
-                msg = 'a message';
-                result = eth.recover(msg, 'kfdlskdlf');
-                expect(result).to.be.undefined;
+            it('should return undefined if "signed" is bad, ethereumjs-util throws an error', () => {
+                let err = eth.recover('a message', 'kfdlskdlf')
+                expect(err).to.be.undefined;
             })
   
         });
     });
 
-    describe('Request Handlers', () => {
+    // -----------------------------  Request Handlers -----------------------------------
+    describe( 'Request Handlers', () => {
 
         let db;
 
         // DB creation and cleanup
-        beforeEach(() => { 
+        beforeEach( () => { 
             db = new pouchdb('contracts'); 
             eth.units.setDB(db);
         });
 
-        afterEach((done)=>{ 
-            db.destroy().then(()=>{
-                done();
-            }) 
-        });
+        afterEach( () => { return db.destroy() });
 
-        // -------------------------------- getContract ---------------------------------------------
-
+        // -------------------------------- getContract ------------------------------------
         describe('getTx([pin, lastPin], signed)', ()=>{
 
             let pins, signed;
@@ -81,11 +89,11 @@ describe('Eth Client', function(){
                 signed = wallet.signing.signMsg( keystore, account.key, pins[0], address); 
             })
 
-            it('should resolve a contract if it finds one matching the acct. address', (done) =>{
 
+            it('should resolve a contract if it finds one matching the acct. address', (done) =>{
                 let mock = { _id: hexAddress, authority: hexAddress, contract: '12345'};
                 db.put(mock).then(()=>{
-                    expect(eth.getTx(pins, signed)).to.eventually.include(mock).notify(done);
+                    eth.getTx(pins, signed).should.eventually.include(mock).notify(done);
                 });
             });
 
@@ -93,72 +101,72 @@ describe('Eth Client', function(){
                 let mock = { _id: hexAddress, authority: hexAddress, contract: '12345'};
                 let expected = { caller: hexAddress };
                 db.put(mock).then(()=>{
-                    expect(eth.getTx(pins, signed)).to.eventually.include(expected).notify(done);
+                    eth.getTx(pins, signed).should.eventually.include(expected).notify(done);
                 });
             });
 
 
             it('should reject if it cant find a contract matching the acct. address', (done)=>{
                 let mock = { _id: 'do_not_exist', authority: hexAddress, contract: '12345'};
-
                 db.put(mock).then(()=>{
-                    expect(eth.getTx(pins, signed)).to.eventually.be.rejected.notify(done);
+                    eth.getTx(pins, signed).should.eventually.be.rejected.notify(done);
                 });
             });
 
-            it('should reject if it is unable to extract an address from the signed msg', (done)=>{
-                
+            it('should reject if it is unable to extract an address from the signed msg', ()=>{
                 let garbage = 'garbage';
-                expect(eth.getTx(pins, garbage)).to.eventually.be.rejected.notify(done);
+                return eth.getTx(pins, garbage).should.eventually.be.rejected;
             });
-
         });
+        describe( 'authTx([pin, lastPin], signed)', () => {
 
-        // ----------------------------------- authTx ---------------------------------------------
+            let pin, signed, msgHash, deployed, client = web3.eth.accounts[0];
 
-        contract('authTx([pin, lastPin], signed)', (accounts) =>{
-
-            let pin, signed, msgHash, client = accounts[1]; 
-
-            // Apparently contracts get processed first.
-            before(()=>{
+             before(() => {
                 pin = ['1234'];
                 msgHash = util.addHexPrefix(util.sha3(pin[0]).toString('hex'));
-                signed =  web3.eth.sign(client, msgHash);               
+                signed =  web3.eth.sign(client, msgHash);     
+
+                return newContract( contracts.Test, { from: web3.eth.accounts[0] })
+                        .then( Test => deployed = Test )
             });
 
-            it('should call verifyPresence on relevant contract and resolve a valid tx hash', (done)=>{
+             it('should call verifyPresence on relevant contract and resolve a valid tx hash', (done)=>{
                 let tx;
                 let block_before = web3.eth.blockNumber;
-                let contractAddress = TestContract.deployed().address;
+                let contractAddress = deployed.address;
                 let mock = { _id: client, authority: client, contract: contractAddress };
                 
-                Promise.all([
-                    db.put(mock),
-                    eth.authTx(pin, signed)
-                ]).then( results => {
-                    tx = web3.eth.getTransaction(results[1]);
-                    expect(tx.hash).to.equal(results[1]);
-                    expect(tx.blockNumber).to.equal(block_before + 1);
-                    done();
+                db.put(mock).then(() => {
+                    eth.authTx(pin, signed).then( result => {
+                        tx = web3.eth.getTransaction(result);
+                        tx.hash.should.equal(result);
+                        tx.blockNumber.should.equal(block_before + 1);
+                        done();
+                    })
                 })
             });
 
             it('should reject if it cant find a contract matching the acct. address', (done)=>{
                 let mock = { _id: 'do_not_exist', authority: hexAddress, contract: '12345'};
 
-                db.put(mock).then(()=>{
-                    expect(eth.getTx(pin, signed)).to.eventually.be.rejected.notify(done);
+                db.put(mock).then( () => { 
+                    eth.authTx(pin, signed).should.eventually.be.rejected.notify(done);
                 });
             });
 
-            it('should reject if it is unable to extract an address from the signed msg', (done)=>{
-                
+            it('should reject if it is unable to extract an address from the signed msg', () => {
                 let garbage = 'garbage';
-                expect(eth.getTx(pin, garbage)).to.eventually.be.rejected.notify(done);
+                return eth.authTx(pin, garbage).should.eventually.be.rejected;
             });
         });
 
-
+        // ----------------------------------- authAndSubmitTx ------------------------------------------
+        // ----------------------------------- submitTx -------------------------------------------------
+        // ----------------------------------- getTx ----------------------------------------------------
     });
 });
+
+
+
+
