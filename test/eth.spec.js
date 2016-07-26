@@ -9,7 +9,7 @@ const contracts = require('../contracts/Test.js');
 const account = require('../test/mocks/wallet.js');
 
 // Ethereum
-const util = require('ethereumjs-util')
+const util = require('ethereumjs-util');
 const wallet = require('eth-lightwallet');
 const Web3 = require('web3');
 const provider = new Web3.providers.HttpProvider('http://localhost:8545');
@@ -34,7 +34,7 @@ chai.should();
 describe('Eth Client', function(){
 
     var keystore, address, hexAddress;
-
+    
     // Prep a single keystore/account for all eth-lightwallet tests
     before(() => {
         let json = JSON.stringify(account.keystore);
@@ -164,9 +164,11 @@ describe('Eth Client', function(){
         // ----------------------------------- authAndSubmitTx ------------------------------------------
         // ----------------------------------- submitTx -------------------------------------------------
         // ----------------------------------- getTx ----------------------------------------------------
-    });
+    }); 
+    
 });
 
 
+   
 
 

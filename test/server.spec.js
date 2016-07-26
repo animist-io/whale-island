@@ -6,6 +6,7 @@ let eth = require('../lib/eth.js');
 
 const Promise = require('bluebird');
 const account = require('../test/mocks/wallet.js');
+const transaction = require('../test/mocks/transaction.js');
 const wallet = require('eth-lightwallet');
 const pouchdb = require('pouchdb');
 
@@ -101,7 +102,7 @@ describe('Bluetooth Server', () => {
                 
                 output = animist.parseGetContractRequest(req);
 
-                expect( output.status).to.equal(1);
+                expect( output.ok).to.equal(true);
                 expect( typeof output.val).to.equal('object');
                 expect( Buffer.isBuffer(output.val.r)).to.be.true;
                 expect( Buffer.isBuffer(output.val.s)).to.be.true;
@@ -112,7 +113,7 @@ describe('Bluetooth Server', () => {
                 req = '{\"signed\": \"I am not signed\"}';
                 output = animist.parseGetContractRequest(req);
 
-                expect(output.status).to.equal(0);
+                expect(output.ok).to.equal(false);
                 expect(output.val).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
             });
 
@@ -121,7 +122,7 @@ describe('Bluetooth Server', () => {
                 req = "0x5[w,r,0,,n,g";
                 output = animist.parseGetContractRequest(req);
 
-                expect(output.status).to.equal(0);
+                expect(output.ok).to.equal(false);
                 expect(output.val).to.equal(config.codes.INVALID_JSON_IN_REQUEST);
 
             });
@@ -181,11 +182,7 @@ describe('Bluetooth Server', () => {
                 }).catch((err) => {
                     expect('Test should not error').to.equal('true');
                 });
-            });
-
-            
-
-            
+            });   
         });
 
         describe('startSession(tx)', function(){
