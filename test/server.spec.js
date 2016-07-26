@@ -263,7 +263,7 @@ describe('Bluetooth Server', () => {
             }) 
         });
 
-        describe('onPinRead', () => {
+        describe('onGetPin', () => {
 
 
           it('should respond to request w/ the current pin', () => {
@@ -274,7 +274,7 @@ describe('Bluetooth Server', () => {
             fns.callback = (code, pin) => {};
             
             chai.spy.on(fns, 'callback');
-            animist.onPinRead(null, fns.callback);
+            animist.onGetPin(null, fns.callback);
 
             expect(fns.callback).to.have.been.called.with(codes.RESULT_SUCCESS, pin_to_buffer);
 
