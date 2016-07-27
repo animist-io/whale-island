@@ -10,13 +10,16 @@ let eth = require('../lib/eth.js');
 const account = require('../test/mocks/wallet.js');
 const transaction = require('../test/mocks/transaction.js');
 const wallet = require('eth-lightwallet');
+const contracts = require('../contracts/Test.js');
 
 // Ethereum 
 const Web3 = require('web3');
+const util = require("ethereumjs-util");
 
 // Misc NPM
 const Promise = require('bluebird');
 const pouchdb = require('pouchdb');
+const bufferEqual = require('buffer-equal');
 
 // Testing
 const chai = require('chai');
@@ -31,19 +34,24 @@ chai.use(chaiAsPromised);
 
 const provider = new Web3.providers.HttpProvider('http://localhost:8545');
 const web3 = new Web3(provider);
+const newContract = require('eth-new-contract').default(provider);
 
 // ----------------------------------- Tests -----------------------------------------
 describe('Bluetooth Server', () => {
     
-    var keystore, address, hexAddress;
+    var keystore, address, hexAddress, deployed;
+    var client = web3.eth.accounts[0];;
 
-    // Prep a single keystore/account for all tests
+    // Prep a single keystore/account for all tests, deploy TestContract
     before(() => {
         let json = JSON.stringify(account.keystore);
         keystore = wallet.keystore.deserialize(json);  
         keystore.generateNewAddress(account.key, 1);
         address = keystore.getAddresses()[0]; // Lightwallets addresses are not prefixed.
         hexAddress = '0x' + address;          // Eth's are - we recover them as this.
+
+        return newContract( contracts.Test, { from: client })
+                .then( testContract => deployed = testContract );
     });
 
     describe('Utilites', () => {
@@ -359,7 +367,7 @@ describe('Bluetooth Server', () => {
                 let expected_send = new Buffer(JSON.stringify(res));
 
                 updateValueCallback = (val) => {
-                    val.should.be.expected_send;
+                    expect(bufferEqual(val, expected_send)).to.be.true;
                     done();
                 };
                 animist.getTxStatusCharacteristic.onSubscribe(null, updateValueCallback);
@@ -385,7 +393,7 @@ describe('Bluetooth Server', () => {
                 let expected_send = new Buffer(JSON.stringify('null'));
 
                 updateValueCallback = (val) => {
-                    val.should.be.expected_send;
+                    expect(bufferEqual(val, expected_send)).to.be.true;
                     done();
                 };
                 animist.getTxStatusCharacteristic.onSubscribe(null, updateValueCallback);
@@ -393,6 +401,53 @@ describe('Bluetooth Server', () => {
             });
 
         });
+
+        /*describe('onAuthTx', function(){
+
+            let pin, signed, msgHash, input, eth_db, record, updateValueCallback, fns = {};
+            
+            // Mock client signed input, load contract record into contractsDB.
+            beforeEach( () => {
+
+                pin = animist.getPin();
+                msgHash = util.addHexPrefix(util.sha3(pin).toString('hex'));
+                signed =  web3.eth.sign(client, msgHash); 
+                input = JSON.stringify(signed);
+
+                eth_db = new pouchdb('contracts'); 
+                eth.units.setDB(eth_db);
+                record = { _id: client, authority: client, contract: deployed.address };
+                return eth_db.put(record);
+            });
+
+            // Cleanup
+            afterEach( () => { return eth_db.destroy() });
+
+            it('should respond w/ RESULT_SUCCESS', (done) => {
+
+                fns.callback = (code) => { 
+                    expect(code).to.equal(config.codes.RESULT_SUCCESS);
+                };
+
+                updateValueCallback = val => { done() };
+                animist.authTxCharacteristic.onSubscribe(null, updateValueCallback);
+                animist.onAuthTx(input, null, null, fns.callback );
+
+            });
+
+            it( 'should send data about the queried tx', (done) => {
+                
+                fns.callback = () => {};
+
+                updateValueCallback = (val) => {
+
+                    //expect(bufferEqual(val, expected_send)).to.be.true;
+                    done();
+                };
+                animist.authTxCharacteristic.onSubscribe(null, updateValueCallback);
+                animist.onAuthTx( input, null, null, fns.callback );
+            });
+        });*/
 
         describe('onGetContractWrite', () => {
             
