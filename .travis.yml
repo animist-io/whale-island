@@ -9,8 +9,9 @@ addons:
     - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
-script: gulp test
+script: mocha --timeout 60s
 before_script:
   - npm install -g ethereumjs-testrpc
   - npm install
   - testrpc > /dev/null & 
+  - sleep 3
