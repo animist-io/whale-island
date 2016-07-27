@@ -117,7 +117,7 @@ describe('Bluetooth Server', () => {
 
             var req, output, msg;
 
-            it('should return a correctly formatted object representing a signed msg', () =>{
+            it('should return usable object representing a signed msg if input is form { v: r: s: }', () =>{
 
                 msg = 'a message';
                 req = wallet.signing.signMsg( keystore, account.key, msg, address); 
@@ -132,6 +132,20 @@ describe('Bluetooth Server', () => {
 
             });
 
+            it('it should return usable string representing a signed msg if input is form "0x923 . . ."', ()=> {
+                
+                msg = animist.getPin();
+                let msgHash = util.addHexPrefix(util.sha3(msg).toString('hex'));
+                let signed =  web3.eth.sign(client, msgHash); 
+                let input = JSON.stringify(signed);
+
+                output = animist.parseGetContractRequest(input);
+            
+                expect(output.ok).to.be.true;
+                expect(output.val).to.equal(signed);
+    
+            });
+
             it('should return error if req is not parse-able as a signed msg', ()=>{
                 req = '{\"signed\": \"I am not signed\"}';
                 output = animist.parseGetContractRequest(req);
@@ -140,16 +154,15 @@ describe('Bluetooth Server', () => {
                 expect(output.val).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
             });
 
-            it('should return error if req is not JSON formatted', ()=>{
+            it('should return error if a string req is not hex-prefixed', ()=>{
 
-                req = "0x5[w,r,0,,n,g";
+                req = "dd5[w,r,0,,n,g";
                 output = animist.parseGetContractRequest(req);
 
                 expect(output.ok).to.equal(false);
                 expect(output.val).to.equal(config.codes.INVALID_JSON_IN_REQUEST);
 
             });
-
         });
 
         describe('parseGetTxRequest(req)', () => {
@@ -355,7 +368,7 @@ describe('Bluetooth Server', () => {
                 };
 
                 updateValueCallback = val => { done() };
-                animist.getTxStatusCharacteristic.onSubscribe(null, updateValueCallback);
+                animist.getTxStatusCharacteristic.updateValueCallback = updateValueCallback;
                 animist.onGetTxStatus(input, null, null, fns.callback );
 
             });
@@ -370,7 +383,7 @@ describe('Bluetooth Server', () => {
                     expect(bufferEqual(val, expected_send)).to.be.true;
                     done();
                 };
-                animist.getTxStatusCharacteristic.onSubscribe(null, updateValueCallback);
+                animist.getTxStatusCharacteristic.updateValueCallback = updateValueCallback;
                 animist.onGetTxStatus( input, null, null, fns.callback );
             });
 
@@ -387,7 +400,7 @@ describe('Bluetooth Server', () => {
                 animist.onGetTxStatus(malformed_input, null, null, fns.callback );
             });
 
-            it('should respond with NO_TX_DB_ERR if unable to find tx', (done) => {
+            it('should send "null" if unable to find tx', (done) => {
                 let missing = '0xf087407379e66de3d69da365826272f7750e6c978f5c2d034296de168f500000';
                 let missing_input = JSON.stringify(missing);
                 let expected_send = new Buffer(JSON.stringify('null'));
@@ -396,28 +409,41 @@ describe('Bluetooth Server', () => {
                     expect(bufferEqual(val, expected_send)).to.be.true;
                     done();
                 };
-                animist.getTxStatusCharacteristic.onSubscribe(null, updateValueCallback);
+                
+                animist.getTxStatusCharacteristic.updateValueCallback = updateValueCallback;
                 animist.onGetTxStatus(missing_input, null, null, fns.callback );
             });
 
         });
 
-        /*describe('onAuthTx', function(){
+        describe('onAuthTx', function(){
 
             let pin, signed, msgHash, input, eth_db, record, updateValueCallback, fns = {};
             
-            // Mock client signed input, load contract record into contractsDB.
+            // Debugging . . . duplicate recs getting stuck in db
+            before( () => {
+                eth_db = new pouchdb('contracts'); 
+                return eth_db.destroy();
+            } )
+
+             
             beforeEach( () => {
 
+                // Zero out previous write callback
+                fns.callback = () => {};
+
+                // Mock client signed pin (web3 style),
                 pin = animist.getPin();
                 msgHash = util.addHexPrefix(util.sha3(pin).toString('hex'));
                 signed =  web3.eth.sign(client, msgHash); 
                 input = JSON.stringify(signed);
 
+                // Load contract record into contractsDB.
                 eth_db = new pouchdb('contracts'); 
                 eth.units.setDB(eth_db);
                 record = { _id: client, authority: client, contract: deployed.address };
                 return eth_db.put(record);
+
             });
 
             // Cleanup
@@ -430,24 +456,80 @@ describe('Bluetooth Server', () => {
                 };
 
                 updateValueCallback = val => { done() };
-                animist.authTxCharacteristic.onSubscribe(null, updateValueCallback);
+                animist.authTxCharacteristic.updateValueCallback = updateValueCallback;
                 animist.onAuthTx(input, null, null, fns.callback );
 
             });
 
-            it( 'should send data about the queried tx', (done) => {
+            it( 'should send the tx hash of the auth contract call', (done) => {
                 
                 fns.callback = () => {};
 
+                // Check txHash form: Is buffer, right length, hex prefixed
                 updateValueCallback = (val) => {
-
-                    //expect(bufferEqual(val, expected_send)).to.be.true;
+                    expect(Buffer.isBuffer(val)).to.be.true;
+                    expect(val.length).to.equal(68)    
+                    expect(util.isHexPrefixed(JSON.parse(val))).to.be.true;
                     done();
                 };
-                animist.authTxCharacteristic.onSubscribe(null, updateValueCallback);
+                animist.authTxCharacteristic.updateValueCallback = updateValueCallback;
                 animist.onAuthTx( input, null, null, fns.callback );
             });
-        });*/
+
+            it('should respond with NO_SIGNED_MSG_IN_REQUEST if input is malformed', (done) => {
+                let malformed = "dd5[w,r,0,,n,g";
+                let malformed_input = JSON.stringify(malformed);
+                
+                fns.callback = (code) => { 
+                    expect(code).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
+                    done();
+                };
+
+                chai.spy.on(fns, 'callback');
+                animist.onAuthTx(malformed_input, null, null, fns.callback );
+            });
+
+            it('should send "null" if unable to find tx', (done) => {
+                
+                // Expecting 'null'
+                let expected_send = new Buffer(JSON.stringify('null'));
+                
+                // Mock good pin sign, non-existent client.
+                let non_client = web3.eth.accounts[3];
+                pin = animist.getPin();
+                msgHash = util.addHexPrefix(util.sha3(pin).toString('hex'));
+                signed =  web3.eth.sign(non_client, msgHash); 
+                input = JSON.stringify(signed);
+
+                updateValueCallback = (val) => {
+                    expect(bufferEqual(val, expected_send)).to.be.true;
+                    done();
+                };
+                
+                animist.authTxCharacteristic.updateValueCallback = updateValueCallback;
+                animist.onAuthTx(input, null, null, fns.callback );
+            });
+        });
+
+        describe('onGetBlockNumber', ()=> {
+
+            let callback, valString, valInt;
+
+            it('should callback w/RESULT_SUCCESS & the current blockNumber', (done) => {
+                let callback = (code, val) => {
+                    
+                    // Decode val
+                    valString = JSON.parse(val.toString());
+                    valInt = parseInt(valString);
+                    
+                    expect(code).to.equal(config.codes.RESULT_SUCCESS);
+                    expect(valInt).to.equal(web3.eth.blockNumber);
+                    done();
+                }
+
+                animist.onGetBlockNumber(null, callback);
+            });    
+        });
 
         describe('onGetContractWrite', () => {
             
@@ -563,7 +645,7 @@ describe('Bluetooth Server', () => {
 
             it('should respond w/ error code if req is un-parseable', ()=>{
 
-                req = "0x5[w,r,0,,n,g";
+                req = "dd5[w,r,0,,n,g";
                 chai.spy.on(fns, 'callback');
 
                 animist.onGetContractWrite(req, null, null, fns.callback);
