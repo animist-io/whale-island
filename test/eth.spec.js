@@ -33,15 +33,20 @@ chai.should();
 // ----------------------------------- Tests -----------------------------------------
 describe('Eth Client', function(){
 
-    var keystore, address, hexAddress;
+    var keystore, address, hexAddress, deployed;
     
-    // Prep a single keystore/account for all eth-lightwallet tests
     before(() => {
+
+        // Prep a single keystore/account for all eth-lightwallet tests
         let json = JSON.stringify(account.keystore);
         keystore = wallet.keystore.deserialize(json);  
         keystore.generateNewAddress(account.key, 1);
         address = keystore.getAddresses()[0];    // Lightwallets addresses are not prefixed.
         hexAddress = util.addHexPrefix(address); // Eth's are - we recover them as this.
+
+        // Deploy TestContract
+        return newContract( contracts.Test, { from: web3.eth.accounts[0] })
+                .then( Test => deployed = Test )
     });
 
     // -----------------------------  Utilities ----------------------------------------
@@ -78,6 +83,32 @@ describe('Eth Client', function(){
         });
 
         afterEach( () => { return db.destroy() });
+
+        // -------------------------------- getBlockNumber --------------------------------
+        describe( 'getBlockNumber', ()=> {
+            it('should return the current blockNumber', ()=> {
+                let expected_block = web3.eth.blockNumber;
+                eth.getBlockNumber().should.equal(expected_block);
+            });
+        });
+
+        describe( 'getTx', ()=> {
+            let txHash, accounts = web3.eth.accounts;
+            
+            it('should resolve tx data', ()=> {
+                txHash = web3.eth.sendTransaction({from: accounts[0], to: accounts[1], value: 100 });
+                return eth.getTx(txHash).then( tx => {
+                    tx.blockNumber.should.be.a('number');
+                    tx.nonce.should.be.a('number');
+                    tx.gas.should.be.a('number');
+                });
+            });
+
+            it('should reject w/ NO_TX_DB_ERR if tx not found', () => {
+                txHash = '0x000000000000000012345';
+                return eth.getTx(txHash).catch( err => err.should.equal(config.codes.NO_TX_DB_ERR));
+            })
+        });
 
         // -------------------------------- getContract ------------------------------------
         describe('getContract([pin, lastPin], signed)', ()=>{
@@ -120,15 +151,14 @@ describe('Eth Client', function(){
         });
         describe( 'authTx([pin, lastPin], signed)', () => {
 
-            let pin, signed, msgHash, deployed, client = web3.eth.accounts[0];
+            let pin, signed, msgHash, client = web3.eth.accounts[0];
 
-             before(() => {
+            // Sign a pin using web3 signing methods.
+            before(() => {
+                
                 pin = ['1234'];
                 msgHash = util.addHexPrefix(util.sha3(pin[0]).toString('hex'));
                 signed =  web3.eth.sign(client, msgHash);     
-
-                return newContract( contracts.Test, { from: web3.eth.accounts[0] })
-                        .then( Test => deployed = Test )
             });
 
              it('should call verifyPresence on relevant contract and resolve a valid tx hash', (done)=>{
@@ -139,7 +169,7 @@ describe('Eth Client', function(){
                 
                 db.put(mock).then(() => {
                     eth.authTx(pin, signed).then( result => {
-                        tx = web3.eth.getTransaction(result);
+                        tx = web3.eth.getTransaction(result); 
                         tx.hash.should.equal(result);
                         tx.blockNumber.should.equal(block_before + 1);
                         done();

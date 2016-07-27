@@ -41,7 +41,7 @@ gulp.task('test', ['pre-test'], function (cb) {
   var mochaErr;
 
   // Exclude files by adding: '!test/...etc' to array : , '!test/server.spec.js'
-  gulp.src(['test/**/*.js'])
+  gulp.src(['test/**/*.js']) //['test/server.spec.js']
     .pipe(plumber())
     .pipe(mocha({reporter: 'spec', timeout: 10000}))
     .on('error', function (err) {

@@ -1,23 +1,38 @@
 'use strict'
 
+// ----------------------------------- Imports -----------------------------------------
+
+// Local
 let config = require('../lib/config.js');
 let server = require('../lib/server.js');
 let eth = require('../lib/eth.js');
 
-const Promise = require('bluebird');
 const account = require('../test/mocks/wallet.js');
 const transaction = require('../test/mocks/transaction.js');
 const wallet = require('eth-lightwallet');
+
+// Ethereum 
+const Web3 = require('web3');
+
+// Misc NPM
+const Promise = require('bluebird');
 const pouchdb = require('pouchdb');
 
+// Testing
 const chai = require('chai');
 const spies = require('chai-spies');
 const chaiAsPromised = require("chai-as-promised");
-const expect = chai.expect;
 
+// ----------------------------------- Setup -----------------------------------------
+const expect = chai.expect;
+const should = chai.should;
 chai.use(spies);
 chai.use(chaiAsPromised);
 
+const provider = new Web3.providers.HttpProvider('http://localhost:8545');
+const web3 = new Web3(provider);
+
+// ----------------------------------- Tests -----------------------------------------
 describe('Bluetooth Server', () => {
     
     var keystore, address, hexAddress;
@@ -102,7 +117,7 @@ describe('Bluetooth Server', () => {
                 
                 output = animist.parseGetContractRequest(req);
 
-                expect( output.ok).to.equal(true);
+                expect( output.ok).to.be.true;
                 expect( typeof output.val).to.equal('object');
                 expect( Buffer.isBuffer(output.val.r)).to.be.true;
                 expect( Buffer.isBuffer(output.val.s)).to.be.true;
@@ -129,7 +144,43 @@ describe('Bluetooth Server', () => {
 
         });
 
-        
+        describe('parseGetTxRequest(req)', () => {
+
+            let hash, input, output;
+            it( 'should return an object containing a correctly formatted txHash', () => {
+                hash = '0xf087407379e66de3d69da365826272f7750e6c978f5c2d034296de168f571e4d';
+                input = JSON.stringify(hash);
+                output = animist.parseGetTxRequest(input);
+                expect(output.ok).to.be.true;
+                expect(output.val).to.equal(hash);
+            })
+
+            it( 'should error w/ INVALID_TX_HASH if input is not a string', ()=>{
+                hash = '{ hello: "I am not a string" }';
+                input = JSON.stringify(hash);
+                output = animist.parseGetTxRequest(input);
+                expect(output.ok).to.be.false;
+                expect(output.val).to.equal(config.codes.INVALID_TX_HASH);
+
+            });
+
+            it( 'should error w/ INVALID_TX_HASH if input is not hex prefixed', ()=> {
+                hash = 'f087407379e66de3d69da365826272f7750e6c978f5c2d034296de168f571e4d';
+                input = JSON.stringify(hash);
+                output = animist.parseGetTxRequest(input);
+                expect(output.ok).to.be.false;
+                expect(output.val).to.equal(config.codes.INVALID_TX_HASH);
+            });
+
+            it( 'should error w/ INVALID_TX_HASH if input does not repr. 32bytes', () => {
+                hash = '0xf087407379e66de3d69da365826272f7750e6c978f5c2d034296de168f';
+                input = JSON.stringify(hash);
+                output = animist.parseGetTxRequest(input);
+                expect(output.ok).to.be.false;
+                expect(output.val).to.equal(config.codes.INVALID_TX_HASH);
+            });
+        });
+
         describe('isValidSession(id)', function(){
 
             let db;
@@ -276,6 +327,71 @@ describe('Bluetooth Server', () => {
             expect(fns.callback).to.have.been.called.with(codes.RESULT_SUCCESS, pin_to_buffer);
 
           });
+        });
+
+        describe('onGetTxStatus', () => {
+
+            let hash, input, fns = {}, updateValueCallback, accounts = web3.eth.accounts;
+            
+            beforeEach(() => {
+                fns.callback = () => {};
+                hash = web3.eth.sendTransaction({from: accounts[0], to: accounts[1], value: 100 });
+                input = JSON.stringify(hash);
+                
+            });
+
+            it('should respond w/ RESULT_SUCCESS', (done) => {
+
+                fns.callback = (code) => { 
+                    expect(code).to.equal(config.codes.RESULT_SUCCESS);
+                };
+
+                updateValueCallback = val => { done() };
+                animist.getTxStatusCharacteristic.onSubscribe(null, updateValueCallback);
+                animist.onGetTxStatus(input, null, null, fns.callback );
+
+            });
+
+            it( 'should send data about the queried tx', (done) => {
+                
+                let tx = web3.eth.getTransaction(hash);
+                let res = {blockNumber: tx.blockNumber, nonce: tx.nonce, gas: tx.gas};
+                let expected_send = new Buffer(JSON.stringify(res));
+
+                updateValueCallback = (val) => {
+                    val.should.be.expected_send;
+                    done();
+                };
+                animist.getTxStatusCharacteristic.onSubscribe(null, updateValueCallback);
+                animist.onGetTxStatus( input, null, null, fns.callback );
+            });
+
+            it('should respond with INVALID_TX_HASH if input is malformed', (done) => {
+                let malformed = '0x000000000000000012345';
+                let malformed_input = JSON.stringify(malformed);
+                
+                fns.callback = (code) => { 
+                    expect(code).to.equal(config.codes.INVALID_TX_HASH);
+                    done();
+                };
+
+                chai.spy.on(fns, 'callback');
+                animist.onGetTxStatus(malformed_input, null, null, fns.callback );
+            });
+
+            it('should respond with NO_TX_DB_ERR if unable to find tx', (done) => {
+                let missing = '0xf087407379e66de3d69da365826272f7750e6c978f5c2d034296de168f500000';
+                let missing_input = JSON.stringify(missing);
+                let expected_send = new Buffer(JSON.stringify('null'));
+
+                updateValueCallback = (val) => {
+                    val.should.be.expected_send;
+                    done();
+                };
+                animist.getTxStatusCharacteristic.onSubscribe(null, updateValueCallback);
+                animist.onGetTxStatus(missing_input, null, null, fns.callback );
+            });
+
         });
 
         describe('onGetContractWrite', () => {
