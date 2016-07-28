@@ -113,7 +113,7 @@ describe('Bluetooth Server', () => {
 
         });
 
-        describe('parseGetContractRequest(req)', () =>{
+        describe('parseSignedPin(signed)', () =>{
 
             var req, output, msg;
 
@@ -123,7 +123,7 @@ describe('Bluetooth Server', () => {
                 req = wallet.signing.signMsg( keystore, account.key, msg, address); 
                 req = JSON.stringify(req);
                 
-                output = animist.parseGetContractRequest(req);
+                output = animist.parseSignedPin(req);
 
                 expect( output.ok).to.be.true;
                 expect( typeof output.val).to.equal('object');
@@ -132,32 +132,32 @@ describe('Bluetooth Server', () => {
 
             });
 
-            it('it should return usable string representing a signed msg if input is form "0x923 . . ."', ()=> {
+            it('should return usable string representing a signed msg if input is form "0x923 . . ."', ()=> {
                 
                 msg = animist.getPin();
                 let msgHash = util.addHexPrefix(util.sha3(msg).toString('hex'));
                 let signed =  web3.eth.sign(client, msgHash); 
                 let input = JSON.stringify(signed);
 
-                output = animist.parseGetContractRequest(input);
+                output = animist.parseSignedPin(input);
             
                 expect(output.ok).to.be.true;
                 expect(output.val).to.equal(signed);
     
             });
 
-            it('should return error if req is not parse-able as a signed msg', ()=>{
+            it('should return error if input is object and not parse-able as a signed msg', ()=>{
                 req = '{\"signed\": \"I am not signed\"}';
-                output = animist.parseGetContractRequest(req);
+                output = animist.parseSignedPin(req);
 
                 expect(output.ok).to.equal(false);
                 expect(output.val).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
             });
 
-            it('should return error if a string req is not hex-prefixed', ()=>{
+            it('should return error if input is string and not hex-prefixed', ()=>{
 
                 req = "dd5[w,r,0,,n,g";
-                output = animist.parseGetContractRequest(req);
+                output = animist.parseSignedPin(req);
 
                 expect(output.ok).to.equal(false);
                 expect(output.val).to.equal(config.codes.INVALID_JSON_IN_REQUEST);
@@ -165,13 +165,13 @@ describe('Bluetooth Server', () => {
             });
         });
 
-        describe('parseGetTxRequest(req)', () => {
+        describe('parseTxHash(hash)', () => {
 
             let hash, input, output;
             it( 'should return an object containing a correctly formatted txHash', () => {
                 hash = '0xf087407379e66de3d69da365826272f7750e6c978f5c2d034296de168f571e4d';
                 input = JSON.stringify(hash);
-                output = animist.parseGetTxRequest(input);
+                output = animist.parseTxHash(input);
                 expect(output.ok).to.be.true;
                 expect(output.val).to.equal(hash);
             })
@@ -179,7 +179,7 @@ describe('Bluetooth Server', () => {
             it( 'should error w/ INVALID_TX_HASH if input is not a string', ()=>{
                 hash = '{ hello: "I am not a string" }';
                 input = JSON.stringify(hash);
-                output = animist.parseGetTxRequest(input);
+                output = animist.parseTxHash(input);
                 expect(output.ok).to.be.false;
                 expect(output.val).to.equal(config.codes.INVALID_TX_HASH);
 
@@ -188,7 +188,7 @@ describe('Bluetooth Server', () => {
             it( 'should error w/ INVALID_TX_HASH if input is not hex prefixed', ()=> {
                 hash = 'f087407379e66de3d69da365826272f7750e6c978f5c2d034296de168f571e4d';
                 input = JSON.stringify(hash);
-                output = animist.parseGetTxRequest(input);
+                output = animist.parseTxHash(input);
                 expect(output.ok).to.be.false;
                 expect(output.val).to.equal(config.codes.INVALID_TX_HASH);
             });
@@ -196,7 +196,7 @@ describe('Bluetooth Server', () => {
             it( 'should error w/ INVALID_TX_HASH if input does not repr. 32bytes', () => {
                 hash = '0xf087407379e66de3d69da365826272f7750e6c978f5c2d034296de168f';
                 input = JSON.stringify(hash);
-                output = animist.parseGetTxRequest(input);
+                output = animist.parseTxHash(input);
                 expect(output.ok).to.be.false;
                 expect(output.val).to.equal(config.codes.INVALID_TX_HASH);
             });
@@ -245,7 +245,7 @@ describe('Bluetooth Server', () => {
                 });
             });
 
-            it('should reject if the sessionId was not issue to the caller', function(done){
+            it('should reject if the sessionId was not issued to the caller', function(done){
                 let doc = {_id: '55555', expires: '12345', account: "0x25345454564545"  };
                 let tx = { caller: "0x00000000" };
 
@@ -335,7 +335,7 @@ describe('Bluetooth Server', () => {
         describe('onGetPin', () => {
 
 
-          it('should respond to request w/ the current pin', () => {
+          it('should respond w/ the current pin', () => {
             
             let fns = {};
             let codes = config.codes;
@@ -415,6 +415,64 @@ describe('Bluetooth Server', () => {
             });
 
         });
+
+        describe('onGetNewSessionId', () => {
+
+            let input, pin, signed, msgHash, fns = {}, updateValueCallback;
+            
+            beforeEach(() => {
+                // Zero out previous write callback
+                fns.callback = () => {};
+
+                // Mock client signed pin (web3 style),
+                pin = animist.getPin();
+                msgHash = util.addHexPrefix(util.sha3(pin).toString('hex'));
+                signed =  web3.eth.sign(client, msgHash); 
+                input = JSON.stringify(signed);
+                
+            });
+
+            it('should respond w/ RESULT_SUCCESS', (done) => {
+
+                fns.callback = (code) => { 
+                    expect(code).to.equal(config.codes.RESULT_SUCCESS);
+                };
+
+                updateValueCallback = val => { done() };
+                animist.getNewSessionIdCharacteristic.updateValueCallback = updateValueCallback;
+                animist.onGetNewSessionId(input, null, null, fns.callback );
+
+            });
+
+            it( 'should send sessionId data', (done) => {
+                
+                updateValueCallback = (val) => {
+                    let out = JSON.parse(val.toString());
+                    expect(out.sessionId).to.be.a('string');
+                    expect(out.sessionId.length).to.equal(10);
+                    expect(out.expires).to.be.a('number');
+                    done();
+                };
+                animist.getNewSessionIdCharacteristic.updateValueCallback = updateValueCallback;
+                animist.onGetNewSessionId(input, null, null, fns.callback );
+            });
+
+            it('should respond with NO_SIGNED_MSG_IN_REQUEST if input is malformed', (done) => {
+                let malformed = "dd5[w,r,0,,n,g";
+                let malformed_input = JSON.stringify(malformed);
+                
+                fns.callback = (code) => { 
+                    expect(code).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
+                    done();
+                };
+
+                chai.spy.on(fns, 'callback');
+                animist.onGetNewSessionId(malformed_input, null, null, fns.callback );
+            });
+
+        });
+
+
 
         describe('onAuthTx', function(){
 
@@ -515,7 +573,7 @@ describe('Bluetooth Server', () => {
 
             let callback, valString, valInt;
 
-            it('should callback w/RESULT_SUCCESS & the current blockNumber', (done) => {
+            it('should respond w/RESULT_SUCCESS & the current blockNumber', (done) => {
                 let callback = (code, val) => {
                     
                     // Decode val
