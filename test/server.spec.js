@@ -8,13 +8,12 @@ let server = require('../lib/server.js');
 let eth = require('../lib/eth.js');
 
 const account = require('../test/mocks/wallet.js');
-const transaction = require('../test/mocks/transaction.js');
-const wallet = require('eth-lightwallet');
-const contracts = require('../contracts/Test.js');
+const transactions = require('../test/mocks/transaction.js');
 
 // Ethereum 
 const Web3 = require('web3');
 const util = require("ethereumjs-util");
+const wallet = require('eth-lightwallet');
 
 // Misc NPM
 const Promise = require('bluebird');
@@ -34,24 +33,29 @@ chai.use(chaiAsPromised);
 
 const provider = new Web3.providers.HttpProvider('http://localhost:8545');
 const web3 = new Web3(provider);
-const newContract = require('eth-new-contract').default(provider);
 
 // ----------------------------------- Tests -----------------------------------------
 describe('Bluetooth Server', () => {
     
-    var keystore, address, hexAddress, deployed;
-    var client = web3.eth.accounts[0];;
+    var keystore, address, hexAddress, deployed, goodTx, badTx;
+    var client = web3.eth.accounts[0];
 
-    // Prep a single keystore/account for all tests, deploy TestContract
     before(() => {
+
+        // Prep an eth-lightwallet keystore/account for pin signing tests
         let json = JSON.stringify(account.keystore);
         keystore = wallet.keystore.deserialize(json);  
         keystore.generateNewAddress(account.key, 1);
-        address = keystore.getAddresses()[0]; // Lightwallets addresses are not prefixed.
-        hexAddress = '0x' + address;          // Eth's are - we recover them as this.
+        address = keystore.getAddresses()[0];    // Lightwallets addresses are not prefixed.
+        hexAddress = '0x' + address;             // Eth's are prefixed - we recover them as this.
 
-        return newContract( contracts.Test, { from: client })
-                .then( testContract => deployed = testContract );
+        // Deploy TestContract, compose some signed transactions for rawTx submission.
+        return transactions.generate().then( mock => {   
+
+            deployed = mock.deployed;            // TestContract.sol deployed to test-rpc
+            badTx = mock.badTx;                  // raw: TestContract.set(2, {from: client})
+            goodTx = mock.goodTx;                // raw: goodTx but sent with 0 gas.
+        });
     });
 
     describe('Utilites', () => {

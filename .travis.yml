@@ -13,5 +13,6 @@ script: mocha --timeout 60s
 before_script:
   - npm install -g ethereumjs-testrpc
   - npm install
-  - testrpc > /dev/null & 
+  - chmod +x rpc.sh
+  - ./rpc.sh > /dev/null & 
   - sleep 3
