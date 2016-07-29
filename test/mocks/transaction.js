@@ -32,6 +32,7 @@ module.exports.generate = function(){
         let code = web3.eth.getCode(deployed.address); 
         let abi = deployed.abi;
         let privKey = util.stripHexPrefix(keys[0]);
+        let brokeKey = util.stripHexPrefix(keys[0]);
 
         let goodTxOptions = { gasPrice: 1, gasLimit: 3000000, data: util.stripHexPrefix(code)};
         let badTxOptions = { gasPrice: 1, gasLimit: 0, data: util.stripHexPrefix(code)};
@@ -47,14 +48,17 @@ module.exports.generate = function(){
         
         let goodTx = new Transaction(new Buffer(goodTxSet, 'hex'));
         let badTx = new Transaction(new Buffer(badTxSet, 'hex'));
+        let brokeTx = new Transaction(new Buffer(goodTxSet, 'hex'));
 
         goodTx.sign(new Buffer(privKey, 'hex'));
         badTx.sign(new Buffer(privKey, 'hex'));
+        brokeTx.sign(new Buffer(brokeKey, 'hex'));
 
         goodTx = goodTx.serialize().toString('hex');
         badTx = badTx.serialize().toString('hex');
+        brokeTx = brokeTx.serialize().toString('hex');
 
-        return { deployed: deployed, goodTx: goodTx, badTx: badTx }
+        return { deployed: deployed, goodTx: goodTx, badTx: badTx, brokeTx: brokeTx }
                 
     });
 };

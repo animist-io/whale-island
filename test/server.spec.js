@@ -37,7 +37,7 @@ const web3 = new Web3(provider);
 // ----------------------------------- Tests -----------------------------------------
 describe('Bluetooth Server', () => {
     
-    var keystore, address, hexAddress, deployed, goodTx, badTx;
+    var keystore, address, hexAddress, deployed, goodTx, badTx, mismatchTx;
     var client = web3.eth.accounts[0];
 
     before(() => {
@@ -55,6 +55,7 @@ describe('Bluetooth Server', () => {
             deployed = mock.deployed;            // TestContract.sol deployed to test-rpc
             badTx = mock.badTx;                  // raw: TestContract.set(2, {from: client})
             goodTx = mock.goodTx;                // raw: goodTx but sent with 0 gas.
+            mismatchTx = mock.mismatchTx;        // raw: goodTx signed with wrong key.
         });
     });
 
@@ -168,6 +169,73 @@ describe('Bluetooth Server', () => {
 
             });
         });
+
+        describe('parseSignedTx(data, client)', () => {
+
+            let pin = 0, data, output;
+
+            it('should extract and return a signed tx string from the data input', ()=> {
+                data = JSON.stringify({ pin: pin, tx: goodTx });
+                output = animist.parseSignedTx(data, client );
+                //expect(output.ok).to.be.true;
+                expect(output.val).to.equal(goodTx);               
+            });
+
+            it('should error w/ INVALID_PIN if the client address is malformed', ()=>{
+                // Good data, client address is error code
+                data = JSON.stringify({ pin: pin, tx: goodTx });
+                output = animist.parseSignedTx(data, 0x02 );
+                expect(output.ok).to.be.false;
+                expect(output.val).to.equal(config.codes.INVALID_PIN);
+            });
+
+            it('should error w/ INVALID_JSON_IN_REQUEST if data is not parse-able as object', () => {
+                data = JSON.stringify('not an object');
+                output = animist.parseSignedTx(data, client);
+                expect(output.ok).to.be.false;
+                expect(output.val).to.equal(config.codes.INVALID_JSON_IN_REQUEST);
+            })
+
+            it('should error w/ INVALID_JSON_IN_REQUEST if data obj does not have a "tx" key', () => {
+                data = JSON.stringify({no_tx: 'hello!'});
+                output = animist.parseSignedTx(data, client);
+                expect(output.ok).to.be.false;
+                expect(output.val).to.equal(config.codes.INVALID_JSON_IN_REQUEST);
+            });
+
+            it('should error w/ INVALID_JSON_IN_REQUEST if data.tx is not a string', () => {
+                data = JSON.stringify({tx: 12345});
+                output = animist.parseSignedTx(data, client);
+                expect(output.ok).to.be.false;
+                expect(output.val).to.equal(config.codes.INVALID_JSON_IN_REQUEST);
+            });
+
+            it('should error w/ INVALID_TX_SENDER_ADDRESS if tx sender is not client', ()=> {
+                // Mock tx's are signed with accounts[0]
+                data = JSON.stringify({pin: pin, tx: goodTx});
+                output = animist.parseSignedTx(data, web3.eth.accounts[2]);
+                expect(output.ok).to.be.false;
+                expect(output.val).to.equal(config.codes.INVALID_TX_SENDER_ADDRESS);
+            });
+
+            it('should error w/ INSUFFICIENT_GAS if tx gas limit too low', () => {
+                data = JSON.stringify({pin: pin, tx: badTx});
+                output = animist.parseSignedTx(data, web3.eth.accounts[0]);
+                expect(output.ok).to.be.false;
+                expect(output.val).to.equal(config.codes.INSUFFICIENT_GAS);
+            })
+
+            /*it('should error w/ INSUFFICIENT_BALANCE if tx sender cant afford gas', ()=> {
+                // Mock tx's are signed with accounts[0]
+                data = JSON.stringify({pin: pin, tx: brokeTx});
+                output = animist.parseSignedTx(data, web3.eth.accounts[4]);
+                expect(output.ok).to.be.false;
+                expect(output.val).to.equal(config.codes.INSUFFICIENT_BALANCE);
+            });*/
+
+        });
+
+
 
         describe('parseTxHash(hash)', () => {
 
