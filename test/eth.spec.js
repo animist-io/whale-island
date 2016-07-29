@@ -192,6 +192,24 @@ describe('Eth Client', function(){
         });
 
         // ----------------------------------- authAndSubmitTx ------------------------------------------
+        /*describe( 'submitTxWhenAuthed(authTxHash, signedTx, address', ()=> {
+
+            it('should update the contract record to show pending auth', ()=>{
+
+            });
+
+            it('should continue cycling while authTx is pending', ()=> {
+
+            });
+
+            it('should mark contract auth status as failed if the auth throws', ()=>{
+
+            });
+
+            it('should submit the tx when auth is mined, save txHash and update auth status', ()=>{
+
+            });
+        });*/
         // ----------------------------------- submitTx -------------------------------------------------
     });  
 });
