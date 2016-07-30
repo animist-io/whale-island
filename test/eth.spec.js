@@ -57,7 +57,6 @@ describe('Eth Client', function(){
 
             it ('should extract and return string address from signed message', () =>{
                 let msg = 'message', signed, result;
-        
                 signed = wallet.signing.signMsg( keystore, account.key, msg, address);         
                 eth.recover(msg, signed).should.equal(hexAddress);
         

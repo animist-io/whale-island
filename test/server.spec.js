@@ -67,7 +67,7 @@ describe('Bluetooth Server', () => {
             animist = new server.AnimistServer();
         });
 
-        describe('queueTx(tx)', ()=>{
+        describe('queueContract(tx)', ()=>{
             var tx, queue, old_config;
             
             it('should transform input into buffers of MAX_SIZE & queue them',()=>{
@@ -77,7 +77,7 @@ describe('Bluetooth Server', () => {
                 old_config = config.MAX_SEND;
                 config.MAX_SEND = 4;
                 
-                animist.queueTx(tx);
+                animist.queueContract(tx);
                 queue = animist.getSendQueue();
                 
                 expect(queue.length).to.equal(3);
@@ -87,7 +87,7 @@ describe('Bluetooth Server', () => {
                 // Testing 3 chars (including "" from JSON stringify) /4 byte packets:
                 tx = '1';
                 animist.resetSendQueue();
-                animist.queueTx(tx);
+                animist.queueContract(tx);
                 queue = animist.getSendQueue();
 
                 expect(queue.length).to.equal(1);
@@ -794,7 +794,7 @@ describe('Bluetooth Server', () => {
 
                 animist.resetSendQueue();
                 animist.getContractCharacteristic.updateValueCallback = (val) => {};
-                animist.queueTx(config.fakeTx);
+                animist.queueContract(config.fakeTx);
 
             });
 
