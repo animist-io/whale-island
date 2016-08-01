@@ -52,9 +52,9 @@ describe('Bluetooth Server', () => {
         // Deploy TestContract, compose some signed transactions for rawTx submission.
         return transactions.generate().then( mock => {   
 
-            deployed = mock.deployed;            // TestContract.sol deployed to test-rpc
-            badTx = mock.badTx;                  // raw: TestContract.set(2, {from: client})
-            goodTx = mock.goodTx;                // raw: goodTx but sent with 0 gas.
+            deployed = mock.deployed;            // TestContract.sol deployed to test-rpc                            
+            goodTx = mock.goodTx;                // raw: TestContract.set(2, {from: client})
+            badTx = mock.badTx;                  // raw: goodTx but sent with 0 gas.
             mismatchTx = mock.mismatchTx;        // raw: goodTx signed with wrong key.
         });
     });
@@ -225,13 +225,13 @@ describe('Bluetooth Server', () => {
                 expect(output.val).to.equal(config.codes.INSUFFICIENT_GAS);
             })
 
-            /*it('should error w/ INSUFFICIENT_BALANCE if tx sender cant afford gas', ()=> {
+            //it('should error w/ INSUFFICIENT_BALANCE if tx sender cant afford gas', ()=> {
                 // Mock tx's are signed with accounts[0]
-                data = JSON.stringify({pin: pin, tx: brokeTx});
-                output = animist.parseSignedTx(data, web3.eth.accounts[4]);
-                expect(output.ok).to.be.false;
-                expect(output.val).to.equal(config.codes.INSUFFICIENT_BALANCE);
-            });*/
+            //    data = JSON.stringify({pin: pin, tx: brokeTx});
+            //    output = animist.parseSignedTx(data, web3.eth.accounts[4]);
+            //    expect(output.ok).to.be.false;
+            //    expect(output.val).to.equal(config.codes.INSUFFICIENT_BALANCE);
+            //});
 
         });
 
@@ -292,7 +292,7 @@ describe('Bluetooth Server', () => {
 
             it('should resolve if session id exists in the db', function(done){
                 let doc = {_id: '55555', expires: '12345', account: "0x25345454564545"  };
-                let tx = { caller: "0x25345454564545" };
+                let tx = { account: "0x25345454564545" };
         
                 db.put(doc).then(()=>{ 
                     expect(animist.isValidSession('55555', tx)).to.be.fulfilled.notify(done);        
@@ -308,7 +308,7 @@ describe('Bluetooth Server', () => {
 
             it('should reject if the session record is not found in the DB', function(done){
                 let doc = {_id: '55555', expires: '12345', account: "0x25345454564545"  };
-                let tx = { caller: "0x25345454564545" };
+                let tx = { account: "0x25345454564545" };
 
                 db.put(doc).then(()=>{
                     expect(animist.isValidSession('77777', tx)).to.be.rejected.notify(done);        
@@ -319,7 +319,7 @@ describe('Bluetooth Server', () => {
 
             it('should reject if the sessionId was not issued to the caller', function(done){
                 let doc = {_id: '55555', expires: '12345', account: "0x25345454564545"  };
-                let tx = { caller: "0x00000000" };
+                let tx = { account: "0x00000000" };
 
                 db.put(doc).then(()=>{
                     expect(animist.isValidSession('55555', tx)).to.be.rejected.notify(done);        
@@ -359,10 +359,10 @@ describe('Bluetooth Server', () => {
             it('should save session data associated w/ caller account to the DB', function(done){
 
                 let fakeTx = config.fakeTx;
-                fakeTx.caller = "0x25345454564545";
+                fakeTx.account = "0x25345454564545";
 
                 animist.startSession(fakeTx).then(()=>{
-                    let expected = {_id: fakeTx.sessionId, expires: fakeTx.expires, account: fakeTx.caller }
+                    let expected = {_id: fakeTx.sessionId, expires: fakeTx.expires, account: fakeTx.account }
                     expect(db.get(fakeTx.sessionId)).to.eventually.include(expected).notify(done);
                 });
 
@@ -571,7 +571,7 @@ describe('Bluetooth Server', () => {
                 // Load contract record into contractsDB.
                 eth_db = new pouchdb('contracts'); 
                 eth.units.setDB(eth_db);
-                record = { _id: client, authority: client, contract: deployed.address };
+                record = { _id: client, authority: client, contractAddress: deployed.address };
                 return eth_db.put(record);
 
             });
@@ -673,7 +673,7 @@ describe('Bluetooth Server', () => {
                 req = wallet.signing.signMsg( keystore, account.key, animist.getPin(), address); 
                 req = JSON.stringify(req);
 
-                mock_contract = { _id: hexAddress, authority: hexAddress, contract: config.fakeTx.code };
+                mock_contract = { _id: hexAddress, authority: hexAddress, contractAddress: deployed.address };
                 
             });
 

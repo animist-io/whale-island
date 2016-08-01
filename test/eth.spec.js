@@ -7,6 +7,7 @@ let config = require('../lib/config.js');
 const eth = require('../lib/eth.js');
 const contracts = require('../contracts/Test.js');
 const account = require('../test/mocks/wallet.js');
+const transactions = require('../test/mocks/transaction.js');
 
 // Ethereum
 const util = require('ethereumjs-util');
@@ -33,7 +34,7 @@ chai.should();
 // ----------------------------------- Tests -----------------------------------------
 describe('Eth Client', function(){
 
-    var keystore, address, hexAddress, deployed;
+    var keystore, address, hexAddress, deployed, goodTx, badTx, mismatchTx;
     
     before(() => {
 
@@ -44,9 +45,14 @@ describe('Eth Client', function(){
         address = keystore.getAddresses()[0];    // Lightwallets addresses are not prefixed.
         hexAddress = util.addHexPrefix(address); // Eth's are - we recover them as this.
 
-        // Deploy TestContract
-        return newContract( contracts.Test, { from: web3.eth.accounts[0] })
-                .then( Test => deployed = Test )
+        // Deploy TestContract, compose some signed transactions for rawTx submission.
+        return transactions.generate().then( mock => {   
+
+            deployed = mock.deployed;            // TestContract.sol deployed to test-rpc                            
+            goodTx = mock.goodTx;                // raw: TestContract.set(2, {from: client})
+            badTx = mock.badTx;                  // raw: goodTx but sent with 0 gas.
+            mismatchTx = mock.mismatchTx;        // raw: goodTx signed with wrong key.
+        });
     });
 
     // -----------------------------  Utilities ----------------------------------------
@@ -65,8 +71,7 @@ describe('Eth Client', function(){
             it('should return undefined if "signed" is bad, ethereumjs-util throws an error', () => {
                 let err = eth.recover('a message', 'kfdlskdlf')
                 expect(err).to.be.undefined;
-            })
-  
+            })  
         });
     });
 
@@ -117,24 +122,22 @@ describe('Eth Client', function(){
             before(()=>{
                 pins = ['1234', '5678'];
                 signed = wallet.signing.signMsg( keystore, account.key, pins[0], address); 
+
             })
 
 
-            it('should resolve a contract if it finds one matching the acct. address', (done) =>{
-                let mock = { _id: hexAddress, authority: hexAddress, contract: '12345'};
-                db.put(mock).then(()=>{
-                    eth.getContract(pins, signed).should.eventually.include(mock).notify(done);
-                });
-            });
-
-            it('should append callers address to the contract', (done) => {
-                let mock = { _id: hexAddress, authority: hexAddress, contract: '12345'};
-                let expected = { caller: hexAddress };
+            it('should resolve a contract object if it finds a contract creation event matching the acct. address', (done) =>{
+                let mock = { _id: hexAddress, authority: hexAddress, contractAddress: deployed.address };
+                let expected = { 
+                    account: hexAddress, 
+                    authority: hexAddress, 
+                    contractAddress: deployed.address, 
+                    code: web3.eth.getCode(deployed.address) 
+                }
                 db.put(mock).then(()=>{
                     eth.getContract(pins, signed).should.eventually.include(expected).notify(done);
                 });
             });
-
 
             it('should reject if it cant find a contract matching the acct. address', (done)=>{
                 let mock = { _id: 'do_not_exist', authority: hexAddress, contract: '12345'};
@@ -148,6 +151,7 @@ describe('Eth Client', function(){
                 return eth.getContract(pins, garbage).should.eventually.be.rejected;
             });
         });
+
         describe( 'authTx([pin, lastPin], signed)', () => {
 
             let pin, signed, msgHash, client = web3.eth.accounts[0];
@@ -160,11 +164,12 @@ describe('Eth Client', function(){
                 signed =  web3.eth.sign(client, msgHash);     
             });
 
-             it('should call verifyPresence on relevant contract and resolve a valid tx hash', (done)=>{
+             it('should call found contracts verifyPresence method and resolve a valid tx hash', (done)=>{
                 let tx;
                 let block_before = web3.eth.blockNumber;
                 let contractAddress = deployed.address;
-                let mock = { _id: client, authority: client, contract: contractAddress };
+
+                let mock = { _id: client, authority: client, contractAddress: contractAddress };
                 
                 db.put(mock).then(() => {
                     eth.authTx(pin, signed).then( result => {
@@ -177,7 +182,7 @@ describe('Eth Client', function(){
             });
 
             it('should reject if it cant find a contract matching the acct. address', (done)=>{
-                let mock = { _id: 'do_not_exist', authority: hexAddress, contract: '12345'};
+                let mock = { _id: 'do_not_exist', authority: hexAddress, contractAddress: '12345'};
 
                 db.put(mock).then( () => { 
                     eth.authTx(pin, signed).should.eventually.be.rejected.notify(done);
@@ -191,28 +196,138 @@ describe('Eth Client', function(){
         });
 
         // ----------------------------------- authAndSubmitTx ------------------------------------------
-        /*describe( 'submitTxWhenAuthed(authTxHash, signedTx, address', ()=> {
+        describe( 'submitTxWhenAuthed(authTxHash, signedTx, address', ()=> {
 
-            it('should update the contract record to show pending auth', ()=>{
+            let pin, signed, msgHash, authTxHash, client = web3.eth.accounts[0];
+
+            // Debugging . . . duplicate recs getting stuck in db
+            before( () => {
+                let eth_db = new pouchdb('contracts'); 
+                return eth_db.destroy();
+            })
+            
+            beforeEach(() => {
+                
+                // Sign a pin using web3 signing methods.
+                pin = ['1234'];
+                msgHash = util.addHexPrefix(util.sha3(pin[0]).toString('hex'));
+                signed =  web3.eth.sign(client, msgHash);   
+
+                // Auth the tx, get authTxHash.
+                let mock = { _id: client, authority: client, contractAddress: deployed.address };
+                return db.put(mock).then( res => {
+                    return eth.authTx(pin, signed).then( result => authTxHash = result );  
+                });
+            });
+
+            it('should update the contract record to show pending auth', (done)=>{
+                let original_cycles = config.MAX_CONFIRMATION_CYCLES;
+                let original_mining = config.MINING_CHECK_INTERVAL;
+                let mock_record = { _id: hexAddress, authority: hexAddress, contractAddress: deployed.address };
+                eth.units.setConfCycles(0); // Don't even check conf.
+                eth.units.setMiningCheckInterval(10); // Fast!
+
+                // This should get called in the conf. cycles check block.
+                let cb = () => {
+                    db.get(client).then( doc => {
+                        expect(doc.authStatus).to.equal('pending');
+                        expect(doc.authTxHash).to.equal(authTxHash);
+                        expect(doc.submittedTxHash).to.equal(null);
+
+                        // Clean-up
+                        eth.units.setConfCycles(original_cycles); 
+                        eth.units.setMiningCheckInterval(original_mining); 
+                        done();
+                    });
+                };
+
+                eth.submitTxWhenAuthed(authTxHash, goodTx, client, cb );
+            });
+
+            it('should submit the tx when auth is mined, save txHash and update auth status', (done)=>{
+
+                let original_mining = config.MINING_CHECK_INTERVAL;
+                eth.units.setMiningCheckInterval(2000); // 
+
+                // This should get called post db update on success.
+                let cb = () => {
+                    db.get(client).then( doc => {
+                        expect(doc.authStatus).to.equal('success');
+                        expect(doc.authTxHash).to.equal(authTxHash);
+                        expect(util.isHexPrefixed(doc.submittedTxHash)).to.be.true;
+                        expect(doc.submittedTxHash.length).to.equal(0x42);
+                        eth.units.setMiningCheckInterval(original_mining); 
+                        done();
+                    })
+                }
+
+                eth.submitTxWhenAuthed(authTxHash, goodTx, client, cb );
 
             });
 
-            it('should continue cycling while authTx is pending', ()=> {
+            it('should continue cycling while authTx is pending', (done)=> {
+                
 
+                let original_cycles = config.MAX_CONFIRMATION_CYCLES;
+                let original_mining = config.MINING_CHECK_INTERVAL;
+                eth.units.setConfCycles(2); // Cycle a couple times
+                eth.units.setMiningCheckInterval(10); // Fast!
+
+                // Mock pending auth tx by mocking web3 local to eth.js
+                let local_web3 = eth.units.getWeb3();
+                let original_getTx = local_web3.eth.getTransaction;
+                local_web3.eth.getTransaction = (hash) => { return { blockNumber: null }};
+
+                let cb = (waitCycles) => {
+                    db.get(client).then( doc => {
+                        expect(waitCycles).to.be.gt(0);
+                        expect(doc.authStatus).to.equal('pending');
+                        expect(doc.authTxHash).to.equal(authTxHash);
+                        expect(doc.submittedTxHash).to.equal(null);
+
+                        //Clean-up
+                        local_web3.eth.getTransaction = original_getTx;
+                        eth.units.setConfCycles(original_cycles); 
+                        eth.units.setMiningCheckInterval(original_mining); 
+                        done();
+                    });
+                }
+
+                eth.submitTxWhenAuthed(authTxHash, goodTx, client, cb );
             });
 
-            it('should mark contract auth status as failed if the auth throws', ()=>{
+            it('should mark contract auth status as failed if the auth throws', (done)=>{
+                
+                let gasLimit = 4712388; // Default test-rpc limit
 
-            });
+                // Speed up mine.
+                let original_mining = config.MINING_CHECK_INTERVAL;
+                eth.units.setMiningCheckInterval(1000); // 
 
-            it('should submit the tx when auth is mined, save txHash and update auth status', ()=>{
+                // Mock an authtx that used gasLimit gas.
+                let local_web3 = eth.units.getWeb3();
+                let original_getTx = local_web3.eth.getTransactionReceipt;
+                local_web3.eth.getTransactionReceipt = (hash) => { return { gasUsed: gasLimit }};
 
-            });
-        });*/
+                let cb = () => {
+                    db.get(client).then( doc => {
+                        expect(doc.authStatus).to.equal('failed');
+                        expect(doc.authTxHash).to.equal(authTxHash);
+                        expect(doc.submittedTxHash).to.equal(null);
+
+                        //Clean-up
+                        local_web3.eth.getTransactionReceipt = original_getTx;
+                        eth.units.setMiningCheckInterval(original_mining); 
+                        done();
+                    });
+                }
+
+                eth.submitTxWhenAuthed(authTxHash, goodTx, client, cb );
+            });            
+        });
         // ----------------------------------- submitTx -------------------------------------------------
     });  
 });
 
    
-
 
