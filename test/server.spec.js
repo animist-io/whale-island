@@ -641,6 +641,94 @@ describe('Bluetooth Server', () => {
             });
         });
 
+        describe('onAuthAndSubmitTx', ()=> {
+
+            let data, record, output, pin, msgHash, signed, eth_db;
+
+            beforeEach(()=>{
+
+                // Mock client signed pin (web3 style),
+                pin = animist.getPin();
+                msgHash = util.addHexPrefix(util.sha3(pin).toString('hex'));
+                signed =  web3.eth.sign(client, msgHash); 
+
+                eth_db = new pouchdb('contracts'); 
+                eth.units.setDB(eth_db);
+                record = { _id: client, authority: client, contractAddress: deployed.address };
+                return eth_db.put(record);
+        
+            });
+
+            // Cleanup
+            afterEach( () => { return eth_db.destroy() });
+
+            it('should respond w/ RESULT_SUCCESS if pin and tx parse ok', (done)=>{
+                data = JSON.stringify({pin: signed, tx: goodTx});
+                
+                let cb = (val) => {
+                    expect(val).to.equal(config.codes.RESULT_SUCCESS);
+                } 
+                let updateValueCallback = (sent) => { done(); };
+                animist.authAndSubmitTxCharacteristic.updateValueCallback = updateValueCallback;
+                animist.onAuthAndSubmitTx(data, null, null, cb);
+            });
+
+            it('should send the tx hash of the verifyPresence method call', (done)=>{
+
+                data = JSON.stringify({pin: signed, tx: goodTx});
+                
+                let cb = (val) => {};
+
+                // Check txHash form: Is buffer, right length, hex prefixed
+                let updateValueCallback = (val) => {
+                    expect(Buffer.isBuffer(val)).to.be.true;
+                    expect(val.length).to.equal(68)    
+                    expect(util.isHexPrefixed(JSON.parse(val))).to.be.true;
+                    done();
+                };
+                animist.authAndSubmitTxCharacteristic.updateValueCallback = updateValueCallback;    
+                animist.onAuthAndSubmitTx(data, null, null, cb);
+            });
+
+            it('should call submitTxWhenAuthed', (done)=>{
+
+                data = JSON.stringify({pin: signed, tx: goodTx});
+                
+                let cb = (val) => {};
+                chai.spy.on(eth, 'submitTxWhenAuthed');
+
+                let updateValueCallback = (sent) => {
+                    expect(eth.submitTxWhenAuthed).to.have.been.called();
+                    done();
+                }
+                animist.authAndSubmitTxCharacteristic.updateValueCallback = updateValueCallback;    
+                animist.onAuthAndSubmitTx(data, null, null, cb);
+            });
+ 
+            it('should respond w/error if sent pin is bad', (done)=>{
+                "dd5[w,r,0,,n,g"
+                data = JSON.stringify({pin: "dd5[w,r,0,,n,g", tx: badTx});
+
+                let cb = (val) => {
+                    expect(val).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
+                    done();
+                }    
+                animist.onAuthAndSubmitTx(data, null, null, cb);
+            });
+
+            it('should respond w/error if sent tx is bad', (done)=> {
+
+                data = JSON.stringify({pin: signed, tx: badTx});
+                
+                let cb = (val) => {
+                    expect(val).to.equal(config.codes.INSUFFICIENT_GAS);
+                    done();
+                }    
+                animist.onAuthAndSubmitTx(data, null, null, cb);
+            });
+
+        });
+
         describe('onGetBlockNumber', ()=> {
 
             let callback, valString, valInt;
