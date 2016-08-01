@@ -729,6 +729,137 @@ describe('Bluetooth Server', () => {
 
         });
 
+        describe('onGetSubmittedTxHash', () => {
+            let pin, data, signed, msgHash, input, eth_db, mock_record, updateValueCallback, fns = {};
+            
+            // Debugging . . . duplicate recs getting stuck in db
+            before( () => {
+                eth_db = new pouchdb('contracts'); 
+                return eth_db.destroy();
+            } )
+
+            beforeEach( () => {
+
+                // Zero out previous write callback
+                fns.callback = () => {};
+
+                // Mock client signed pin (web3 style),
+                pin = animist.getPin();
+                msgHash = util.addHexPrefix(util.sha3(pin).toString('hex'));
+                signed =  web3.eth.sign(client, msgHash); 
+                input = JSON.stringify(signed);
+
+                // Load contract record into contractsDB.
+                eth_db = new pouchdb('contracts'); 
+                eth.units.setDB(eth_db);
+
+            });
+
+            // Cleanup
+            afterEach( () => { return eth_db.destroy() });
+
+            it('should respond w/ RESULT_SUCCESS', (done) => {
+
+                let cb = (code) => { 
+                    expect(code).to.equal(config.codes.RESULT_SUCCESS);
+                };
+
+                updateValueCallback = val => { done() };
+                animist.getSubmittedTxHashCharacteristic.updateValueCallback = updateValueCallback;
+                animist.onGetSubmittedTxHash(input, null, null, cb );
+
+            });
+
+            it('should send authStatus, authTxHash & submittedTxHash data', (done)=>{
+                mock_record = { 
+                    _id: client, 
+                    contractAddress: deployed.address,
+                    authStatus: 'pending', 
+                    authTxHash: '0x00001', 
+                    submittedTxHash: null 
+                };
+
+                let cb = (code) => {};
+
+                updateValueCallback = val => { 
+                    expect(Buffer.isBuffer(val)).to.be.true;
+                    val = JSON.parse(val);    
+                    expect(val.authStatus).to.equal('pending');
+                    expect(val.authTxHash).to.equal('0x00001');
+                    expect(val.submittedTxHash).to.equal(null);
+                    done();
+                };
+
+                animist.getSubmittedTxHashCharacteristic.updateValueCallback = updateValueCallback;
+                eth_db.put(mock_record).then( res => animist.onGetSubmittedTxHash(input, null, null, cb));
+
+
+            });
+
+            it('should behave as expected: e2e', (done)=>{
+                
+                // Fast mine authAndSubmitTx
+                let original_mining = config.MINING_CHECK_INTERVAL;
+                eth.units.setMiningCheckInterval(10); // Fast!
+
+                data = JSON.stringify({pin: signed, tx: goodTx});
+                
+                // Check getSubmittedTxHash val after +1 sec.
+                let cb = (val) => {};
+                let updateValueCallback = (val) => {
+                    expect(Buffer.isBuffer(val)).to.be.true;
+                    val = JSON.parse(val);    
+                    expect(val.authStatus).to.equal('success');
+                    expect(val.authTxHash.length).to.equal(66);
+                    expect(val.submittedTxHash.length).to.equal(66);
+                    eth.units.setMiningCheckInterval(original_mining);
+                    done();
+                };
+            
+                // Wait for simulated authAndSubmitTx call to (probably) finish
+                setTimeout(()=>{
+                    animist.onGetSubmittedTxHash(input, null, null, cb);
+                }, 1000)
+
+                // Simulate an authAndSubmitTx call.
+                animist.getSubmittedTxHashCharacteristic.updateValueCallback = updateValueCallback;
+                animist.authAndSubmitTxCharacteristic.updateValueCallback = () => {};    
+                mock_record = { _id: client, authority: client, contractAddress: deployed.address };
+                eth_db.put(mock_record).then( res => animist.onAuthAndSubmitTx(data, null, null, cb));  
+            });
+
+            it('should send "null" if it cant find the contract record', (done)=>{
+                let expected_send = new Buffer(JSON.stringify('null'));
+
+                mock_record = { 
+                    _id: 'not_the_id_you_need', 
+                    contractAddress: deployed.address,
+                    authStatus: 'pending', 
+                    authTxHash: '0x00001', 
+                    submittedTxHash: null 
+                };
+
+                let cb = (code) => {};
+                updateValueCallback = (val) => {
+                    expect(bufferEqual(val, expected_send)).to.be.true;
+                    done();
+                };
+
+                animist.getSubmittedTxHashCharacteristic.updateValueCallback = updateValueCallback;
+                eth_db.put(mock_record).then( res => animist.onGetSubmittedTxHash(input, null, null, cb));
+            });
+
+            it('should respond w/ error code if pin signature doesnt parse', (done)=>{
+    
+                let data = JSON.stringify("dd5[w,r,0,,n,g");
+                let cb = (val) => {
+                    expect(val).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
+                    done();
+                }    
+                animist.onAuthAndSubmitTx(data, null, null, cb);
+            });
+        });
+
         describe('onGetBlockNumber', ()=> {
 
             let callback, valString, valInt;
