@@ -331,5 +331,5 @@ describe('Eth Client', function(){
     });  
 });
 
-  
+ 
 

@@ -878,6 +878,68 @@ describe('Bluetooth Server', () => {
 
         });
 
+        describe('onSubmitTx', ()=>{
+
+            let db, eth_db, cb, data, expected, orig_session, mock_auth_request;
+
+            // Session DBs are opened and destroyed at the top of 'Request Handlers'
+            // Debug - theres a contract left in the DB somewhere before this test
+            before( () => {
+                eth_db = new pouchdb('contracts'); 
+                eth.units.setDB(eth_db);
+                db = new pouchdb('sessions'); 
+                return db.destroy().then(() => { return eth_db.destroy() })
+            })
+                
+            it('should respond w/ RESULT_SUCCESS if sent data ok', (done)=>{
+                orig_session = {account: client};
+                cb = (val) => {
+                    expect(val).to.equal(config.codes.RESULT_SUCCESS);
+                }
+                let updateValueCallback = (sent) => { done() };
+                animist.submitTxCharacteristic.updateValueCallback = updateValueCallback;
+                
+                animist.startSession(orig_session).then( doc => {
+                    data = JSON.stringify({id: doc.sessionId, tx: goodTx});
+                    animist.onSubmitTx(data, null, null, cb);
+                })
+            });
+
+            it('should send txHash of the submitted transaction', (done)=>{
+                orig_session = {account: client};
+                cb = (val) => {};
+
+                // Check for hash form
+                let updateValueCallback = (val) => {
+                    expect(Buffer.isBuffer(val)).to.be.true;
+                    expect(val.length).to.equal(68)    
+                    expect(util.isHexPrefixed(JSON.parse(val))).to.be.true;
+                    done();  
+                };
+                animist.submitTxCharacteristic.updateValueCallback = updateValueCallback;
+                
+                animist.startSession(orig_session).then( doc => {
+                    data = JSON.stringify({id: doc.sessionId, tx: goodTx});
+                    animist.onSubmitTx(data, null, null, cb);
+                })
+            });
+
+            it('should respond with error code if caller cant submit a tx', (done)=>{
+                orig_session = {account: web3.eth.accounts[2]};
+                cb = (val) => {
+                    expect(val).to.equal(config.codes.INVALID_TX_SENDER_ADDRESS);
+                    done();
+                }
+                let updateValueCallback = (sent) => {};
+                animist.submitTxCharacteristic.updateValueCallback = updateValueCallback;
+                
+                animist.startSession(orig_session).then( doc => {
+                    data = JSON.stringify({id: doc.sessionId, tx: goodTx});
+                    animist.onSubmitTx(data, null, null, cb);
+                })
+            })
+        })
+
         describe('onGetSubmittedTxHash', () => {
             let pin, data, signed, msgHash, input, eth_db, mock_record, updateValueCallback, fns = {};
             
