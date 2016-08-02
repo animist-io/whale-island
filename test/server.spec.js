@@ -384,6 +384,46 @@ describe('Bluetooth Server', () => {
                 });
             });
         });
+
+        describe('parseSessionId', ()=>{
+
+
+            it('should resolve the sessionId if ok', () => {
+
+            });
+            
+            it('should reject w/error if data object incorrectly formatted', ()=>{
+
+            });
+
+            it('should reject with error if id is not a string of correct length', ()=>{
+
+            });
+
+
+        })
+        describe('canSubmitTx(data)', ()=>{
+
+            it('should resolve signedTx if input is ok', ()=>{
+
+            });
+
+            it('should reject w/error code if sessionId doesnt parse', ()=>{
+
+            });
+
+            it('should reject w/error code if sessionId not found', ()=>{
+
+            });
+
+            it('should reject w/error code if tx is pending', ()=>{
+
+            });
+
+            it('should reject w/error code if tx not signed by sessionId holder', ()=>{
+
+            });
+        });
     });
 
     describe('Request Handlers', () => {
