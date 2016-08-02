@@ -387,40 +387,150 @@ describe('Bluetooth Server', () => {
 
         describe('parseSessionId', ()=>{
 
+            let data, output, expected, good_id = '0123456789';
 
-            it('should resolve the sessionId if ok', () => {
-
+            it('should resolve the submitted sessionId string if ok', () => {
+                data = { id: good_id, tx: '0x25345454564545....'  };
+                data = JSON.stringify(data);
+                expected = { ok: true, val: good_id }
+                output = animist.parseSessionId(data);
+                expect(output).to.deep.equal(expected);
             });
             
-            it('should reject w/error if data object incorrectly formatted', ()=>{
-
+            it('should reject w/ INVALID_SESSION_ID if data object incorrectly formatted', ()=>{
+                data = '[dd50x0123';
+                data = JSON.stringify(data);
+                expected = {ok: false, val: config.codes.INVALID_SESSION_ID};
+                output = animist.parseSessionId(data);
+                expect(output).to.deep.equal(expected);
             });
 
             it('should reject with error if id is not a string of correct length', ()=>{
-
+                data = { id: '012345678', tx: '0x25345454564545....'  };
+                data = JSON.stringify(data);
+                expected = { ok: false, val: config.codes.INVALID_SESSION_ID }
+                output = animist.parseSessionId(data);
+                expect(output).to.deep.equal(expected);
             });
 
+        });
 
-        })
         describe('canSubmitTx(data)', ()=>{
 
-            it('should resolve signedTx if input is ok', ()=>{
+            let db, eth_db, data, expected, orig_session, mock_auth_request;
+            
+            before( () => {
+                eth_db = new pouchdb('contracts'); 
+                db = db = new pouchdb('sessions'); 
+                return db.destroy().then(() => { return eth_db.destroy() })
+            })
+
+            // DB creation and cleanup
+            beforeEach(()=>{ 
+                db = new pouchdb('sessions'); 
+                eth_db = new pouchdb('contracts');
+                eth.units.setDB(eth_db);
+                animist.setDB(db);
+            });
+
+            afterEach( () => {return db.destroy().then(() => { return eth_db.destroy() })} ) 
+                
+
+            it('should resolve signedTx if input is ok', (done)=>{
+                orig_session = {account: client};
+                animist.startSession(orig_session).then( doc => {
+                    data = JSON.stringify({id: doc.sessionId, tx: goodTx});
+                    expected = { ok: true, val: goodTx };
+                    expect(animist.canSubmitTx(data)).to.eventually.deep.equal(expected).notify(done);
+                })
 
             });
 
-            it('should reject w/error code if sessionId doesnt parse', ()=>{
+            it('should resolve signedTx if a completed authAndSubmit event exists for client', (done)=>{
+                
+                // Insert completed auth request for client into contractsDB
+                mock_auth_request = { _id: client, authority: client, contractAddress: deployed.address, submittedTxHash: '0x0234...' };
+                orig_session = {account: client};
+
+                eth.db().put(mock_auth_request).then( res => { 
+                    animist.startSession(orig_session).then( doc => {
+                        data = JSON.stringify({id: doc.sessionId, tx: goodTx});
+                        expected = { ok: true, val: goodTx};
+                        animist.canSubmitTx(data)
+                            .then( res => {
+                                expect(res).to.deep.equal(expected);
+                                done();
+                            })
+                    });
+                })
 
             });
 
-            it('should reject w/error code if sessionId not found', ()=>{
+            it('should reject w/ TX_PENDING if an unsatisfied authAndSubmit requirement exists for client', (done)=>{
+                
+                // Insert pending auth request for client into contractsDB
+                mock_auth_request = { _id: client, authority: client, contractAddress: deployed.address };
+                orig_session = {account: client};
 
+                eth.db().put(mock_auth_request).then( res => { 
+                    animist.startSession(orig_session).then( doc => {
+                        data = JSON.stringify({id: doc.sessionId, tx: goodTx});
+                        expected = { ok: false, val: config.codes.TX_PENDING };
+                        animist.canSubmitTx(data)
+                            .then( res => expect(true).to.be.false)
+                            .catch( err => {
+                                expect(err).to.deep.equal(expected);
+                                done();
+                            })
+                    });
+                })
+                .catch( err => console.log(err));
             });
 
-            it('should reject w/error code if tx is pending', ()=>{
-
+            it('should reject w/ INVALID_SESSION_ID if sessionId doesnt parse', (done)=>{
+                
+                // Session id not proper form, goodTx
+                data = JSON.stringify({id: '001', tx: goodTx});
+                
+                expected = {ok: false, val: config.codes.INVALID_SESSION_ID}
+                animist.canSubmitTx(data)
+                    .then( res => expect(true).to.be.false )
+                    .catch( err => {
+                        expect(err).to.deep.equal(expected);
+                        done();
+                    })
             });
 
-            it('should reject w/error code if tx not signed by sessionId holder', ()=>{
+            it('should reject w/ SESSION_NOT_FOUND if sessionId missing', (done)=>{
+                
+                // Session id not in DB, goodTx
+                data = JSON.stringify({id: '0123456789', tx: goodTx});
+                
+                expected = {ok: false, val: config.codes.SESSION_NOT_FOUND}
+                animist.canSubmitTx(data)
+                    .then( res => expect(true).to.be.false)
+                    .catch( err => {
+                        expect(err).to.deep.equal(expected);
+                        done();
+                    });
+            });
+
+
+            it('should reject w/error code if tx not signed by sessionId holder', (done)=>{
+                
+                // "goodTx" is signed by accounts[0], this session is signed by accounts[2]
+                orig_session = {account: web3.eth.accounts[2]};
+                
+                animist.startSession(orig_session).then( doc => {
+                    data = JSON.stringify({id: doc.sessionId, tx: goodTx});
+                    expected = { ok: false, val: config.codes.INVALID_TX_SENDER_ADDRESS };
+                    animist.canSubmitTx(data)
+                        .then( res => expect(true).to.be.false)
+                        .catch(err => {
+                            expect(err).to.deep.equal(expected);
+                            done();
+                        })
+                });
 
             });
         });
@@ -445,7 +555,6 @@ describe('Bluetooth Server', () => {
         });
 
         describe('onGetPin', () => {
-
 
           it('should respond w/ the current pin', () => {
             

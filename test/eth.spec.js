@@ -254,8 +254,12 @@ describe('Eth Client', function(){
                     db.get(client).then( doc => {
                         expect(doc.authStatus).to.equal('success');
                         expect(doc.authTxHash).to.equal(authTxHash);
+
+                        // Don't really know what this is, so check form.
                         expect(util.isHexPrefixed(doc.submittedTxHash)).to.be.true;
                         expect(doc.submittedTxHash.length).to.equal(0x42);
+                        
+                        // Clean up
                         eth.units.setMiningCheckInterval(original_mining); 
                         done();
                     })
@@ -267,7 +271,6 @@ describe('Eth Client', function(){
 
             it('should continue cycling while authTx is pending', (done)=> {
                 
-
                 let original_cycles = config.MAX_CONFIRMATION_CYCLES;
                 let original_mining = config.MINING_CHECK_INTERVAL;
                 eth.units.setConfCycles(2); // Cycle a couple times
@@ -325,9 +328,8 @@ describe('Eth Client', function(){
                 eth.submitTxWhenAuthed(authTxHash, goodTx, client, cb );
             });            
         });
-        // ----------------------------------- submitTx -------------------------------------------------
     });  
 });
 
-   
+  
 
