@@ -117,11 +117,11 @@ describe('Eth Client', function(){
         // -------------------------------- getContract ------------------------------------
         describe('getContract([pin, lastPin], signed)', ()=>{
 
-            let pins, signed;
+            let pin, signed;
 
             before(()=>{
-                pins = ['1234', '5678'];
-                signed = wallet.signing.signMsg( keystore, account.key, pins[0], address); 
+                pin = '1234';
+                signed = wallet.signing.signMsg( keystore, account.key, pin, address); 
 
             })
 
@@ -135,20 +135,20 @@ describe('Eth Client', function(){
                     code: web3.eth.getCode(deployed.address) 
                 }
                 db.put(mock).then(()=>{
-                    eth.getContract(pins, signed).should.eventually.include(expected).notify(done);
+                    eth.getContract(pin, signed).should.eventually.include(expected).notify(done);
                 });
             });
 
             it('should reject if it cant find a contract matching the acct. address', (done)=>{
                 let mock = { _id: 'do_not_exist', authority: hexAddress, contract: '12345'};
                 db.put(mock).then(()=>{
-                    eth.getContract(pins, signed).should.eventually.be.rejected.notify(done);
+                    eth.getContract(pin, signed).should.eventually.be.rejected.notify(done);
                 });
             });
 
             it('should reject if it is unable to extract an address from the signed msg', ()=>{
                 let garbage = 'garbage';
-                return eth.getContract(pins, garbage).should.eventually.be.rejected;
+                return eth.getContract(pin, garbage).should.eventually.be.rejected;
             });
         });
 
@@ -159,8 +159,8 @@ describe('Eth Client', function(){
             // Sign a pin using web3 signing methods.
             before(() => {
                 
-                pin = ['1234'];
-                msgHash = util.addHexPrefix(util.sha3(pin[0]).toString('hex'));
+                pin = '1234';
+                msgHash = util.addHexPrefix(util.sha3(pin).toString('hex'));
                 signed =  web3.eth.sign(client, msgHash);     
             });
 
@@ -209,8 +209,8 @@ describe('Eth Client', function(){
             beforeEach(() => {
                 
                 // Sign a pin using web3 signing methods.
-                pin = ['1234'];
-                msgHash = util.addHexPrefix(util.sha3(pin[0]).toString('hex'));
+                pin = '1234';
+                msgHash = util.addHexPrefix(util.sha3(pin).toString('hex'));
                 signed =  web3.eth.sign(client, msgHash);   
 
                 // Auth the tx, get authTxHash.
