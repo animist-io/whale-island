@@ -113,6 +113,44 @@ describe('BLE Utilites', () => {
 
     });
 
+    describe('parseCall', () => {
+
+        let data, output, expected, item1, item2;
+
+        it('should return ok and an object with "to" and "data" fields if input valid', ()=>{
+            
+            // Everything ok.
+            item1 = '0x253...eee';
+            item2 = '0xf087407379e66de3...000';
+            expected = {ok: true, val: {to: item1, data: item2}};
+            data = JSON.stringify([item1, item2]);
+            output = util.parseCall(data);
+            expect(output).to.deep.equal(expected);
+        });
+
+        it('should return w/ error code if input is not JSON parseable', ()=> {
+            
+            // Data not JSON stringified.
+            item1 = '0x253...eee';
+            item2 = '0xf087407379e66de3...000';
+            data = [item1, item2];
+            expected = {ok: false, val: config.codes.INVALID_CALL_DATA};
+            output = util.parseCall(data);
+            expect(output).to.deep.equal(expected);
+        });
+
+        it('should return w/ error code if input is not array of length 2, hex strings', ()=>{
+
+            // Data not hex
+            item1 = '253...eee';
+            item2 = 'f087407379e66de3...000';
+            data = JSON.stringify([item1,item2]);
+            expected = {ok: false, val: config.codes.INVALID_CALL_DATA};
+            output = util.parseCall(data);
+            expect(output).to.deep.equal(expected);
+        });
+    });
+
     describe('parseSignedPin(signed)', () =>{
 
         var req, output, msg;

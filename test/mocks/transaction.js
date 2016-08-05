@@ -36,29 +36,43 @@ module.exports.generate = function(){
 
         let goodTxOptions = { gasPrice: 1, gasLimit: 3000000, data: util.stripHexPrefix(code)};
         let badTxOptions = { gasPrice: 1, gasLimit: 0, data: util.stripHexPrefix(code)};
+        let callTxOptions = { data: util.stripHexPrefix(code)};
         
         goodTxOptions.to = util.stripHexPrefix(deployed.address);
-        goodTxOptions.to = util.stripHexPrefix(deployed.address);
+        badTxOptions.to = util.stripHexPrefix(deployed.address);
+        callTxOptions.to = util.stripHexPrefix(deployed.address);
 
         let goodTxSet = wallet.txutils.functionTx(abi, 'setState', [2], goodTxOptions);
         let badTxSet = wallet.txutils.functionTx(abi, 'setState', [2], badTxOptions);
+        let callTxSet = wallet.txutils.functionTx(abi, 'getVerified', [], callTxOptions);
         
         goodTxSet = util.stripHexPrefix(goodTxSet);
         badTxSet = util.stripHexPrefix(badTxSet);
+        callTxSet = util.stripHexPrefix(callTxSet);
         
         let goodTx = new Transaction(new Buffer(goodTxSet, 'hex'));
         let badTx = new Transaction(new Buffer(badTxSet, 'hex'));
         let brokeTx = new Transaction(new Buffer(goodTxSet, 'hex'));
+        let callTx = new Transaction(new Buffer(callTxSet, 'hex'));
 
         goodTx.sign(new Buffer(privKey, 'hex'));
         badTx.sign(new Buffer(privKey, 'hex'));
         brokeTx.sign(new Buffer(brokeKey, 'hex'));
-
+        //callTx.sign(new Buffer(privKey, 'hex'));
+        callTx = callTx.toJSON();
+        
         goodTx = goodTx.serialize().toString('hex');
         badTx = badTx.serialize().toString('hex');
         brokeTx = brokeTx.serialize().toString('hex');
+        
 
-        return { deployed: deployed, goodTx: goodTx, badTx: badTx, brokeTx: brokeTx }
+        return { 
+            deployed: deployed, 
+            goodTx: goodTx, 
+            badTx: badTx, 
+            brokeTx: brokeTx, 
+            abi: abi, 
+            callGetVerified: [callTx[3],callTx[5]] }
                 
     });
 };

@@ -1,21 +1,22 @@
 module.exports.Test = `
 
     contract Test {
-        address client;
-        uint state;
-        bool verified;
-        uint64 timeVerified;
-        function getState() constant public returns (uint state){
+        address public client;
+        uint public state;
+        bool public verified = true;
+        uint64 public timeVerified;
+
+        function getState() constant returns (uint val){
             return state;
         }
-        function getVerified() constant public returns (bool status){
+        function getVerified() constant returns (bool status){
             return verified;
         }
-        function getTimeVerified() constant public returns (uint time){
+        function getTimeVerified() constant returns (uint time){
             return timeVerified;
         }
 
-        function getClient() constant public returns (address client){
+        function getClient() constant returns (address client){
             return client;
         }
         function setVerified(bool val) public {

@@ -41,7 +41,7 @@ const web3 = new Web3(provider);
 
 describe('BLE Request Handlers', () => {
 
-    var db, keystore, address, hexAddress, deployed, goodTx, badTx, mismatchTx;
+    var db, keystore, address, hexAddress, deployed, goodTx, badTx, mismatchTx, callGetVerified;
     var client = web3.eth.accounts[0];
 
     before(() => {
@@ -56,10 +56,11 @@ describe('BLE Request Handlers', () => {
         // Deploy TestContract, compose some signed transactions for rawTx submission.
         return transactions.generate().then( mock => {   
 
-            deployed = mock.deployed;            // TestContract.sol deployed to test-rpc                            
-            goodTx = mock.goodTx;                // raw: TestContract.set(2, {from: client})
-            badTx = mock.badTx;                  // raw: goodTx but sent with 0 gas.
-            mismatchTx = mock.mismatchTx;        // raw: goodTx signed with wrong key.
+            deployed = mock.deployed;                // TestContract.sol deployed to test-rpc                            
+            goodTx = mock.goodTx;                    // raw: TestContract.set(2, {from: client})
+            badTx = mock.badTx;                      // raw: goodTx but sent with 0 gas.
+            mismatchTx = mock.mismatchTx;            // raw: goodTx signed with wrong key.
+            callGetVerified = mock.callGetVerified;  // array vals: call getVerified
         });
     });
 
@@ -210,7 +211,46 @@ describe('BLE Request Handlers', () => {
 
     });
 
+    describe('onCallTx', function() {
+        let cb, updateValueCallback, data, out;
+        it('should respond with RESULT_SUCCESS', (done)=>{
 
+            data = JSON.stringify(callGetVerified) 
+            
+            cb = (code) => expect(code).to.equal(config.codes.RESULT_SUCCESS);
+            updateValueCallback = val => done();
+            
+            defs.callTxCharacteristic.updateValueCallback = updateValueCallback;
+            ble.onCallTx(data, null, null, cb);
+            
+        });
+
+        it('should send a hex string result', (done)=> {
+            out = '0x0000000000000000000000000000000000000000000000000000000000000001';
+            out = new Buffer(JSON.stringify(out));
+            data = JSON.stringify(callGetVerified) 
+            
+            cb = (code) => {};
+            updateValueCallback = val => { 
+                expect(bufferEqual(val, out)).to.be.true;
+                done();
+            };
+            defs.callTxCharacteristic.updateValueCallback = updateValueCallback;
+            ble.onCallTx(data, null, null, cb);
+
+        });
+
+        it('should respond w/ error code if data does not parse correctly', (done)=>{
+            data = JSON.stringify(['3948394893', 890823493 ]);
+            
+            cb = (code) => {
+                expect(code).to.equal(config.codes.INVALID_CALL_DATA);
+                done();
+            }
+    
+            ble.onCallTx(data, null, null, cb);
+        });
+    })
 
     describe('onAuthTx', function(){
 

@@ -34,7 +34,7 @@ chai.should();
 // ----------------------------------- Tests -----------------------------------------
 describe('Eth Client', function(){
 
-    var keystore, address, hexAddress, deployed, goodTx, badTx, mismatchTx;
+    var keystore, address, hexAddress, deployed, abi, goodTx, badTx, mismatchTx, callGetVerified;
     
     before(() => {
 
@@ -48,14 +48,19 @@ describe('Eth Client', function(){
         // Deploy TestContract, compose some signed transactions for rawTx submission.
         return transactions.generate().then( mock => {   
 
-            deployed = mock.deployed;            // TestContract.sol deployed to test-rpc                            
-            goodTx = mock.goodTx;                // raw: TestContract.set(2, {from: client})
-            badTx = mock.badTx;                  // raw: goodTx but sent with 0 gas.
-            mismatchTx = mock.mismatchTx;        // raw: goodTx signed with wrong key.
+            deployed = mock.deployed;                // TestContract.sol deployed to test-rpc                            
+            goodTx = mock.goodTx;                    // raw: TestContract.set(2, {from: client})
+            badTx = mock.badTx;                      // raw: goodTx but sent with 0 gas.
+            mismatchTx = mock.mismatchTx;            // raw: goodTx signed with wrong key.
+            callGetVerified = mock.callGetVerified;  // raw: call getState
+            abi = mock.abi;
         });
     });
 
-    // -----------------------------  Utilities ----------------------------------------
+    // -----------------------------------------------------------------------------------
+    // -----------------------------  Utilities ------------------------------------------
+    // -----------------------------------------------------------------------------------
+    // 
     describe('Utilities', ()=> {
 
         describe('recover(rawMsg, signed)', ()=>{
@@ -65,7 +70,7 @@ describe('Eth Client', function(){
                 let msg = 'message', signed, result;
                 signed = wallet.signing.signMsg( keystore, account.key, msg, address);         
                 eth.recover(msg, signed).should.equal(hexAddress);
-        
+                
             });
 
             it('should return undefined if "signed" is bad, ethereumjs-util throws an error', () => {
@@ -75,7 +80,9 @@ describe('Eth Client', function(){
         });
     });
 
+    // -----------------------------------------------------------------------------------
     // -----------------------------  Request Handlers -----------------------------------
+    // -----------------------------------------------------------------------------------
     describe( 'Request Handlers', () => {
 
         let db;
@@ -88,6 +95,7 @@ describe('Eth Client', function(){
 
         afterEach( () => { return db.destroy() });
 
+
         // -------------------------------- getBlockNumber --------------------------------
         describe( 'getBlockNumber', ()=> {
             it('should return the current blockNumber', ()=> {
@@ -96,6 +104,29 @@ describe('Eth Client', function(){
             });
         });
 
+        // -------------------------------- callTx -----------------------------------------
+        describe( 'callTx', ()=>{
+
+            it('should resolve the value string returned by the call', () =>{
+                
+                // Testing getVerified in contract Test from mocks.
+                // (should return 'true')
+                let data = { to: callGetVerified[0], data: callGetVerified[1] };
+                let result = eth.callTx(data);
+                expect(typeof result).to.equal('string');
+                expect(util.isHexPrefixed(result)).to.be.true;
+                expect(Boolean(result)).to.be.true;
+            });
+
+            it('should resolve "0x" if the eth.call fails', () => {
+                // Corrupt 'data'
+                let data = { to: callGetVerified[0], data: callGetVerified[0] };
+                let result = eth.callTx(data);
+                expect(result).to.equal('0x');
+            })
+        })
+
+        // -------------------------------- getTx ------------------------------------------
         describe( 'getTx', ()=> {
             let txHash, accounts = web3.eth.accounts;
             
@@ -124,7 +155,6 @@ describe('Eth Client', function(){
                 signed = wallet.signing.signMsg( keystore, account.key, pin, address); 
 
             })
-
 
             it('should resolve a contract object if it finds a contract creation event matching the acct. address', (done) =>{
                 let mock = { _id: hexAddress, authority: hexAddress, contractAddress: deployed.address };
@@ -324,7 +354,6 @@ describe('Eth Client', function(){
                         done();
                     });
                 }
-
                 eth.submitTxWhenAuthed(authTxHash, goodTx, client, cb );
             });            
         });
