@@ -73,7 +73,7 @@ describe('Eth Client', function(){
                 
             });
 
-            it('should return undefined if "signed" is bad, ethereumjs-util throws an error', () => {
+            it('should return undefined if address unrecoverable (ethjs-util throws error)', () => {
                 let err = eth.recover('a message', 'kfdlskdlf')
                 expect(err).to.be.undefined;
             })  
@@ -107,7 +107,7 @@ describe('Eth Client', function(){
         // -------------------------------- callTx -----------------------------------------
         describe( 'callTx', ()=>{
 
-            it('should resolve the value string returned by the call', () =>{
+            it('should return the value string returned by the call', () =>{
                 
                 // Testing getVerified in contract Test from mocks.
                 // (should return 'true')
@@ -118,7 +118,7 @@ describe('Eth Client', function(){
                 expect(Boolean(result)).to.be.true;
             });
 
-            it('should resolve "0x" if the eth.call fails', () => {
+            it('should return "0x" if the eth.call fails', () => {
                 // Corrupt 'data'
                 let data = { to: callGetVerified[0], data: callGetVerified[0] };
                 let result = eth.callTx(data);
@@ -146,7 +146,7 @@ describe('Eth Client', function(){
         });
 
         // -------------------------------- getContract ------------------------------------
-        describe('getContract([pin, lastPin], signed)', ()=>{
+        describe('getContract(pin, signed)', ()=>{
 
             let pin, signed;
 
@@ -156,7 +156,7 @@ describe('Eth Client', function(){
 
             })
 
-            it('should resolve a contract object if it finds a contract creation event matching the acct. address', (done) =>{
+            it('should resolve a contract object matching the acct. address', (done) =>{
                 let mock = { _id: hexAddress, authority: hexAddress, contractAddress: deployed.address };
                 let expected = { 
                     account: hexAddress, 
@@ -176,13 +176,13 @@ describe('Eth Client', function(){
                 });
             });
 
-            it('should reject if it is unable to extract an address from the signed msg', ()=>{
+            it('should reject if unable to extract an address from the signed msg', ()=>{
                 let garbage = 'garbage';
                 return eth.getContract(pin, garbage).should.eventually.be.rejected;
             });
         });
 
-        describe( 'authTx([pin, lastPin], signed)', () => {
+        describe( 'authTx(pin, signed)', () => {
 
             let pin, signed, msgHash, client = web3.eth.accounts[0];
 
@@ -219,7 +219,7 @@ describe('Eth Client', function(){
                 });
             });
 
-            it('should reject if it is unable to extract an address from the signed msg', () => {
+            it('should reject if unable to extract an address from the signed msg', () => {
                 let garbage = 'garbage';
                 return eth.authTx(pin, garbage).should.eventually.be.rejected;
             });

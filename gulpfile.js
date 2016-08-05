@@ -7,6 +7,8 @@ var istanbul = require('gulp-istanbul');
 var nsp = require('gulp-nsp');
 var plumber = require('gulp-plumber');
 var babel = require('gulp-babel');
+var documentation = require('gulp-documentation');
+var concat = require('gulp-concat');
 var del = require('del');
 var isparta = require('isparta');
 
@@ -20,6 +22,32 @@ gulp.task('static', function () {
     .pipe(eslint())
     .pipe(eslint.format())
     .pipe(eslint.failAfterError());
+});
+
+gulp.task('documentation', function () {
+  gulp.src('./lib/eth.js')
+    .pipe(documentation({ shallow: 'true', github: 'true', format: 'md', filename: 'eth.md' }))
+    .pipe(gulp.dest('docs'));
+
+  gulp.src('./lib/handlers.js')
+    .pipe(documentation({ shallow: 'true', github: 'true', format: 'md', filename: 'handlers.md' }))
+    .pipe(gulp.dest('docs'));
+
+  gulp.src('./lib/util.js')
+    .pipe(documentation({ shallow: 'true', github: 'true', format: 'md', filename: 'util.md' }))
+    .pipe(gulp.dest('docs'));
+
+  gulp.src([
+          './docs/top.md', 
+          './docs/handlersDesc.md',
+          './docs/handlers.md',
+          './docs/ethDesc.md', 
+          './docs/eth.md',
+          './docs/utilDesc.md',
+          './docs/util.md'] )
+  
+    .pipe(concat('README.md'))
+    .pipe(gulp.dest('./'));
 });
 
 gulp.task('nsp', function (cb) {
