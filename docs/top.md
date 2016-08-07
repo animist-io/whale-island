@@ -55,7 +55,7 @@ Every animist endpoint broadcasts one of five unique 128bit beacon ids and provi
 Endpoints respond with a hex code indicating whether or not the request is valid. Requested data (if available) follows after a min. 50ms delay. 
 
 | Name | Value |                 | Name | Value |
-|------|-------|                 |------|-------|
+|------|-------|-----------------|------|-------|
 |INVALID_JSON_IN_REQUEST|0x02|   |INVALID_SESSION_ID|0x0E|
 |INVALID_TX_HASH|0x07|           |INVALID_CALL_DATA|0x11|
 |INVALID_PIN|0x09|               |SESSION_NOT_FOUND|0x10|
