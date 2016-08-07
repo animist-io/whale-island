@@ -441,7 +441,7 @@ describe('BLE Utilites', () => {
 
     });
 
-    describe('canSubmitTx(data)', ()=>{
+    describe('canSendTx(data)', ()=>{
 
         let db, eth_db, data, expected, orig_session, mock_auth_request;
         
@@ -467,22 +467,22 @@ describe('BLE Utilites', () => {
             util.startSession(orig_session).then( doc => {
                 data = JSON.stringify({id: doc.sessionId, tx: goodTx});
                 expected = { ok: true, val: goodTx };
-                expect(util.canSubmitTx(data)).to.eventually.deep.equal(expected).notify(done);
+                expect(util.canSendTx(data)).to.eventually.deep.equal(expected).notify(done);
             })
 
         });
 
-        it('should resolve signedTx if a completed authAndSubmit event exists for client', (done)=>{
+        it('should resolve signedTx if a completed authAndSend event exists for client', (done)=>{
             
             // Insert completed auth request for client into contractsDB
-            mock_auth_request = { _id: client, authority: client, contractAddress: deployed.address, submittedTxHash: '0x0234...' };
+            mock_auth_request = { _id: client, authority: client, contractAddress: deployed.address, authStatus: 'success' };
             orig_session = {account: client};
 
             eth.db().put(mock_auth_request).then( res => { 
                 util.startSession(orig_session).then( doc => {
                     data = JSON.stringify({id: doc.sessionId, tx: goodTx});
                     expected = { ok: true, val: goodTx};
-                    util.canSubmitTx(data)
+                    util.canSendTx(data)
                         .then( res => {
                             expect(res).to.deep.equal(expected);
                             done();
@@ -492,17 +492,17 @@ describe('BLE Utilites', () => {
 
         });
 
-        it('should reject w/ TX_PENDING if an unsatisfied authAndSubmit requirement exists for client', (done)=>{
+        it('should reject w/ TX_PENDING if a pending authAndSend requirement exists for client', (done)=>{
             
             // Insert pending auth request for client into contractsDB
-            mock_auth_request = { _id: client, authority: client, contractAddress: deployed.address };
+            mock_auth_request = { _id: client, authority: client, contractAddress: deployed.address, authStatus: 'pending' };
             orig_session = {account: client};
 
             eth.db().put(mock_auth_request).then( res => { 
                 util.startSession(orig_session).then( doc => {
                     data = JSON.stringify({id: doc.sessionId, tx: goodTx});
                     expected = { ok: false, val: config.codes.TX_PENDING };
-                    util.canSubmitTx(data)
+                    util.canSendTx(data)
                         .then( res => expect(true).to.be.false)
                         .catch( err => {
                             expect(err).to.deep.equal(expected);
@@ -519,7 +519,7 @@ describe('BLE Utilites', () => {
             data = JSON.stringify({id: '001', tx: goodTx});
             
             expected = {ok: false, val: config.codes.INVALID_SESSION_ID}
-            util.canSubmitTx(data)
+            util.canSendTx(data)
                 .then( res => expect(true).to.be.false )
                 .catch( err => {
                     expect(err).to.deep.equal(expected);
@@ -533,7 +533,7 @@ describe('BLE Utilites', () => {
             data = JSON.stringify({id: '0123456789', tx: goodTx});
             
             expected = {ok: false, val: config.codes.SESSION_NOT_FOUND}
-            util.canSubmitTx(data)
+            util.canSendTx(data)
                 .then( res => expect(true).to.be.false)
                 .catch( err => {
                     expect(err).to.deep.equal(expected);
@@ -550,7 +550,7 @@ describe('BLE Utilites', () => {
             util.startSession(orig_session).then( doc => {
                 data = JSON.stringify({id: doc.sessionId, tx: goodTx});
                 expected = { ok: false, val: config.codes.INVALID_TX_SENDER_ADDRESS };
-                util.canSubmitTx(data)
+                util.canSendTx(data)
                     .then( res => expect(true).to.be.false)
                     .catch(err => {
                         expect(err).to.deep.equal(expected);

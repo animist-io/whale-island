@@ -225,8 +225,8 @@ describe('Eth Client', function(){
             });
         });
 
-        // ----------------------------------- authAndSubmitTx ------------------------------------------
-        describe( 'submitTxWhenAuthed(authTxHash, signedTx, address', ()=> {
+        // ----------------------------------- authAndSendTx ------------------------------------------
+        describe( 'sendTxWhenAuthed(authTxHash, signedTx, address', ()=> {
 
             let pin, signed, msgHash, authTxHash, client = web3.eth.accounts[0];
 
@@ -271,10 +271,10 @@ describe('Eth Client', function(){
                     });
                 };
 
-                eth.submitTxWhenAuthed(authTxHash, goodTx, client, cb );
+                eth.sendTxWhenAuthed(authTxHash, goodTx, client, cb );
             });
 
-            it('should submit the tx when auth is mined, save txHash and update auth status', (done)=>{
+            it('should send the tx when auth is mined, save txHash and update auth status', (done)=>{
 
                 let original_mining = config.MINING_CHECK_INTERVAL;
                 eth.units.setMiningCheckInterval(2000); // 
@@ -295,7 +295,7 @@ describe('Eth Client', function(){
                     })
                 }
 
-                eth.submitTxWhenAuthed(authTxHash, goodTx, client, cb );
+                eth.sendTxWhenAuthed(authTxHash, goodTx, client, cb );
 
             });
 
@@ -326,7 +326,7 @@ describe('Eth Client', function(){
                     });
                 }
 
-                eth.submitTxWhenAuthed(authTxHash, goodTx, client, cb );
+                eth.sendTxWhenAuthed(authTxHash, goodTx, client, cb );
             });
 
             it('should mark contract auth status as failed if the auth throws', (done)=>{
@@ -354,7 +354,7 @@ describe('Eth Client', function(){
                         done();
                     });
                 }
-                eth.submitTxWhenAuthed(authTxHash, goodTx, client, cb );
+                eth.sendTxWhenAuthed(authTxHash, goodTx, client, cb );
             });            
         });
     });  

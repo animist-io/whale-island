@@ -1,196 +1,224 @@
-# onAuthAndSubmitTx
+# onAuthAndSendTx
 
-[lib/handlers.js:293-321](https://github.com/animist-io/whale-island/blob/3da5c0ef65da6210373a8908fd5a0f18dd4aecc6/lib/handlers.js#L293-L321 "Source code on GitHub")
+[lib/handlers.js:305-333](https://github.com/animist-io/whale-island/blob/b08180f2e64b68a6bfb8fdc070b3ad336bcba906/lib/handlers.js#L305-L333 "Source code on GitHub")
 
-Gets contract, auths and passes signed tx and the auth hash to submitTxWhenAuthed. 
-Sends auth transaction receipt.  
-Subscribe/write to: 8D8577B9-E2F0-4750-BB82-421750D9BF86
+Auths client by invoking their contract's "verifyPresence" method with the device account. 
+Waits for auth to be mined and sends clients raw transaction. This endpoint provides a way of 
+authenticating and sending a transaction in a single step.
 
 **Parameters**
 
--   `data` **object** : JSON object { pin: signedPin, tx: signed functionTx }
+-   `data` **Buffer** : JSON formatted object { pin: {v: r: s:}, tx: "0x32a..2d" }
 -   `offset`  
 -   `response`  
--   `callback`  
+-   `callback` **Buffer** : init response is hex code . 0x00 on success or err.
 
-Returns **Number** code: init response is hex code callback. 0x00 on success or err.
+**Properties**
 
-Returns **Buffer** authTxHash: JSON string (or 'null' on error) transaction hash.
+-   `Subscribe` **Characteristic** 8D8577B9-E2F0-4750-BB82-421750D9BF86
+-   `Access` **Pin** 
+
+Returns **Buffer** JSON formatted string repr. auth transaction hash
+
+Returns **Buffer** JSON formatted string "null" on error.
 
 # onAuthTx
 
-[lib/handlers.js:262-283](https://github.com/animist-io/whale-island/blob/3da5c0ef65da6210373a8908fd5a0f18dd4aecc6/lib/handlers.js#L262-L283 "Source code on GitHub")
+[lib/handlers.js:271-292](https://github.com/animist-io/whale-island/blob/b08180f2e64b68a6bfb8fdc070b3ad336bcba906/lib/handlers.js#L271-L292 "Source code on GitHub")
 
-Locates contract event about the calling account and auths it ( e.g. prints a timestamped
-verification of callers presence to contract - see eth.authTx ). Responds w/ auth tx hash.  
-Subscribe/write to: 297E3B0A-F353-4531-9D44-3686CC8C4036
+Auths client by invoking their contract's "verifyPresence" method with the device account.
 
 **Parameters**
 
--   `pin` **String** : current endpoint pin value, signed by caller account.
--   `data`  
+-   `data` **Buffer** : JSON formatted pin value, signed by caller account.
 -   `offset`  
 -   `response`  
--   `callback`  
+-   `callback` **Buffer** : init response is hex code . 0x00 on success or err.
 
-Returns **Number** code: init response is hex code callback. 0x00 on success or err.
+**Properties**
 
-Returns **Buffer** authTxHash: JSON string (or 'null' on error) transaction hash.
+-   `Subscribe` **Characteristic** 297E3B0A-F353-4531-9D44-3686CC8C4036
+-   `Access` **Pin** 
+
+Returns **Buffer** JSON formatted string auth transaction hash.
+
+Returns **Buffer** JSON formatted string "null" on error.
 
 # onCallTx
 
-[lib/handlers.js:210-223](https://github.com/animist-io/whale-island/blob/3da5c0ef65da6210373a8908fd5a0f18dd4aecc6/lib/handlers.js#L210-L223 "Source code on GitHub")
+[lib/handlers.js:218-231](https://github.com/animist-io/whale-island/blob/b08180f2e64b68a6bfb8fdc070b3ad336bcba906/lib/handlers.js#L218-L231 "Source code on GitHub")
 
-Executes web3.eth.call on methods that use no gas and do not need to be signed. Sends result.
-(Public: Does not require a signed pin).  
-Subscribe/write to: 4506C117-0A27-4D90-94A1-08BB81B0738F
+Executes web3.eth.call on methods that use no gas and do not need to be signed.
 
 **Parameters**
 
--   `data` **String** : JSON stringified array w/form [hexString to, hexString code]
+-   `data` **Buffer** : JSON formatted array repr. "to" and "data" fields of web3 call: ["0x84..e", "0x453e..f"]
 -   `offset`  
 -   `response`  
--   `callback`  
+-   `callback` **Buffer** : init response is hex code . 0x00 on success or err.
 
-Returns **Number** code: init response is hex code callback. 0x00 on success or err.
+**Properties**
 
-Returns **Buffer** eof: JSON string of web3.eth.call result.
+-   `Subscribe` **Characteristic** 4506C117-0A27-4D90-94A1-08BB81B0738F
+-   `Access` **Public** 
+
+Returns **Buffer** JSON formatted string of web3.eth.call result.
 
 # onGetBlockNumber
 
-[lib/handlers.js:33-36](https://github.com/animist-io/whale-island/blob/3da5c0ef65da6210373a8908fd5a0f18dd4aecc6/lib/handlers.js#L33-L36 "Source code on GitHub")
+[lib/handlers.js:37-40](https://github.com/animist-io/whale-island/blob/b08180f2e64b68a6bfb8fdc070b3ad336bcba906/lib/handlers.js#L37-L40 "Source code on GitHub")
 
-Publishes current blockNumber. (Public: does not require a signed pin).  
-Read: C888866C-3499-4B80-B145-E1A61620F885
+Publishes current blockNumber.
 
 **Parameters**
 
 -   `offset`  
--   `callback`  
+-   `callback`  Hex code 0x00 on success
 
-Returns **Buffer** blockNumber: JSON string repr. int value converted to string.
+**Properties**
+
+-   `Read` **Characteristic** C888866C-3499-4B80-B145-E1A61620F885
+-   `Access` **Public** 
+
+Returns **Buffer** JSON formatted string: "152..2"
 
 # onGetContractIndicate
 
-[lib/handlers.js:180-199](https://github.com/animist-io/whale-island/blob/3da5c0ef65da6210373a8908fd5a0f18dd4aecc6/lib/handlers.js#L180-L199 "Source code on GitHub")
+[lib/handlers.js:188-207](https://github.com/animist-io/whale-island/blob/b08180f2e64b68a6bfb8fdc070b3ad336bcba906/lib/handlers.js#L188-L207 "Source code on GitHub")
 
-Fetches contract referencing the caller account. Writes the contract code plus a session id / expiration 
-out to the client in a series of packets. This fn sends the first of these - onGetContractIndicate 
-sends the rest as the client signals it can accept more. (Uses a timeout per bleno/issues/170 )
+DeQueues and sends contract code packet. ( Access is automatic following onGetContract call )
 
-Returns **Buffer** data: part of a JSONed contract object sitting in send queue. (see onGetContract)
+Returns **Buffer** data: queued packet of JSON formatted contract object. (see onGetContract)
 
-Returns **Buffer** eof: JSON string EOF after last packet is sent.
+Returns **Buffer** JSON formatted string "EOF" after last packet is sent.
 
 # onGetContractWrite
 
-[lib/handlers.js:146-170](https://github.com/animist-io/whale-island/blob/3da5c0ef65da6210373a8908fd5a0f18dd4aecc6/lib/handlers.js#L146-L170 "Source code on GitHub")
+[lib/handlers.js:156-180](https://github.com/animist-io/whale-island/blob/b08180f2e64b68a6bfb8fdc070b3ad336bcba906/lib/handlers.js#L156-L180 "Source code on GitHub")
 
-Sends contract code plus a session id / expiration in a series of packets. This handler
-sends the first of these - onGetContractIndicate sends the rest as the client signals it can 
-accept more.  
-Subscribe/write to: BFA15C55-ED8F-47B4-BD6A-31280E98C7BA
+Begins sending contract code plus a session id / expiration out to the client in a series of packets. 
+This method sends the first of these - onGetContractIndicate publishes the rest as the client signals 
+it can accept more.
 
 **Parameters**
 
--   `data` **String** : current endpoint pin value, signed by caller account.
+-   `data` **Buffer** : JSON formatted pin value, signed by caller account.
 -   `offset`  
 -   `response`  
--   `callback`  
+-   `callback` **Buffer** : init response is hex code . 0x00 on success or err.
 
-Returns **Number** code: init response is hex code callback. 0x00 on success or err.
+**Properties**
 
-Returns **Buffer** data: JSON object (or null string) contract data incl. code, session data.
+-   `Subscribe` **Characteristic** BFA15C55-ED8F-47B4-BD6A-31280E98C7BA
+-   `Access` **Pin** 
+
+Returns **Buffer** JSON formatted object: {code: '0x5d3e..11', sessionId: '4ydw2..2', expires: '5732..1'}
 
 # onGetNewSessionId
 
-[lib/handlers.js:75-95](https://github.com/animist-io/whale-island/blob/3da5c0ef65da6210373a8908fd5a0f18dd4aecc6/lib/handlers.js#L75-L95 "Source code on GitHub")
+[lib/handlers.js:83-103](https://github.com/animist-io/whale-island/blob/b08180f2e64b68a6bfb8fdc070b3ad336bcba906/lib/handlers.js#L83-L103 "Source code on GitHub")
 
-Generates, saves and sends a new session id. ( Requires: valid SessionId ).  
-Subscribe/write to: 9BBA5055-57CA-4F78-BA61-52F4154382CF
+Generates, saves and sends a new session id. ( Access requires signed pin ).
 
 **Parameters**
 
--   `data` **String** : current endpoint pin value, signed by caller account.
+-   `data` **Buffer** : JSON formatted pin value, signed by caller account.
 -   `offset`  
 -   `response`  
--   `callback`  
+-   `callback` **Buffer** : init response is hex code . 0x00 on success or err.
 
-Returns **Number** code: init response is hex code callback. 0x00 on success or err.
+**Properties**
 
-Returns **Buffer** session: JSON object (or 'null' string) { sessionId: string, expires: int, account: address }
+-   `Subscribe` **Characteristic** 9BBA5055-57CA-4F78-BA61-52F4154382CF
+-   `Access` **Pin** 
+
+Returns **Buffer** JSON formatted object { sessionId: "a34..4q', expires: '435...01', account: '0x78ef..a' }
+
+Returns **Buffer** JSON formatted string "null" on error.
 
 # onGetPin
 
-[lib/handlers.js:22-25](https://github.com/animist-io/whale-island/blob/3da5c0ef65da6210373a8908fd5a0f18dd4aecc6/lib/handlers.js#L22-L25 "Source code on GitHub")
+[lib/handlers.js:24-27](https://github.com/animist-io/whale-island/blob/b08180f2e64b68a6bfb8fdc070b3ad336bcba906/lib/handlers.js#L24-L27 "Source code on GitHub")
 
-Publishes current time pin value. (Public: does not require a signed pin).  
-Read C40C94B3-D9FF-45A0-9A37-032D72E423A9
+Publishes current time pin value.
 
 **Parameters**
 
 -   `offset`  
--   `callback`  
+-   `callback`  Hex code 0x00 on success
 
-Returns **Buffer** pin: 32 character alpha-numeric string (resets every ~30 sec)
+**Properties**
+
+-   `Read` **Characteristic** C40C94B3-D9FF-45A0-9A37-032D72E423A9
+-   `Access` **Public** 
+
+Returns **Buffer** JSON formatted 32 character alpha-numeric string (resets every ~30 sec)
 
 # onGetSubmittedTxHash
 
-[lib/handlers.js:108-133](https://github.com/animist-io/whale-island/blob/3da5c0ef65da6210373a8908fd5a0f18dd4aecc6/lib/handlers.js#L108-L133 "Source code on GitHub")
+[lib/handlers.js:117-142](https://github.com/animist-io/whale-island/blob/b08180f2e64b68a6bfb8fdc070b3ad336bcba906/lib/handlers.js#L117-L142 "Source code on GitHub")
 
-Sends the transaction hash of a tx submitted in an atomic authAndSubmit 
-request. This is available once the AuthTx has been mined and caller's tx has
-been published to chain. Also returns authStatus data which may be 'pending' or
-'failed' if authTx is unmined or ran out of gas.  
-Subscribe/write to: 421522D1-C7EE-494C-A1E4-029BBE644E8D
+Sends the hash of a transaction sent in an atomic authAndSend request. This is available once 
+the AuthTx has been mined and caller's tx has been published to chain. Also returns authStatus 
+data which may be 'pending' or 'failed' if authTx is unmined or ran out of gas.
 
 **Parameters**
 
--   `data` **String** : current endpoint pin value, signed by caller account.
+-   `data` **Buffer** : JSON formatted pin value, signed by caller account.
 -   `offset`  
 -   `response`  
--   `callback`  
+-   `callback` **Buffer** : init response is hex code . 0x00 on success or err.
 
-Returns **Number** code: init response is hex code callback. 0x00 on success or err.
+**Properties**
 
-Returns **Buffer** txHash: JSON string, hash or 'null' on error
+-   `Subscribe` **Characteristic** 421522D1-C7EE-494C-A1E4-029BBE644E8D
+-   `Access` **Pin** 
+
+Returns **Buffer** JSON formatted string txhash: "0x7d34e..023"
+
+Returns **Buffer** JSON formatted string "null" on error.
 
 # onGetTxStatus
 
-[lib/handlers.js:46-65](https://github.com/animist-io/whale-island/blob/3da5c0ef65da6210373a8908fd5a0f18dd4aecc6/lib/handlers.js#L46-L65 "Source code on GitHub")
+[lib/handlers.js:52-71](https://github.com/animist-io/whale-island/blob/b08180f2e64b68a6bfb8fdc070b3ad336bcba906/lib/handlers.js#L52-L71 "Source code on GitHub")
 
-Responds w/ some web3 data about a tx. (Public: does not require a signed pin).  
-Subscribe/write to: 03796948-4475-4E6F-812E-18807B28A84A
+Responds w/ some web3 data about a tx.
 
 **Parameters**
 
--   `data` **String** : hex prefixed tx hash
+-   `data` **Buffer** : JSON formatted tx hash (hex prefixed)
 -   `offset`  
 -   `response`  
--   `callback`  
+-   `callback` **Buffer** : init response is hex code . 0x00 on success or err.
 
-Returns **Number** code: init response is hex code callback. 0x00 on success or err.
+**Properties**
 
-Returns **Buffer** status: JSON object (or 'null' string) { blockNumber: int OR null, nonce: int, gas: int }
+-   `Subscribe` **Characteristic** 03796948-4475-4E6F-812E-18807B28A84A
+-   `Access` **Public** 
 
-# onSubmitTx
+Returns **Buffer** JSON formatted object { blockNumber: "150..1", nonce: "77", gas: "314..3" }
 
-[lib/handlers.js:237-251](https://github.com/animist-io/whale-island/blob/3da5c0ef65da6210373a8908fd5a0f18dd4aecc6/lib/handlers.js#L237-L251 "Source code on GitHub")
+Returns **Buffer** JSON formatted string "null" on error.
+
+# onSendTx
+
+[lib/handlers.js:245-259](https://github.com/animist-io/whale-island/blob/b08180f2e64b68a6bfb8fdc070b3ad336bcba906/lib/handlers.js#L245-L259 "Source code on GitHub")
 
 Sends tx as rawTransaction if tx signer's sessionId is valid. Will not submit if
-an unstarted or pending authAndSubmit tx exists in the contractDB for this caller account.
-(This endpoint is a convenience for processing non-authed method calls (including contract
-deployments) and payments. It cannot be used for presence verification in combination 
-with a separate call to authTx. Auth's must be done atomically using the authAndSubmit endpoint).  
-Subscribe/write to: 3340BC2C-70AE-4E7A-BE24-8B2ED8E3ED06
+a pending authAndSubmit tx exists in the contractDB for this caller account. 
+(This endpoint is intended primarily as a convenience for processing non-authed method calls, 
+including contract deployments and payments.)
 
 **Parameters**
 
--   `data` **Object** : {tx: signed method call, sessionId: animist session id}]
+-   `data` **Object** : signed method call and sessionId {tx: "0x123d..", sessionId: "9tfh1..v"}]
 -   `offset`  
 -   `response`  
--   `callback`  
+-   `callback` **Buffer** : init response is hex code . 0x00 on success or err.
 
-Returns **Number** code: init response is hex code callback. 0x00 on success or err.
+**Properties**
+
+-   `Subscribe` **Characteristic** 3340BC2C-70AE-4E7A-BE24-8B2ED8E3ED06
+-   `Access` **SessionId** 
 
 Returns **Buffer** submittedTxHash: hash of submitted transaction

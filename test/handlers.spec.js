@@ -346,7 +346,7 @@ describe('BLE Request Handlers', () => {
         });
     });
 
-    describe('onAuthAndSubmitTx', ()=> {
+    describe('onAuthAndSendTx', ()=> {
 
         let data, record, output, pin, msgHash, signed, eth_db;
 
@@ -374,8 +374,8 @@ describe('BLE Request Handlers', () => {
                 expect(val).to.equal(config.codes.RESULT_SUCCESS);
             } 
             let updateValueCallback = (sent) => { done(); };
-            defs.authAndSubmitTxCharacteristic.updateValueCallback = updateValueCallback;
-            ble.onAuthAndSubmitTx(data, null, null, cb);
+            defs.authAndSendTxCharacteristic.updateValueCallback = updateValueCallback;
+            ble.onAuthAndSendTx(data, null, null, cb);
         });
 
         it('should send the tx hash of the verifyPresence method call', (done)=>{
@@ -391,23 +391,23 @@ describe('BLE Request Handlers', () => {
                 expect(ethjs_util.isHexPrefixed(JSON.parse(val))).to.be.true;
                 done();
             };
-            defs.authAndSubmitTxCharacteristic.updateValueCallback = updateValueCallback;    
-            ble.onAuthAndSubmitTx(data, null, null, cb);
+            defs.authAndSendTxCharacteristic.updateValueCallback = updateValueCallback;    
+            ble.onAuthAndSendTx(data, null, null, cb);
         });
 
-        it('should call submitTxWhenAuthed', (done)=>{
+        it('should call sendTxWhenAuthed', (done)=>{
 
             data = JSON.stringify({pin: signed, tx: goodTx});
             
             let cb = (val) => {};
-            chai.spy.on(eth, 'submitTxWhenAuthed');
+            chai.spy.on(eth, 'sendTxWhenAuthed');
 
             let updateValueCallback = (sent) => {
-                expect(eth.submitTxWhenAuthed).to.have.been.called();
+                expect(eth.sendTxWhenAuthed).to.have.been.called();
                 done();
             }
-            defs.authAndSubmitTxCharacteristic.updateValueCallback = updateValueCallback;    
-            ble.onAuthAndSubmitTx(data, null, null, cb);
+            defs.authAndSendTxCharacteristic.updateValueCallback = updateValueCallback;    
+            ble.onAuthAndSendTx(data, null, null, cb);
         });
 
         it('should respond w/error if sent pin is bad', (done)=>{
@@ -418,7 +418,7 @@ describe('BLE Request Handlers', () => {
                 expect(val).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
                 done();
             }    
-            ble.onAuthAndSubmitTx(data, null, null, cb);
+            ble.onAuthAndSendTx(data, null, null, cb);
         });
 
         it('should respond w/error if sent tx is bad', (done)=> {
@@ -429,12 +429,12 @@ describe('BLE Request Handlers', () => {
                 expect(val).to.equal(config.codes.INSUFFICIENT_GAS);
                 done();
             }    
-            ble.onAuthAndSubmitTx(data, null, null, cb);
+            ble.onAuthAndSendTx(data, null, null, cb);
         });
 
     });
 
-    describe('onSubmitTx', ()=>{
+    describe('onSendTx', ()=>{
 
         let db, eth_db, cb, data, expected, orig_session, mock_auth_request;
 
@@ -453,15 +453,15 @@ describe('BLE Request Handlers', () => {
                 expect(val).to.equal(config.codes.RESULT_SUCCESS);
             }
             let updateValueCallback = (sent) => { done() };
-            defs.submitTxCharacteristic.updateValueCallback = updateValueCallback;
+            defs.sendTxCharacteristic.updateValueCallback = updateValueCallback;
             
             util.startSession(orig_session).then( doc => {
                 data = JSON.stringify({id: doc.sessionId, tx: goodTx});
-                ble.onSubmitTx(data, null, null, cb);
+                ble.onSendTx(data, null, null, cb);
             })
         });
 
-        it('should send txHash of the submitted transaction', (done)=>{
+        it('should send txHash of the sent transaction', (done)=>{
             orig_session = {account: client};
             cb = (val) => {};
 
@@ -472,26 +472,26 @@ describe('BLE Request Handlers', () => {
                 expect(ethjs_util.isHexPrefixed(JSON.parse(val))).to.be.true;
                 done();  
             };
-            defs.submitTxCharacteristic.updateValueCallback = updateValueCallback;
+            defs.sendTxCharacteristic.updateValueCallback = updateValueCallback;
             
             util.startSession(orig_session).then( doc => {
                 data = JSON.stringify({id: doc.sessionId, tx: goodTx});
-                ble.onSubmitTx(data, null, null, cb);
+                ble.onSendTx(data, null, null, cb);
             })
         });
 
-        it('should respond with error code if caller cant submit a tx', (done)=>{
+        it('should respond with error code if caller cant send a tx', (done)=>{
             orig_session = {account: web3.eth.accounts[2]};
             cb = (val) => {
                 expect(val).to.equal(config.codes.INVALID_TX_SENDER_ADDRESS);
                 done();
             }
             let updateValueCallback = (sent) => {};
-            defs.submitTxCharacteristic.updateValueCallback = updateValueCallback;
+            defs.sendTxCharacteristic.updateValueCallback = updateValueCallback;
             
             util.startSession(orig_session).then( doc => {
                 data = JSON.stringify({id: doc.sessionId, tx: goodTx});
-                ble.onSubmitTx(data, null, null, cb);
+                ble.onSendTx(data, null, null, cb);
             })
         })
     })
@@ -565,7 +565,7 @@ describe('BLE Request Handlers', () => {
 
         it('should behave as expected: e2e', (done)=>{
             
-            // Fast mine authAndSubmitTx
+            // Fast mine authAndSendTx
             let original_mining = config.MINING_CHECK_INTERVAL;
             eth.units.setMiningCheckInterval(10); // Fast!
 
@@ -583,16 +583,16 @@ describe('BLE Request Handlers', () => {
                 done();
             };
         
-            // Wait for simulated authAndSubmitTx call to (probably) finish
+            // Wait for simulated authAndSendTx call to (probably) finish
             setTimeout(()=>{
                 ble.onGetSubmittedTxHash(input, null, null, cb);
             }, 1000)
 
-            // Simulate an authAndSubmitTx call.
+            // Simulate an authAndSendTx call.
             defs.getSubmittedTxHashCharacteristic.updateValueCallback = updateValueCallback;
-            defs.authAndSubmitTxCharacteristic.updateValueCallback = () => {};    
+            defs.authAndSendTxCharacteristic.updateValueCallback = () => {};    
             mock_record = { _id: client, authority: client, contractAddress: deployed.address };
-            eth_db.put(mock_record).then( res => ble.onAuthAndSubmitTx(data, null, null, cb));  
+            eth_db.put(mock_record).then( res => ble.onAuthAndSendTx(data, null, null, cb));  
         });
 
         it('should send "null" if it cant find the contract record', (done)=>{
@@ -623,7 +623,7 @@ describe('BLE Request Handlers', () => {
                 expect(val).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
                 done();
             }    
-            ble.onAuthAndSubmitTx(data, null, null, cb);
+            ble.onAuthAndSendTx(data, null, null, cb);
         });
     });
 

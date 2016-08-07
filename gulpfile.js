@@ -40,11 +40,7 @@ gulp.task('documentation', function () {
   gulp.src([
           './docs/top.md', 
           './docs/handlersDesc.md',
-          './docs/handlers.md',
-          './docs/ethDesc.md', 
-          './docs/eth.md',
-          './docs/utilDesc.md',
-          './docs/util.md'] )
+          './docs/handlers.md'] )
   
     .pipe(concat('README.md'))
     .pipe(gulp.dest('./'));
