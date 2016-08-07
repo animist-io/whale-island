@@ -54,25 +54,17 @@ Every animist endpoint broadcasts one of five unique 128bit beacon ids and provi
 
 Endpoints respond with a hex code indicating whether or not the request is valid. Requested data (if available) follows after a min. 50ms delay. 
 
-| Name | Value |
-|------|-------|
-|INVALID_JSON_IN_REQUEST|0x02|
-|INVALID_TX_HASH|0x07|
-|INVALID_PIN|0x09|
-|INVALID_TX_SENDER_ADDRESS|0x0A|
-|INVALID_TX_SIGNATURE|0x0B| 
-|INSUFFICIENT_GAS|0x0C|
-|INSUFFICIENT_BALANCE|0x0D|
-|INVALID_SESSION_ID|0x0E|
-|INVALID_CALL_DATA|0x11|
-|SESSION_NOT_FOUND|0x10|
-|TX_PENDING|0x0F|
-|NO_SIGNED_MSG_IN_REQUEST|0x03|
-|NO_TX_DB_ERR|0x04|
-|NO_TX_ADDR_ERR|0x05|
-|NO_ETHEREUM|0x08|
-|RESULT_SUCCESS|0x00|
-|EOF|"EOF"|
+| Name | Value |                 | Name | Value |
+|------|-------|                 |------|-------|
+|INVALID_JSON_IN_REQUEST|0x02|   |INVALID_SESSION_ID|0x0E|
+|INVALID_TX_HASH|0x07|           |INVALID_CALL_DATA|0x11|
+|INVALID_PIN|0x09|               |SESSION_NOT_FOUND|0x10|
+|INVALID_TX_SENDER_ADDRESS|0x0A| |TX_PENDING|0x0F|
+|INVALID_TX_SIGNATURE|0x0B|      |NO_SIGNED_MSG_IN_REQUEST|0x03| 
+|INSUFFICIENT_GAS|0x0C|          |NO_TX_DB_ERR|0x04|
+|INSUFFICIENT_BALANCE|0x0D|      |NO_TX_ADDR_ERR|0x05|
+|NO_ETHEREUM|0x08|               |RESULT_SUCCESS|0x00|
+
 
 
 ### Other code documentation
@@ -95,7 +87,7 @@ Endpoints respond with a hex code indicating whether or not the request is valid
 
 # onAuthAndSendTx
 
-[lib/handlers.js:305-333](https://github.com/animist-io/whale-island/blob/3e5f2000d971b0efb46195bc2cf31011701b037c/lib/handlers.js#L305-L333 "Source code on GitHub")
+[lib/handlers.js:307-335](https://github.com/animist-io/whale-island/blob/44dcfd9ca9936b40a8719a4b52b4e01491cdd2cc/lib/handlers.js#L307-L335 "Source code on GitHub")
 
 Auths client by invoking their contract's "verifyPresence" method with the device account. 
 Waits for auth to be mined and sends clients raw transaction. This endpoint provides a way of 
@@ -119,7 +111,7 @@ Returns **Buffer** JSON formatted string "null" on error.
 
 # onAuthTx
 
-[lib/handlers.js:271-292](https://github.com/animist-io/whale-island/blob/3e5f2000d971b0efb46195bc2cf31011701b037c/lib/handlers.js#L271-L292 "Source code on GitHub")
+[lib/handlers.js:273-294](https://github.com/animist-io/whale-island/blob/44dcfd9ca9936b40a8719a4b52b4e01491cdd2cc/lib/handlers.js#L273-L294 "Source code on GitHub")
 
 Auths client by invoking their contract's "verifyPresence" method with the device account.
 
@@ -141,7 +133,7 @@ Returns **Buffer** JSON formatted string "null" on error.
 
 # onCallTx
 
-[lib/handlers.js:218-231](https://github.com/animist-io/whale-island/blob/3e5f2000d971b0efb46195bc2cf31011701b037c/lib/handlers.js#L218-L231 "Source code on GitHub")
+[lib/handlers.js:220-233](https://github.com/animist-io/whale-island/blob/44dcfd9ca9936b40a8719a4b52b4e01491cdd2cc/lib/handlers.js#L220-L233 "Source code on GitHub")
 
 Executes web3.eth.call on methods that use no gas and do not need to be signed.
 
@@ -161,7 +153,7 @@ Returns **Buffer** JSON formatted string of web3.eth.call result.
 
 # onGetBlockNumber
 
-[lib/handlers.js:37-40](https://github.com/animist-io/whale-island/blob/3e5f2000d971b0efb46195bc2cf31011701b037c/lib/handlers.js#L37-L40 "Source code on GitHub")
+[lib/handlers.js:37-40](https://github.com/animist-io/whale-island/blob/44dcfd9ca9936b40a8719a4b52b4e01491cdd2cc/lib/handlers.js#L37-L40 "Source code on GitHub")
 
 Publishes current blockNumber.
 
@@ -179,11 +171,10 @@ Returns **Buffer** JSON formatted string: "152..2"
 
 # onGetContract
 
-[lib/handlers.js:156-180](https://github.com/animist-io/whale-island/blob/3e5f2000d971b0efb46195bc2cf31011701b037c/lib/handlers.js#L156-L180 "Source code on GitHub")
+[lib/handlers.js:157-181](https://github.com/animist-io/whale-island/blob/44dcfd9ca9936b40a8719a4b52b4e01491cdd2cc/lib/handlers.js#L157-L181 "Source code on GitHub")
 
 Begins sending contract code plus a session id / expiration out to the client in a series of packets. 
-This method sends the first of these - onGetContractIndicate publishes the rest as the client signals 
-it can accept more.
+onGetContractIndicate handler publishes the rest as the client signals it can accept more.
 
 **Parameters**
 
@@ -201,9 +192,13 @@ Returns **Buffer** JSON formatted object: {code: '0x5d3e..11', sessionId: '4ydw2
 
 # onGetContractIndicate
 
-[lib/handlers.js:188-207](https://github.com/animist-io/whale-island/blob/3e5f2000d971b0efb46195bc2cf31011701b037c/lib/handlers.js#L188-L207 "Source code on GitHub")
+[lib/handlers.js:190-209](https://github.com/animist-io/whale-island/blob/44dcfd9ca9936b40a8719a4b52b4e01491cdd2cc/lib/handlers.js#L190-L209 "Source code on GitHub")
 
-DeQueues and sends contract code packet. ( Access is automatic following onGetContract call )
+DeQueues and sends contract code packet.
+
+**Properties**
+
+-   `Access` **Automatic** following onGetContract call
 
 Returns **Buffer** data: queued packet of JSON formatted contract object. (see onGetContract)
 
@@ -211,9 +206,9 @@ Returns **Buffer** JSON formatted string "EOF" after last packet is sent.
 
 # onGetNewSessionId
 
-[lib/handlers.js:83-103](https://github.com/animist-io/whale-island/blob/3e5f2000d971b0efb46195bc2cf31011701b037c/lib/handlers.js#L83-L103 "Source code on GitHub")
+[lib/handlers.js:85-105](https://github.com/animist-io/whale-island/blob/44dcfd9ca9936b40a8719a4b52b4e01491cdd2cc/lib/handlers.js#L85-L105 "Source code on GitHub")
 
-Generates, saves and sends a new session id. ( Access requires signed pin ).
+Generates, saves and sends a new session id.
 
 **Parameters**
 
@@ -233,7 +228,7 @@ Returns **Buffer** JSON formatted string "null" on error.
 
 # onGetPin
 
-[lib/handlers.js:24-27](https://github.com/animist-io/whale-island/blob/3e5f2000d971b0efb46195bc2cf31011701b037c/lib/handlers.js#L24-L27 "Source code on GitHub")
+[lib/handlers.js:24-27](https://github.com/animist-io/whale-island/blob/44dcfd9ca9936b40a8719a4b52b4e01491cdd2cc/lib/handlers.js#L24-L27 "Source code on GitHub")
 
 Publishes current time pin value.
 
@@ -251,9 +246,11 @@ Returns **Buffer** JSON formatted 32 character alpha-numeric string (resets ever
 
 # onGetTxStatus
 
-[lib/handlers.js:52-71](https://github.com/animist-io/whale-island/blob/3e5f2000d971b0efb46195bc2cf31011701b037c/lib/handlers.js#L52-L71 "Source code on GitHub")
+[lib/handlers.js:54-73](https://github.com/animist-io/whale-island/blob/44dcfd9ca9936b40a8719a4b52b4e01491cdd2cc/lib/handlers.js#L54-L73 "Source code on GitHub")
 
-Responds w/ some web3 data about a tx.
+Responds w/ small subset of web3 data about a transaction. Useful for determining whether
+or not a transaction has been mined. (blockNumber field of response will be null if tx is
+pending)
 
 **Parameters**
 
@@ -273,7 +270,7 @@ Returns **Buffer** JSON formatted string "null" on error.
 
 # onGetVerifiedTxHash
 
-[lib/handlers.js:117-142](https://github.com/animist-io/whale-island/blob/3e5f2000d971b0efb46195bc2cf31011701b037c/lib/handlers.js#L117-L142 "Source code on GitHub")
+[lib/handlers.js:119-144](https://github.com/animist-io/whale-island/blob/44dcfd9ca9936b40a8719a4b52b4e01491cdd2cc/lib/handlers.js#L119-L144 "Source code on GitHub")
 
 Sends the hash of a transaction sent in an atomic authAndSend request. This is available once 
 the AuthTx has been mined and caller's tx has been published to chain. Also returns authStatus 
@@ -297,7 +294,7 @@ Returns **Buffer** JSON formatted string "null" on error.
 
 # onSendTx
 
-[lib/handlers.js:245-259](https://github.com/animist-io/whale-island/blob/3e5f2000d971b0efb46195bc2cf31011701b037c/lib/handlers.js#L245-L259 "Source code on GitHub")
+[lib/handlers.js:247-261](https://github.com/animist-io/whale-island/blob/44dcfd9ca9936b40a8719a4b52b4e01491cdd2cc/lib/handlers.js#L247-L261 "Source code on GitHub")
 
 Sends tx as rawTransaction if tx signer's sessionId is valid. Will not submit if
 a pending authAndSubmit tx exists in the contractDB for this caller account. 
