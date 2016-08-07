@@ -647,7 +647,7 @@ describe('BLE Request Handlers', () => {
         });    
     });
 
-    describe('onGetContractWrite', () => {
+    describe('onGetContract', () => {
         
         let req, eth_db, mock_contract, fns = {};
 
@@ -688,7 +688,7 @@ describe('BLE Request Handlers', () => {
                 expect(code).to.equal(config.codes.RESULT_SUCCESS);
                 setTimeout(done, 55); 
             };
-            ble.onGetContractWrite(req, null, null, fns.callback);
+            ble.onGetContract(req, null, null, fns.callback);
             
         });
 
@@ -709,7 +709,7 @@ describe('BLE Request Handlers', () => {
             };
         
             // Run fn
-            ble.onGetContractWrite(req, null, null, fns.callback)
+            ble.onGetContract(req, null, null, fns.callback)
     
         });
 
@@ -738,7 +738,7 @@ describe('BLE Request Handlers', () => {
             };
 
             // Run
-            ble.onGetContractWrite(req, null, null, fns.callback);
+            ble.onGetContract(req, null, null, fns.callback);
             
         });
 
@@ -753,7 +753,7 @@ describe('BLE Request Handlers', () => {
                         expect(fns.callback).to.have.been.called.with(config.codes.NO_TX_DB_ERR);
                         done();
                     }, 55)
-                    ble.onGetContractWrite(req, null, null, fns.callback);
+                    ble.onGetContract(req, null, null, fns.callback);
                  })
         });
 
@@ -762,7 +762,7 @@ describe('BLE Request Handlers', () => {
             req = "dd5[w,r,0,,n,g";
             chai.spy.on(fns, 'callback');
 
-            ble.onGetContractWrite(req, null, null, fns.callback);
+            ble.onGetContract(req, null, null, fns.callback);
             expect(fns.callback).to.have.been.called.with(config.codes.INVALID_JSON_IN_REQUEST);
             
         });
