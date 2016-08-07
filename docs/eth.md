@@ -1,6 +1,6 @@
 # authTx
 
-[lib/eth.js:147-163](https://github.com/animist-io/whale-island/blob/dba67dd6b6911c3fe77793292c8595aa066a6edb/lib/eth.js#L147-L163 "Source code on GitHub")
+[lib/eth.js:147-163](https://github.com/animist-io/whale-island/blob/632b7779ed004f81d51b4b0ff27b36235fa7b629/lib/eth.js#L147-L163 "Source code on GitHub")
 
 Invokes verifyPresence on the contract discovered in the contractsDB. 
 verifyPresence prints caller was here, 'timestamped' now, to chain.
@@ -16,7 +16,7 @@ Returns **Promise** Rejects w/ hex code: NO_TX_FOUND
 
 # callTx
 
-[lib/eth.js:84-86](https://github.com/animist-io/whale-island/blob/dba67dd6b6911c3fe77793292c8595aa066a6edb/lib/eth.js#L84-L86 "Source code on GitHub")
+[lib/eth.js:84-86](https://github.com/animist-io/whale-island/blob/632b7779ed004f81d51b4b0ff27b36235fa7b629/lib/eth.js#L84-L86 "Source code on GitHub")
 
 Wraps web3.eth.call. Method should require no gas and no "from" parameter. See onCallTx
 
@@ -28,7 +28,7 @@ Returns **String** hex encoded value per web3
 
 # getBlockNumber
 
-[lib/eth.js:73-75](https://github.com/animist-io/whale-island/blob/dba67dd6b6911c3fe77793292c8595aa066a6edb/lib/eth.js#L73-L75 "Source code on GitHub")
+[lib/eth.js:73-75](https://github.com/animist-io/whale-island/blob/632b7779ed004f81d51b4b0ff27b36235fa7b629/lib/eth.js#L73-L75 "Source code on GitHub")
 
 Wraps web3.eth.blockNumber.
 
@@ -36,7 +36,7 @@ Returns **Number**
 
 # getContract
 
-[lib/eth.js:120-138](https://github.com/animist-io/whale-island/blob/dba67dd6b6911c3fe77793292c8595aa066a6edb/lib/eth.js#L120-L138 "Source code on GitHub")
+[lib/eth.js:120-138](https://github.com/animist-io/whale-island/blob/632b7779ed004f81d51b4b0ff27b36235fa7b629/lib/eth.js#L120-L138 "Source code on GitHub")
 
 Extracts address from signed pin and looks for record from contractsDB with that id.
 
@@ -63,7 +63,7 @@ Returns **Promise** Rejects with hex code: NO_TX_DB_ERR or NO_TX_ADDR_ERR
 
 # getTx
 
-[lib/eth.js:94-104](https://github.com/animist-io/whale-island/blob/dba67dd6b6911c3fe77793292c8595aa066a6edb/lib/eth.js#L94-L104 "Source code on GitHub")
+[lib/eth.js:94-104](https://github.com/animist-io/whale-island/blob/632b7779ed004f81d51b4b0ff27b36235fa7b629/lib/eth.js#L94-L104 "Source code on GitHub")
 
 Queries blockchain for transaction receipt.
 
@@ -77,7 +77,7 @@ Returns **Promise** Rejects w/ hex code: NO_TX_DB_ERR
 
 # recover
 
-[lib/eth.js:48-64](https://github.com/animist-io/whale-island/blob/dba67dd6b6911c3fe77793292c8595aa066a6edb/lib/eth.js#L48-L64 "Source code on GitHub")
+[lib/eth.js:48-64](https://github.com/animist-io/whale-island/blob/632b7779ed004f81d51b4b0ff27b36235fa7b629/lib/eth.js#L48-L64 "Source code on GitHub")
 
 Recovers address used to sign a message, which may be encoded in eth-lightwallet or web3.sign 
 formats. (Will generate non-existent address if data signed and 'rawMsg' are not identical.
@@ -93,7 +93,7 @@ Returns **** undefined if ethereumjs-util throws an error during recovery.
 
 # sendTx
 
-[lib/eth.js:171-173](https://github.com/animist-io/whale-island/blob/dba67dd6b6911c3fe77793292c8595aa066a6edb/lib/eth.js#L171-L173 "Source code on GitHub")
+[lib/eth.js:171-173](https://github.com/animist-io/whale-island/blob/632b7779ed004f81d51b4b0ff27b36235fa7b629/lib/eth.js#L171-L173 "Source code on GitHub")
 
 Prints client-signed tx to blockchain. A wrapper for web3 sendRawTransaction.
 
@@ -105,7 +105,7 @@ Returns **String** txHash of sendRawTransaction
 
 # sendTxWhenAuthed
 
-[lib/eth.js:184-256](https://github.com/animist-io/whale-island/blob/dba67dd6b6911c3fe77793292c8595aa066a6edb/lib/eth.js#L184-L256 "Source code on GitHub")
+[lib/eth.js:184-256](https://github.com/animist-io/whale-island/blob/632b7779ed004f81d51b4b0ff27b36235fa7b629/lib/eth.js#L184-L256 "Source code on GitHub")
 
 Waits for auth tx to be mined then sends tx. Updates client's contract record with auth status when 
 pending, successful, failed and saves signedTx transaction hash to record on success.
