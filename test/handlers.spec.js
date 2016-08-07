@@ -89,6 +89,22 @@ describe('BLE Request Handlers', () => {
       });
     });
 
+    describe('onGetDeviceAccount', () => {
+
+      it('should respond w/ the devices public account address', ( done ) => {
+        
+        let codes = config.codes;
+        let expected_account = new Buffer(JSON.stringify(config.animistAccount));
+        let pin_to_buffer = new Buffer(util.getPin());
+        let callback = (code, account) => {
+            expect(bufferEqual(account, expected_account)).to.be.true;
+            done();
+        };
+        
+        ble.onGetDeviceAccount(null, callback);
+      });
+    });
+
     describe('onGetTxStatus', () => {
 
         let hash, input, fns = {}, updateValueCallback, accounts = web3.eth.accounts;
