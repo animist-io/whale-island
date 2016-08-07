@@ -262,7 +262,7 @@ describe('Eth Client', function(){
                     db.get(client).then( doc => {
                         expect(doc.authStatus).to.equal('pending');
                         expect(doc.authTxHash).to.equal(authTxHash);
-                        expect(doc.submittedTxHash).to.equal(null);
+                        expect(doc.verifiedTxHash).to.equal(null);
 
                         // Clean-up
                         eth.units.setConfCycles(original_cycles); 
@@ -286,8 +286,8 @@ describe('Eth Client', function(){
                         expect(doc.authTxHash).to.equal(authTxHash);
 
                         // Don't really know what this is, so check form.
-                        expect(util.isHexPrefixed(doc.submittedTxHash)).to.be.true;
-                        expect(doc.submittedTxHash.length).to.equal(0x42);
+                        expect(util.isHexPrefixed(doc.verifiedTxHash)).to.be.true;
+                        expect(doc.verifiedTxHash.length).to.equal(0x42);
                         
                         // Clean up
                         eth.units.setMiningCheckInterval(original_mining); 
@@ -316,7 +316,7 @@ describe('Eth Client', function(){
                         expect(waitCycles).to.be.gt(0);
                         expect(doc.authStatus).to.equal('pending');
                         expect(doc.authTxHash).to.equal(authTxHash);
-                        expect(doc.submittedTxHash).to.equal(null);
+                        expect(doc.verifiedTxHash).to.equal(null);
 
                         //Clean-up
                         local_web3.eth.getTransaction = original_getTx;
@@ -346,7 +346,7 @@ describe('Eth Client', function(){
                     db.get(client).then( doc => {
                         expect(doc.authStatus).to.equal('failed');
                         expect(doc.authTxHash).to.equal(authTxHash);
-                        expect(doc.submittedTxHash).to.equal(null);
+                        expect(doc.verifiedTxHash).to.equal(null);
 
                         //Clean-up
                         local_web3.eth.getTransactionReceipt = original_getTx;

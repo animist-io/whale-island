@@ -496,7 +496,7 @@ describe('BLE Request Handlers', () => {
         })
     })
 
-    describe('onGetSubmittedTxHash', () => {
+    describe('onGetVerifiedTxHash', () => {
         let pin, data, signed, msgHash, input, eth_db, mock_record, updateValueCallback, fns = {};
         
         // Debugging . . . duplicate recs getting stuck in db
@@ -532,18 +532,18 @@ describe('BLE Request Handlers', () => {
             };
 
             updateValueCallback = val => { done() };
-            defs.getSubmittedTxHashCharacteristic.updateValueCallback = updateValueCallback;
-            ble.onGetSubmittedTxHash(input, null, null, cb );
+            defs.getVerifiedTxHashCharacteristic.updateValueCallback = updateValueCallback;
+            ble.onGetVerifiedTxHash(input, null, null, cb );
 
         });
 
-        it('should send authStatus, authTxHash & submittedTxHash data', (done)=>{
+        it('should send authStatus, authTxHash & verifiedTxHash data', (done)=>{
             mock_record = { 
                 _id: client, 
                 contractAddress: deployed.address,
                 authStatus: 'pending', 
                 authTxHash: '0x00001', 
-                submittedTxHash: null 
+                verifiedTxHash: null 
             };
 
             let cb = (code) => {};
@@ -553,12 +553,12 @@ describe('BLE Request Handlers', () => {
                 val = JSON.parse(val);    
                 expect(val.authStatus).to.equal('pending');
                 expect(val.authTxHash).to.equal('0x00001');
-                expect(val.submittedTxHash).to.equal(null);
+                expect(val.verifiedTxHash).to.equal(null);
                 done();
             };
 
-            defs.getSubmittedTxHashCharacteristic.updateValueCallback = updateValueCallback;
-            eth_db.put(mock_record).then( res => ble.onGetSubmittedTxHash(input, null, null, cb));
+            defs.getVerifiedTxHashCharacteristic.updateValueCallback = updateValueCallback;
+            eth_db.put(mock_record).then( res => ble.onGetVerifiedTxHash(input, null, null, cb));
 
 
         });
@@ -571,25 +571,25 @@ describe('BLE Request Handlers', () => {
 
             data = JSON.stringify({pin: signed, tx: goodTx});
             
-            // Check getSubmittedTxHash val after +1 sec.
+            // Check getVerifiedTxHash val after +1 sec.
             let cb = (val) => {};
             let updateValueCallback = (val) => {
                 expect(Buffer.isBuffer(val)).to.be.true;
                 val = JSON.parse(val);    
                 expect(val.authStatus).to.equal('success');
                 expect(val.authTxHash.length).to.equal(66);
-                expect(val.submittedTxHash.length).to.equal(66);
+                expect(val.verifiedTxHash.length).to.equal(66);
                 eth.units.setMiningCheckInterval(original_mining);
                 done();
             };
         
             // Wait for simulated authAndSendTx call to (probably) finish
             setTimeout(()=>{
-                ble.onGetSubmittedTxHash(input, null, null, cb);
+                ble.onGetVerifiedTxHash(input, null, null, cb);
             }, 1000)
 
             // Simulate an authAndSendTx call.
-            defs.getSubmittedTxHashCharacteristic.updateValueCallback = updateValueCallback;
+            defs.getVerifiedTxHashCharacteristic.updateValueCallback = updateValueCallback;
             defs.authAndSendTxCharacteristic.updateValueCallback = () => {};    
             mock_record = { _id: client, authority: client, contractAddress: deployed.address };
             eth_db.put(mock_record).then( res => ble.onAuthAndSendTx(data, null, null, cb));  
@@ -603,7 +603,7 @@ describe('BLE Request Handlers', () => {
                 contractAddress: deployed.address,
                 authStatus: 'pending', 
                 authTxHash: '0x00001', 
-                submittedTxHash: null 
+                verifiedTxHash: null 
             };
 
             let cb = (code) => {};
@@ -612,8 +612,8 @@ describe('BLE Request Handlers', () => {
                 done();
             };
 
-            defs.getSubmittedTxHashCharacteristic.updateValueCallback = updateValueCallback;
-            eth_db.put(mock_record).then( res => ble.onGetSubmittedTxHash(input, null, null, cb));
+            defs.getVerifiedTxHashCharacteristic.updateValueCallback = updateValueCallback;
+            eth_db.put(mock_record).then( res => ble.onGetVerifiedTxHash(input, null, null, cb));
         });
 
         it('should respond w/ error code if pin signature doesnt parse', (done)=>{
