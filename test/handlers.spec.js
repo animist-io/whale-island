@@ -233,6 +233,61 @@ describe('BLE Request Handlers', () => {
 
     });
 
+    describe('onGetPresenceReceipt', ()=>{
+
+        let data, out, pin, msgHash, signedPin, cb, updateValueCallback;
+        
+        beforeEach(()=>{
+
+            // Mock client signed pin (web3 style),
+            pin = util.getPin();
+            msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
+            signedPin =  web3.eth.sign(client, msgHash); 
+    
+        });
+        it('should respond w/ RESULT_SUCCESS', (done) => {
+            data = JSON.stringify(signedPin);
+            cb = (code) => { 
+                expect(code).to.equal(config.codes.RESULT_SUCCESS);
+            };
+
+            updateValueCallback = val => { done() };
+            defs.getPresenceReceiptCharacteristic.updateValueCallback = updateValueCallback;
+            ble.onGetPresenceReceipt(data, null, null, cb );
+
+        });
+
+        it( 'should send signed timestamp and signed caller data', (done) => {
+            data = JSON.stringify(signedPin);
+    
+            cb = (code)=>{};
+
+            updateValueCallback = (val) => {
+                expect(Buffer.isBuffer(val)).to.be.true;
+                val = JSON.parse(val);
+                //console.log(val);
+                let unsignedTime = eth.recover(val.time, val.signedTime);
+                let unsignedAddress = eth.recover(client, val.signedAddress);
+                expect(unsignedTime).to.equal(config.animistAccount);
+                expect(unsignedAddress).to.equal(config.animistAccount);
+                done();
+            };
+            defs.getPresenceReceiptCharacteristic.updateValueCallback = updateValueCallback;
+            ble.onGetPresenceReceipt(data, null, null, cb );
+        });
+
+        it('should respond with NO_TX_DB_ERR if input is malformed', (done) => {
+            let malformed = "dd5[w,r,0,,n,g";
+            let malformed_input = JSON.stringify(malformed);
+            
+            cb = (code) => { 
+                expect(code).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
+                done();
+            };
+            ble.onGetPresenceReceipt(malformed_input, null, null, cb );
+        });
+    });
+
     describe('onGetNewSessionId', () => {
 
         let input, pin, signed, msgHash, fns = {}, updateValueCallback;
