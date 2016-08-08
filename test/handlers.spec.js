@@ -105,6 +105,68 @@ describe('BLE Request Handlers', () => {
       });
     });
 
+    describe('onGetAccountBalance', ()=>{
+
+        let input, account, cb, updateValueCallback, accounts = web3.eth.accounts;
+        
+        it('should respond w/ RESULT_SUCCESS', (done) => {
+            input = JSON.stringify(accounts[3]);
+            cb = (code) => { 
+                expect(code).to.equal(config.codes.RESULT_SUCCESS);
+            };
+
+            updateValueCallback = val => { done() };
+            defs.getAccountBalanceCharacteristic.updateValueCallback = updateValueCallback;
+            ble.onGetAccountBalance(input, null, null, cb );
+
+        });
+
+        it( 'should send data about the queried tx', (done) => {
+            account = accounts[3];
+            input = JSON.stringify(account);
+
+            let balance = web3.eth.getBalance(account).toString();
+            let expected_send = new Buffer(JSON.stringify(balance));
+            cb = (code)=>{};
+
+            updateValueCallback = (val) => {
+                expect(bufferEqual(val, expected_send)).to.be.true;
+                done();
+            };
+            defs.getAccountBalanceCharacteristic.updateValueCallback = updateValueCallback;
+            ble.onGetAccountBalance(input, null, null, cb );
+        });
+
+        it('should respond with NO_TX_DB_ERR if input is malformed', (done) => {
+            let malformed = '0x000000000000000012345';
+            let malformed_input = JSON.stringify(malformed);
+            
+            cb = (code) => { 
+                expect(code).to.equal(config.codes.NO_TX_ADDR_ERR);
+                done();
+            };
+
+            defs.getAccountBalanceCharacteristic.updateValueCallback = updateValueCallback;
+            ble.onGetAccountBalance(malformed_input, null, null, cb );
+        });
+
+        it('should send "0" if account non-existent', (done) => {
+            let missing = "0x4dea71bde50f23d347d6b21e18c50f02221c50ae";
+            let missing_input = JSON.stringify(missing);
+            let expected = new Buffer(JSON.stringify('0'));
+
+            cb = (code) => {};
+            updateValueCallback = (val) => {
+                expect(bufferEqual(val, expected)).to.be.true;
+                done();
+            };
+            
+            defs.getAccountBalanceCharacteristic.updateValueCallback = updateValueCallback;
+            ble.onGetAccountBalance(missing_input, null, null, cb );
+        });
+
+    });
+
     describe('onGetTxStatus', () => {
 
         let hash, input, fns = {}, updateValueCallback, accounts = web3.eth.accounts;
