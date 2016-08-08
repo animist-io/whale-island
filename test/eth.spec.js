@@ -104,6 +104,24 @@ describe('Eth Client', function(){
             });
         });
 
+        describe( 'getAccountBalance', ()=>{
+            let account, expected, out;
+
+            it('should return string repr. the current balance of the account in wei', ()=>{
+                account = web3.eth.accounts[3];
+                expected = web3.eth.getBalance(account).toString();
+                out = eth.getAccountBalance(account);
+                expect(out).to.equal(expected);
+            })
+
+            it('should return string repr. 0 wei from a non-existent account', ()=>{
+                account = "0x4dea71bde50f23d347d6b21e18c50f02221c50ae";
+                expected = "0";
+                out = eth.getAccountBalance(account);
+                expect(out).to.equal(expected);
+            })
+        })
+
         // -------------------------------- callTx -----------------------------------------
         describe( 'callTx', ()=>{
 

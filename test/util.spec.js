@@ -307,6 +307,27 @@ describe('BLE Utilites', () => {
         });
     });
 
+    describe('parseAddress', ()=>{
+
+        let address, input, output, expected;
+        it('should return ok with a valid account address', ()=>{
+
+            address = "0x4dea71bde50f23d347d6b21e18c50f02221c50ad";
+            input = JSON.stringify(address);
+            expected = {ok: true, val: address};
+            output = util.parseAddress(input);
+            expect(output).to.deep.equal(expected);
+        })
+
+        it('should return err if account address malformed', ()=> {
+            address = "4dea71bde50f23d347d6b21e18c50f02221c50ad";
+            input = JSON.stringify(address);
+            expected = {ok: false, val: config.codes.NO_TX_ADDR_ERR};
+            output = util.parseAddress(input);
+            expect(output).to.deep.equal(expected);
+        })
+    })
+
     describe('isValidSession(id)', function(){
 
         let db;
