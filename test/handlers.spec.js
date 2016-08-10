@@ -220,9 +220,10 @@ describe('BLE Request Handlers', () => {
         it('should send "null" if unable to find tx', (done) => {
             let missing = '0xf087407379e66de3d69da365826272f7750e6c978f5c2d034296de168f500000';
             let missing_input = JSON.stringify(missing);
-            let expected_send = new Buffer(JSON.stringify('null'));
+            let expected_send = new Buffer(JSON.stringify(null));
 
             updateValueCallback = (val) => {
+                expect(JSON.parse(val)).to.be.a('null');
                 expect(bufferEqual(val, expected_send)).to.be.true;
                 done();
             };
@@ -460,7 +461,7 @@ describe('BLE Request Handlers', () => {
         it('should send "null" if unable to find tx', (done) => {
             
             // Expecting 'null'
-            let expected_send = new Buffer(JSON.stringify('null'));
+            let expected_send = new Buffer(JSON.stringify(null));
             
             // Mock good pin sign, non-existent client.
             let non_client = web3.eth.accounts[3];
@@ -470,6 +471,7 @@ describe('BLE Request Handlers', () => {
             input = JSON.stringify(signed);
 
             updateValueCallback = (val) => {
+                expect(JSON.parse(val)).to.be.a('null');
                 expect(bufferEqual(val, expected_send)).to.be.true;
                 done();
             };
@@ -729,7 +731,7 @@ describe('BLE Request Handlers', () => {
         });
 
         it('should send "null" if it cant find the contract record', (done)=>{
-            let expected_send = new Buffer(JSON.stringify('null'));
+            let expected_send = new Buffer(JSON.stringify(null));
 
             mock_record = { 
                 _id: 'not_the_id_you_need', 
@@ -741,6 +743,7 @@ describe('BLE Request Handlers', () => {
 
             let cb = (code) => {};
             updateValueCallback = (val) => {
+                expect(JSON.parse(val)).to.be.a('null');
                 expect(bufferEqual(val, expected_send)).to.be.true;
                 done();
             };
