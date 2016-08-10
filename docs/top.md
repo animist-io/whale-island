@@ -40,7 +40,7 @@ $ unset TRAVIS
 
 ### Device UUIDs
 
-Every animist endpoint broadcasts one of five unique 128bit beacon ids and provides access to server endpoints and broadcast events at corresponding BLE service uuids.
+Every animist node broadcasts one of five unique beacon uuids and provides access to server API endpoints and contract-triggered broadcast events at corresponding BLE service uuids.
 
 | Beacon UUID | Server UUID  | 
 | ----------- | ------------ | 
@@ -52,7 +52,7 @@ Every animist endpoint broadcasts one of five unique 128bit beacon ids and provi
 
 ### Hex Response Codes
 
-Endpoints respond with a hex code indicating whether or not the request is valid. Requested data (if available) follows after a min. 50ms delay. 
+Server API Endpoints respond immediately with a hex code indicating whether or not the request is valid. For subscription requests, data (if available) follows after a min. 50ms delay. 
 
 | Name | Value | -                | Name | Value |
 |------|-------|------------------|------|-------|
