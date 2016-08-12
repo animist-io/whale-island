@@ -1,7 +1,14 @@
 # whale-island
-[![Build Status](https://travis-ci.org/animist-io/whale-island.svg?branch=master)](https://travis-ci.org/animist-io/whale-island) (This repo is in the earliest stages of development. Unusable.)
+[![Build Status](https://travis-ci.org/animist-io/whale-island.svg?branch=master)](https://travis-ci.org/animist-io/whale-island) (This project is in early development. Unusable.)
 
-A micro-computer based Ethereum client and Bluetooth beacon that connects to mobile devices with a BLE server. Its API targets contract contingencies about location. 
+## Overview
+Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that connects to mobile devices with a BLE server. Its API targets contract contingencies about location but it can also be used as a simple bluetooth-Ethereum interface to process transactions, deploy contracts and execute methods. An Ionic.js module that helps hybrid mobile apps interact with whale-island is under development at [animist-io/wowshuxkluh](https://github.com/animist-io/wowshuxkluh).
+
+### Features
+
++ **Beacon:** Whale-island emits a continuous beacon signal. Beacon permissioning in iOS and Android allows mobile dapps to automatically wake up from backgrounded or killed states when they encounter an Animist node and publish to it without the user's intentional engagement. This means you can design long-running location-based applications that work seamlessly for most clients. A simple example is a race, where the user intentionally places a wager at the beginning and is automatically detected at the end, resolving the contest. Another would be a contract that rewards a client for visiting a location every day for a month without requiring that they 'check in' somewhere. 
+
++ **Contracts API:** Each node maintains its own account and a deployed contract on the blockchain that provides some standard functionality. By firing events on its contract and overriding it's Solidity methods, Dapps can have the node independently verify their client's presence at a location in time. They can also ask the node to broadcast a signal on an arbitrary port in order to coordinate the behavior of several mobile clients in the same location. For more on how to implement these behaviors in your own contracts see [animist-io/wallowa](https://github.com/animist-io/wallowa).
 
 ### Installation
 
