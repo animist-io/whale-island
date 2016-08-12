@@ -33,7 +33,7 @@ module.exports.generate = function(){
         let abi = deployed.abi;
         let privKey = util.stripHexPrefix(keys[0]);
         let brokeKey = util.stripHexPrefix(keys[0]);
-
+        
         let goodTxOptions = { gasPrice: 1, gasLimit: 3000000, data: util.stripHexPrefix(code)};
         let badTxOptions = { gasPrice: 1, gasLimit: 0, data: util.stripHexPrefix(code)};
         let callTxOptions = { data: util.stripHexPrefix(code)};
@@ -65,14 +65,14 @@ module.exports.generate = function(){
         badTx = badTx.serialize().toString('hex');
         brokeTx = brokeTx.serialize().toString('hex');
         
-
         return { 
             deployed: deployed, 
             goodTx: goodTx, 
             badTx: badTx, 
             brokeTx: brokeTx, 
             abi: abi, 
-            callGetVerified: [callTx[3],callTx[5]] }
+            callGetVerified: [callTx[3],callTx[5]] 
+        }
                 
     });
 };

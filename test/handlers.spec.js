@@ -266,7 +266,6 @@ describe('BLE Request Handlers', () => {
             updateValueCallback = (val) => {
                 expect(Buffer.isBuffer(val)).to.be.true;
                 val = JSON.parse(val);
-                //console.log(val);
                 let unsignedTime = eth.recover(val.time, val.signedTime);
                 let unsignedAddress = eth.recover(client, val.signedAddress);
                 expect(unsignedTime).to.equal(config.animistAccount);
@@ -631,7 +630,7 @@ describe('BLE Request Handlers', () => {
         })
     })
 
-    describe('onGetVerifiedTxHash', () => {
+    describe('onGetVerifiedTxStatus', () => {
         let pin, data, signed, msgHash, input, eth_db, mock_record, updateValueCallback, fns = {};
         
         // Debugging . . . duplicate recs getting stuck in db
@@ -667,12 +666,12 @@ describe('BLE Request Handlers', () => {
             };
 
             updateValueCallback = val => { done() };
-            defs.getVerifiedTxHashCharacteristic.updateValueCallback = updateValueCallback;
-            ble.onGetVerifiedTxHash(input, null, null, cb );
+            defs.getVerifiedTxStatusCharacteristic.updateValueCallback = updateValueCallback;
+            ble.onGetVerifiedTxStatus(input, null, null, cb );
 
         });
 
-        it('should send authStatus, authTxHash & verifiedTxHash data', (done)=>{
+        it('should send authStatus, authTxHash & VerifiedTxStatus data', (done)=>{
             mock_record = { 
                 _id: client, 
                 contractAddress: deployed.address,
@@ -692,8 +691,8 @@ describe('BLE Request Handlers', () => {
                 done();
             };
 
-            defs.getVerifiedTxHashCharacteristic.updateValueCallback = updateValueCallback;
-            eth_db.put(mock_record).then( res => ble.onGetVerifiedTxHash(input, null, null, cb));
+            defs.getVerifiedTxStatusCharacteristic.updateValueCallback = updateValueCallback;
+            eth_db.put(mock_record).then( res => ble.onGetVerifiedTxStatus(input, null, null, cb));
 
 
         });
@@ -706,7 +705,7 @@ describe('BLE Request Handlers', () => {
 
             data = JSON.stringify({pin: signed, tx: goodTx});
             
-            // Check getVerifiedTxHash val after +1 sec.
+            // Check getVerifiedTxStatus val after +1 sec.
             let cb = (val) => {};
             let updateValueCallback = (val) => {
                 expect(Buffer.isBuffer(val)).to.be.true;
@@ -720,11 +719,11 @@ describe('BLE Request Handlers', () => {
         
             // Wait for simulated authAndSendTx call to (probably) finish
             setTimeout(()=>{
-                ble.onGetVerifiedTxHash(input, null, null, cb);
+                ble.onGetVerifiedTxStatus(input, null, null, cb);
             }, 1000)
 
             // Simulate an authAndSendTx call.
-            defs.getVerifiedTxHashCharacteristic.updateValueCallback = updateValueCallback;
+            defs.getVerifiedTxStatusCharacteristic.updateValueCallback = updateValueCallback;
             defs.authAndSendTxCharacteristic.updateValueCallback = () => {};    
             mock_record = { _id: client, authority: client, contractAddress: deployed.address };
             eth_db.put(mock_record).then( res => ble.onAuthAndSendTx(data, null, null, cb));  
@@ -748,8 +747,8 @@ describe('BLE Request Handlers', () => {
                 done();
             };
 
-            defs.getVerifiedTxHashCharacteristic.updateValueCallback = updateValueCallback;
-            eth_db.put(mock_record).then( res => ble.onGetVerifiedTxHash(input, null, null, cb));
+            defs.getVerifiedTxStatusCharacteristic.updateValueCallback = updateValueCallback;
+            eth_db.put(mock_record).then( res => ble.onGetVerifiedTxStatus(input, null, null, cb));
         });
 
         it('should respond w/ error code if pin signature doesnt parse', (done)=>{
