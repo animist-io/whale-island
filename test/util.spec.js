@@ -44,6 +44,9 @@ describe('BLE Utilites', () => {
 
     before(() => {
 
+        // Don't clear the pin 
+        util._units.setPinResetInterval(500000);
+
         // Prep an eth-lightwallet keystore/account for pin signing tests
         let json = JSON.stringify(account.keystore);
         keystore = wallet.keystore.deserialize(json);  
@@ -94,21 +97,59 @@ describe('BLE Utilites', () => {
         });
     });
 
-    describe('resetPin', ()=>{
-        var new_pin, old_pin;
+    describe('getPin(true)', ()=>{
+        it('should generate a new Pin', () => {
+            let old_pin, new_pin
 
-        it('should generate & set a new 32 character pin', ()=>{
-    
-            old_pin = util.getPin();
-
-            util.resetPin();
-            new_pin = util.getPin();
+            old_pin = util.getPin(true);
+            new_pin = util.getPin(true);
 
             expect( typeof old_pin).to.equal('string');
             expect( old_pin.length).to.equal(32);
-            expect( typeof new_pin).to.equal('string');
-            expect( new_pin.length).to.equal(32);
-            expect(new_pin).not.to.equal(old_pin);
+            expect( old_pin).not.to.equal(new_pin);
+        });
+
+        it('should automatically clear the pin after PIN_RESET_INTERVAL ms', (done) => {
+
+            util._units.setPinResetInterval(10);
+            
+            setTimeout(() => {
+                expect(util.getPin()).to.equal(null);
+                util._units.setPinResetInterval(500000);
+                done();
+            }, 15);
+
+            util.getPin(true);
+        });
+
+        it('should NOT clear the pin if a method requests the pin before PIN_RESET_INTERVAL', (done) => {
+            
+            var pin;
+
+            util._units.setPinResetInterval(10);
+            
+            setTimeout(() => {
+                expect(util.getPin()).to.equal(pin);
+                util._units.setPinResetInterval(500000);
+                done();
+            }, 15);
+
+            pin = util.getPin(true);
+            util.getPin()
+        });
+
+    });
+
+    describe('resetPin', ()=>{
+        var new_pin, old_pin;
+
+        it('should clear the old pin', ()=>{
+    
+            old_pin = util.getPin(true);
+            util.resetPin();
+            new_pin = util.getPin();
+
+            expect( new_pin).to.equal(null);
         });
 
     });
@@ -172,7 +213,7 @@ describe('BLE Utilites', () => {
 
         it('should return usable string representing a signed msg if input is form "0x923 . . ."', ()=> {
             
-            msg = util.getPin();
+            msg = util.getPin(true);
             let msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(msg).toString('hex'));
             let signed =  web3.eth.sign(client, msgHash); 
             let input = JSON.stringify(signed);

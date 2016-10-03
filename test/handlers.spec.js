@@ -12,6 +12,7 @@ let eth = require('../lib/eth');
 // Mocks
 const account = require('../test/mocks/wallet');
 const transactions = require('../test/mocks/transaction');
+const bleno = require('../test/mocks/bleno.js');
 
 // Ethereum 
 const Web3 = require('web3');
@@ -46,6 +47,9 @@ describe('BLE Request Handlers', () => {
 
     before(() => {
 
+        // Don't clear the pin 
+        util._units.setPinResetInterval(500000);
+
         // Prep an eth-lightwallet keystore/account for pin signing tests
         let json = JSON.stringify(account.keystore);
         keystore = wallet.keystore.deserialize(json);  
@@ -74,31 +78,38 @@ describe('BLE Request Handlers', () => {
         
     describe('onGetPin', () => {
 
-      it('should respond w/ the current pin', () => {
-        
-        let fns = {};
-        let codes = config.codes;
-        let pin_to_buffer = new Buffer(util.getPin());
-        fns.callback = (code, pin) => {};
-        
-        chai.spy.on(fns, 'callback');
-        ble.onGetPin(null, fns.callback);
+        it('should respond w/ a newly generated pin', (done) => {
 
-        expect(fns.callback).to.have.been.called.with(codes.RESULT_SUCCESS, pin_to_buffer);
-
-      });
+            let new_pin, 
+                old_pin = new Buffer(util.getPin(true)),
+                codes = config.codes;
+           
+            let callback = (code, pin) => {
+                new_pin = new Buffer(util.getPin());
+                expect(code).to.equal(codes.RESULT_SUCCESS);
+                expect(bufferEqual(pin, new_pin)).to.be.true;
+                expect(bufferEqual(pin, old_pin)).to.be.false;
+                done();
+            };
+            ble.onGetPin(null, callback);
+        });
     });
 
     describe('onGetDeviceAccount', () => {
 
-      it('should respond w/ the devices public account address', ( done ) => {
+      it('should respond w/ the devices public account address and disconnect', ( done ) => {
         
+        chai.spy.on(bleno, 'disconnect');
+
         let codes = config.codes;
         let expected_account = new Buffer(JSON.stringify(config.animistAccount));
-        let pin_to_buffer = new Buffer(util.getPin());
+        let pin_to_buffer = new Buffer(util.getPin(true));
         let callback = (code, account) => {
             expect(bufferEqual(account, expected_account)).to.be.true;
-            done();
+            setTimeout(()=> { 
+                expect(bleno.disconnect).to.have.been.called();
+                done();
+            })
         };
         
         ble.onGetDeviceAccount(null, callback);
@@ -121,9 +132,10 @@ describe('BLE Request Handlers', () => {
 
         });
 
-        it( 'should send data about the queried tx', (done) => {
+        it( 'should send data about the queried tx and disconnect', (done) => {
             account = accounts[3];
             input = JSON.stringify(account);
+            chai.spy.on(bleno, 'disconnect');
 
             let balance = web3.eth.getBalance(account).toString();
             let expected_send = new Buffer(JSON.stringify(balance));
@@ -131,26 +143,39 @@ describe('BLE Request Handlers', () => {
 
             updateValueCallback = (val) => {
                 expect(bufferEqual(val, expected_send)).to.be.true;
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             };
             defs.getAccountBalanceCharacteristic.updateValueCallback = updateValueCallback;
             ble.onGetAccountBalance(input, null, null, cb );
         });
 
-        it('should respond with NO_TX_DB_ERR if input is malformed', (done) => {
+        it('should respond with NO_TX_DB_ERR if input is malformed and disconnect', (done) => {
+            
+            chai.spy.on(bleno, 'disconnect');
+
             let malformed = '0x000000000000000012345';
             let malformed_input = JSON.stringify(malformed);
             
+
             cb = (code) => { 
                 expect(code).to.equal(config.codes.NO_TX_ADDR_ERR);
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             };
 
             defs.getAccountBalanceCharacteristic.updateValueCallback = updateValueCallback;
             ble.onGetAccountBalance(malformed_input, null, null, cb );
         });
 
-        it('should send "0" if account non-existent', (done) => {
+        it('should send "0" if account non-existent and disconnect', (done) => {
+
+            chai.spy.on(bleno, 'disconnect');
+
             let missing = "0x4dea71bde50f23d347d6b21e18c50f02221c50ae";
             let missing_input = JSON.stringify(missing);
             let expected = new Buffer(JSON.stringify('0'));
@@ -158,7 +183,10 @@ describe('BLE Request Handlers', () => {
             cb = (code) => {};
             updateValueCallback = (val) => {
                 expect(bufferEqual(val, expected)).to.be.true;
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             };
             
             defs.getAccountBalanceCharacteristic.updateValueCallback = updateValueCallback;
@@ -190,34 +218,48 @@ describe('BLE Request Handlers', () => {
 
         });
 
-        it( 'should send data about the queried tx', (done) => {
+        it( 'should send data about the queried tx and disconnect', (done) => {
             
+            chai.spy.on(bleno, 'disconnect');
+
             let tx = web3.eth.getTransaction(hash);
             let res = {blockNumber: tx.blockNumber, nonce: tx.nonce, gas: tx.gas};
             let expected_send = new Buffer(JSON.stringify(res));
 
             updateValueCallback = (val) => {
                 expect(bufferEqual(val, expected_send)).to.be.true;
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             };
             defs.getTxStatusCharacteristic.updateValueCallback = updateValueCallback;
             ble.onGetTxStatus( input, null, null, fns.callback );
         });
 
-        it('should respond with INVALID_TX_HASH if input is malformed', (done) => {
+        it('should respond with INVALID_TX_HASH if input is malformed and disconnect', (done) => {
+
+            chai.spy.on(bleno, 'disconnect');
+
             let malformed = '0x000000000000000012345';
             let malformed_input = JSON.stringify(malformed);
             
             fns.callback = (code) => { 
                 expect(code).to.equal(config.codes.INVALID_TX_HASH);
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             };
 
             chai.spy.on(fns, 'callback');
             ble.onGetTxStatus(malformed_input, null, null, fns.callback );
         });
 
-        it('should send "null" if unable to find tx', (done) => {
+        it('should send "null" if unable to find tx and disconnect', (done) => {
+
+            chai.spy.on(bleno, 'disconnect');
+
             let missing = '0xf087407379e66de3d69da365826272f7750e6c978f5c2d034296de168f500000';
             let missing_input = JSON.stringify(missing);
             let expected_send = new Buffer(JSON.stringify(null));
@@ -225,7 +267,10 @@ describe('BLE Request Handlers', () => {
             updateValueCallback = (val) => {
                 expect(JSON.parse(val)).to.be.a('null');
                 expect(bufferEqual(val, expected_send)).to.be.true;
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             };
             
             defs.getTxStatusCharacteristic.updateValueCallback = updateValueCallback;
@@ -241,7 +286,7 @@ describe('BLE Request Handlers', () => {
         beforeEach(()=>{
 
             // Mock client signed pin (web3 style),
-            pin = util.getPin();
+            pin = util.getPin(true);
             msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
             signedPin =  web3.eth.sign(client, msgHash); 
     
@@ -258,7 +303,9 @@ describe('BLE Request Handlers', () => {
 
         });
 
-        it( 'should send signed timestamp and signed caller data', (done) => {
+        it( 'should send signed timestamp and signed caller data and disconnect', (done) => {
+
+            chai.spy.on(bleno, 'disconnect');
             data = JSON.stringify(signedPin);
     
             cb = (code)=>{};
@@ -270,19 +317,28 @@ describe('BLE Request Handlers', () => {
                 let unsignedAddress = eth.recover(client, val.signedAddress);
                 expect(unsignedTime).to.equal(config.animistAccount);
                 expect(unsignedAddress).to.equal(config.animistAccount);
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             };
             defs.getPresenceReceiptCharacteristic.updateValueCallback = updateValueCallback;
             ble.onGetPresenceReceipt(data, null, null, cb );
         });
 
-        it('should respond with NO_TX_DB_ERR if input is malformed', (done) => {
+        it('should respond with NO_TX_DB_ERR if input is malformed and disconnect', (done) => {
+
+            chai.spy.on(bleno, 'disconnect');
+
             let malformed = "dd5[w,r,0,,n,g";
             let malformed_input = JSON.stringify(malformed);
             
             cb = (code) => { 
                 expect(code).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             };
             ble.onGetPresenceReceipt(malformed_input, null, null, cb );
         });
@@ -297,7 +353,7 @@ describe('BLE Request Handlers', () => {
             fns.callback = () => {};
 
             // Mock client signed pin (web3 style),
-            pin = util.getPin();
+            pin = util.getPin(true);
             msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
             signed =  web3.eth.sign(client, msgHash); 
             input = JSON.stringify(signed);
@@ -358,7 +414,8 @@ describe('BLE Request Handlers', () => {
             
         });
 
-        it('should send a hex string result', (done)=> {
+        it('should send a hex string result and disconnect', (done)=> {
+            chai.spy.on(bleno, 'disconnect');
             out = '0x0000000000000000000000000000000000000000000000000000000000000001';
             out = new Buffer(JSON.stringify(out));
             data = JSON.stringify(callGetVerified) 
@@ -366,19 +423,26 @@ describe('BLE Request Handlers', () => {
             cb = (code) => {};
             updateValueCallback = val => { 
                 expect(bufferEqual(val, out)).to.be.true;
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             };
             defs.callTxCharacteristic.updateValueCallback = updateValueCallback;
             ble.onCallTx(data, null, null, cb);
 
         });
 
-        it('should respond w/ error code if data does not parse correctly', (done)=>{
+        it('should respond w/ error code if data does not parse correctly and disconnect', (done)=>{
+            chai.spy.on(bleno, 'disconnect');
             data = JSON.stringify(['3948394893', 890823493 ]);
             
             cb = (code) => {
                 expect(code).to.equal(config.codes.INVALID_CALL_DATA);
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             }
     
             ble.onCallTx(data, null, null, cb);
@@ -401,7 +465,7 @@ describe('BLE Request Handlers', () => {
             fns.callback = () => {};
 
             // Mock client signed pin (web3 style),
-            pin = util.getPin();
+            pin = util.getPin(true);
             msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
             signed =  web3.eth.sign(client, msgHash); 
             input = JSON.stringify(signed);
@@ -429,8 +493,9 @@ describe('BLE Request Handlers', () => {
 
         });
 
-        it( 'should send the tx hash of the auth contract call', (done) => {
-            
+        it( 'should send the tx hash of the auth contract call and disconnect', (done) => {
+
+            chai.spy.on(bleno, 'disconnect');
             fns.callback = () => {};
 
             // Check txHash form: Is buffer, right length, hex prefixed
@@ -438,19 +503,28 @@ describe('BLE Request Handlers', () => {
                 expect(Buffer.isBuffer(val)).to.be.true;
                 expect(val.length).to.equal(68)    
                 expect(ethjs_util.isHexPrefixed(JSON.parse(val))).to.be.true;
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             };
             defs.authTxCharacteristic.updateValueCallback = updateValueCallback;
             ble.onAuthTx( input, null, null, fns.callback );
         });
 
-        it('should respond with NO_SIGNED_MSG_IN_REQUEST if input is malformed', (done) => {
+        it('should respond with NO_SIGNED_MSG_IN_REQUEST if input is malformed and disconnect', (done) => {
+
+            chai.spy.on(bleno, 'disconnect');
+
             let malformed = "dd5[w,r,0,,n,g";
             let malformed_input = JSON.stringify(malformed);
             
             fns.callback = (code) => { 
                 expect(code).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             };
 
             chai.spy.on(fns, 'callback');
@@ -464,7 +538,7 @@ describe('BLE Request Handlers', () => {
             
             // Mock good pin sign, non-existent client.
             let non_client = web3.eth.accounts[3];
-            pin = util.getPin();
+            pin = util.getPin(true);
             msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
             signed =  web3.eth.sign(non_client, msgHash); 
             input = JSON.stringify(signed);
@@ -487,7 +561,7 @@ describe('BLE Request Handlers', () => {
         beforeEach(()=>{
 
             // Mock client signed pin (web3 style),
-            pin = util.getPin();
+            pin = util.getPin(true);
             msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
             signed =  web3.eth.sign(client, msgHash); 
 
@@ -512,8 +586,9 @@ describe('BLE Request Handlers', () => {
             ble.onAuthAndSendTx(data, null, null, cb);
         });
 
-        it('should send the tx hash of the verifyPresence method call', (done)=>{
+        it('should send the tx hash of the verifyPresence method call and disconnect', (done)=>{
 
+            chai.spy.on(bleno, 'disconnect');
             data = JSON.stringify({pin: signed, tx: goodTx});
             
             let cb = (val) => {};
@@ -523,7 +598,10 @@ describe('BLE Request Handlers', () => {
                 expect(Buffer.isBuffer(val)).to.be.true;
                 expect(val.length).to.equal(68)    
                 expect(ethjs_util.isHexPrefixed(JSON.parse(val))).to.be.true;
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             };
             defs.authAndSendTxCharacteristic.updateValueCallback = updateValueCallback;    
             ble.onAuthAndSendTx(data, null, null, cb);
@@ -544,24 +622,32 @@ describe('BLE Request Handlers', () => {
             ble.onAuthAndSendTx(data, null, null, cb);
         });
 
-        it('should respond w/error if sent pin is bad', (done)=>{
-            "dd5[w,r,0,,n,g"
+        it('should respond w/error if sent pin is bad and disconnect', (done)=>{
+
+            chai.spy.on(bleno, 'disconnect');
             data = JSON.stringify({pin: "dd5[w,r,0,,n,g", tx: badTx});
 
             let cb = (val) => {
                 expect(val).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             }    
             ble.onAuthAndSendTx(data, null, null, cb);
         });
 
-        it('should respond w/error if sent tx is bad', (done)=> {
+        it('should respond w/error if sent tx is bad and disconnect', (done)=> {
 
+            chai.spy.on(bleno, 'disconnect');
             data = JSON.stringify({pin: signed, tx: badTx});
             
             let cb = (val) => {
                 expect(val).to.equal(config.codes.INSUFFICIENT_GAS);
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             }    
             ble.onAuthAndSendTx(data, null, null, cb);
         });
@@ -595,7 +681,9 @@ describe('BLE Request Handlers', () => {
             })
         });
 
-        it('should send txHash of the sent transaction', (done)=>{
+        it('should send txHash of the sent transaction and disconnect', (done)=>{
+
+            chai.spy.on(bleno, 'disconnect');
             orig_session = {account: client};
             cb = (val) => {};
 
@@ -604,7 +692,10 @@ describe('BLE Request Handlers', () => {
                 expect(Buffer.isBuffer(val)).to.be.true;
                 expect(val.length).to.equal(68)    
                 expect(ethjs_util.isHexPrefixed(JSON.parse(val))).to.be.true;
-                done();  
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             };
             defs.sendTxCharacteristic.updateValueCallback = updateValueCallback;
             
@@ -614,11 +705,17 @@ describe('BLE Request Handlers', () => {
             })
         });
 
-        it('should respond with error code if caller cant send a tx', (done)=>{
+        it('should respond with error code if caller cant send a tx and disconnect', (done)=>{
+
+            chai.spy.on(bleno, 'disconnect');
             orig_session = {account: web3.eth.accounts[2]};
+
             cb = (val) => {
                 expect(val).to.equal(config.codes.INVALID_TX_SENDER_ADDRESS);
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             }
             let updateValueCallback = (sent) => {};
             defs.sendTxCharacteristic.updateValueCallback = updateValueCallback;
@@ -645,7 +742,7 @@ describe('BLE Request Handlers', () => {
             fns.callback = () => {};
 
             // Mock client signed pin (web3 style),
-            pin = util.getPin();
+            pin = util.getPin(true);
             msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
             signed =  web3.eth.sign(client, msgHash); 
             input = JSON.stringify(signed);
@@ -671,7 +768,10 @@ describe('BLE Request Handlers', () => {
 
         });
 
-        it('should send authStatus, authTxHash & VerifiedTxStatus data', (done)=>{
+        it('should send authStatus, authTxHash & VerifiedTxStatus data and disconnect', (done)=>{
+
+            chai.spy.on(bleno, 'disconnect');
+
             mock_record = { 
                 _id: client, 
                 contractAddress: deployed.address,
@@ -688,7 +788,10 @@ describe('BLE Request Handlers', () => {
                 expect(val.authStatus).to.equal('pending');
                 expect(val.authTxHash).to.equal('0x00001');
                 expect(val.verifiedTxHash).to.equal(null);
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             };
 
             defs.getVerifiedTxStatusCharacteristic.updateValueCallback = updateValueCallback;
@@ -729,7 +832,10 @@ describe('BLE Request Handlers', () => {
             eth_db.put(mock_record).then( res => ble.onAuthAndSendTx(data, null, null, cb));  
         });
 
-        it('should send "null" if it cant find the contract record', (done)=>{
+        it('should send "null" if it cant find the contract record and disconnect', (done)=>{
+
+            chai.spy.on(bleno, 'disconnect');
+
             let expected_send = new Buffer(JSON.stringify(null));
 
             mock_record = { 
@@ -744,19 +850,27 @@ describe('BLE Request Handlers', () => {
             updateValueCallback = (val) => {
                 expect(JSON.parse(val)).to.be.a('null');
                 expect(bufferEqual(val, expected_send)).to.be.true;
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             };
 
             defs.getVerifiedTxStatusCharacteristic.updateValueCallback = updateValueCallback;
             eth_db.put(mock_record).then( res => ble.onGetVerifiedTxStatus(input, null, null, cb));
         });
 
-        it('should respond w/ error code if pin signature doesnt parse', (done)=>{
+        it('should respond w/ error code if pin signature doesnt parse and disconnect', (done)=>{
+
+            chai.spy.on(bleno, 'disconnect');
 
             let data = JSON.stringify("dd5[w,r,0,,n,g");
             let cb = (val) => {
                 expect(val).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             }    
             ble.onAuthAndSendTx(data, null, null, cb);
         });
@@ -766,7 +880,10 @@ describe('BLE Request Handlers', () => {
 
         let callback, valString, valInt;
 
-        it('should respond w/RESULT_SUCCESS & the current blockNumber', (done) => {
+        it('should respond w/RESULT_SUCCESS & the current blockNumber and disconnect', (done) => {
+
+            chai.spy.on(bleno, 'disconnect');
+
             let callback = (code, val) => {
                 
                 // Decode val
@@ -775,7 +892,10 @@ describe('BLE Request Handlers', () => {
                 
                 expect(code).to.equal(config.codes.RESULT_SUCCESS);
                 expect(valInt).to.equal(web3.eth.blockNumber);
-                done();
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
             }
 
             ble.onGetBlockNumber(null, callback);
@@ -789,7 +909,7 @@ describe('BLE Request Handlers', () => {
         // Mocks
         before(()=>{
             
-            req = wallet.signing.signMsg( keystore, account.key, util.getPin(), address); 
+            req = wallet.signing.signMsg( keystore, account.key, util.getPin(true), address); 
             req = JSON.stringify(req);
 
             mock_contract = { _id: hexAddress, authority: hexAddress, contractAddress: deployed.address };
@@ -877,7 +997,9 @@ describe('BLE Request Handlers', () => {
             
         });
 
-        it('should respond w/ NO_TX_DB_ERR if there is no tx matching the address', (done)=>{
+        it('should respond w/ NO_TX_DB_ERR if there is no tx matching the address and disconnect', (done)=>{
+
+            chai.spy.on(bleno, 'disconnect');
             
             // Setup: delete mock from contracts DB
             eth_db.get(hexAddress)
@@ -886,19 +1008,26 @@ describe('BLE Request Handlers', () => {
                     chai.spy.on(fns, 'callback');
                     setTimeout(() => {
                         expect(fns.callback).to.have.been.called.with(config.codes.NO_TX_DB_ERR);
+                        expect(bleno.disconnect).to.have.been.called();
                         done();
                     }, 55)
                     ble.onGetContract(req, null, null, fns.callback);
                  })
         });
 
-        it('should respond w/ error code if req is un-parseable', ()=>{
+        it('should respond w/ error code if req is un-parseable and disconnect', (done)=>{
 
             req = "dd5[w,r,0,,n,g";
             chai.spy.on(fns, 'callback');
+            chai.spy.on(bleno, 'disconnect');
 
             ble.onGetContract(req, null, null, fns.callback);
             expect(fns.callback).to.have.been.called.with(config.codes.INVALID_JSON_IN_REQUEST);
+            setTimeout(()=> { 
+                expect(bleno.disconnect).to.have.been.called();
+                done();
+            })
+
             
         });
 
@@ -950,7 +1079,9 @@ describe('BLE Request Handlers', () => {
 
         });
 
-        it('should do nothing post-EOF', (done)=>{
+        it('should disconnect post-EOF', (done)=>{
+
+            chai.spy.on(bleno, 'disconnect');
 
             // Run EOF
             util._units.resetSendQueue();
@@ -964,6 +1095,7 @@ describe('BLE Request Handlers', () => {
 
                 setTimeout(() =>{
                     expect(defs.getContractCharacteristic.updateValueCallback).not.to.have.been.called();
+                    expect(bleno.disconnect).to.have.been.called();
                     done();
                  },0)
             },0);

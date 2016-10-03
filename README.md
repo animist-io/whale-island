@@ -6,7 +6,7 @@ Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that
 
 ### Features
 
-+ **Client Verification**: Nodes identify their clients by asking them to sign a connection-specific pin published on a bluetooth channel. While this doesn't absolutely guarantee a client is proximate to the node, it may be adequate for many moderately valued, well-designed contracts. Spoofing the node typically requires establishing parrallel physical infrastructure that relays node transmissions and client responses in real time. Whale-island can also be combined with data sources like Google geo-location to make an oracle that's harder to corrupt. Dapps that rely on client based geo-location alone are vulnerable to [highly programmatic spoofing](http://highonandroid.com/android-apps/pokemon-go-cheathack-for-android-how-to-play-game-without-leaving-house/) if someone decompiles the app, engineers a way to feed arbitrary location to it and makes the resulting application available to a wider public. 
++ **Client Verification**: Nodes identify their clients by asking them to sign a time-variant pin published on a bluetooth channel. While this doesn't absolutely guarantee a client is proximate to the node, it may be adequate for many moderately valued, well-designed contracts. Spoofing the node typically requires establishing parrallel physical infrastructure that relays node transmissions and client responses in real time. Whale-island can also be combined with data sources like Google geo-location to make an oracle that's very difficult to corrupt. Dapps that rely on client based geo-location alone are vulnerable to highly programmatic spoofing if someone decompiles the app, engineers a way to feed arbitrary location to it and makes the resulting application available to a wider public. 
 
 + **Beacon:** iOS and Android apps that register with their OS to listen for beacon signal will wake up from a backgrounded/killed state when those signals are encountered in the environment and are allowed to run pre-defined subroutines on their device's CPU for ~90 seconds. This means you can design long-running location-based mobile dapps that automatically connect to Animist nodes and publish to the blockchain without requiring a user's explicit engagement. An example use-case for this behavior is a race where the user intentionally places a wager at the beginning and is automatically detected at the end, resolving the contest. Another would be a contract that rewards a client for visiting a location every day for a month without requiring that they check in somewhere. 
 
@@ -97,7 +97,7 @@ Server API Endpoints respond immediately with a hex code indicating whether or n
 
 # onAuthAndSendTx
 
-[lib/handlers.js:383-411](https://github.com/animist-io/whale-island/blob/f04fd43ef829dc99592f475efa0af7b3a937d0a8/lib/handlers.js#L383-L411 "Source code on GitHub")
+[lib/handlers.js:383-411](https://github.com/animist-io/whale-island/blob/47a439f8cd5009332e27a0ad012a88887b32813d/lib/handlers.js#L383-L411 "Source code on GitHub")
 
 Authenticates client's proximity to animist node by invoking their contract's "verifyPresence" 
 method with the device account. Waits for auth to be mined and sends clients raw transaction. 
@@ -121,7 +121,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onAuthTx
 
-[lib/handlers.js:349-370](https://github.com/animist-io/whale-island/blob/f04fd43ef829dc99592f475efa0af7b3a937d0a8/lib/handlers.js#L349-L370 "Source code on GitHub")
+[lib/handlers.js:349-370](https://github.com/animist-io/whale-island/blob/47a439f8cd5009332e27a0ad012a88887b32813d/lib/handlers.js#L349-L370 "Source code on GitHub")
 
 Authenticates client's proximity to animist node by invoking their contract's "verifyPresence" 
 method with the device account.
@@ -144,7 +144,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onCallTx
 
-[lib/handlers.js:297-310](https://github.com/animist-io/whale-island/blob/f04fd43ef829dc99592f475efa0af7b3a937d0a8/lib/handlers.js#L297-L310 "Source code on GitHub")
+[lib/handlers.js:297-310](https://github.com/animist-io/whale-island/blob/47a439f8cd5009332e27a0ad012a88887b32813d/lib/handlers.js#L297-L310 "Source code on GitHub")
 
 Executes web3.eth.call on public constant contract methods that use no gas and do not need to be signed. 
 This endpoint is useful if you wish to retrieve data 'synchronously' from a contract.
@@ -165,7 +165,7 @@ Returns **Buffer** JSON formatted string of web3.eth.call result.
 
 # onGetAccountBalance
 
-[lib/handlers.js:132-147](https://github.com/animist-io/whale-island/blob/f04fd43ef829dc99592f475efa0af7b3a937d0a8/lib/handlers.js#L132-L147 "Source code on GitHub")
+[lib/handlers.js:132-147](https://github.com/animist-io/whale-island/blob/47a439f8cd5009332e27a0ad012a88887b32813d/lib/handlers.js#L132-L147 "Source code on GitHub")
 
 Responds w/ wei balance of requested account.
 
@@ -187,7 +187,7 @@ Returns **Buffer** JSON formatted string: "0" on error.
 
 # onGetBlockNumber
 
-[lib/handlers.js:52-55](https://github.com/animist-io/whale-island/blob/f04fd43ef829dc99592f475efa0af7b3a937d0a8/lib/handlers.js#L52-L55 "Source code on GitHub")
+[lib/handlers.js:52-55](https://github.com/animist-io/whale-island/blob/47a439f8cd5009332e27a0ad012a88887b32813d/lib/handlers.js#L52-L55 "Source code on GitHub")
 
 Publishes current blockNumber.
 
@@ -205,7 +205,7 @@ Returns **Buffer** JSON formatted string: "152..2"
 
 # onGetContract
 
-[lib/handlers.js:233-257](https://github.com/animist-io/whale-island/blob/f04fd43ef829dc99592f475efa0af7b3a937d0a8/lib/handlers.js#L233-L257 "Source code on GitHub")
+[lib/handlers.js:233-257](https://github.com/animist-io/whale-island/blob/47a439f8cd5009332e27a0ad012a88887b32813d/lib/handlers.js#L233-L257 "Source code on GitHub")
 
 Begins sending contract code plus a session id / expiration time to the client in a series of packets. 
 onGetContractIndicate handler publishes the rest as the client signals it can accept more.
@@ -226,7 +226,7 @@ Returns **Buffer** JSON formatted object: {code: '0x5d3e..11', sessionId: '4ydw2
 
 # onGetContractIndicate
 
-[lib/handlers.js:266-285](https://github.com/animist-io/whale-island/blob/f04fd43ef829dc99592f475efa0af7b3a937d0a8/lib/handlers.js#L266-L285 "Source code on GitHub")
+[lib/handlers.js:266-285](https://github.com/animist-io/whale-island/blob/47a439f8cd5009332e27a0ad012a88887b32813d/lib/handlers.js#L266-L285 "Source code on GitHub")
 
 De-queues and sends contract code packet.
 
@@ -240,7 +240,7 @@ Returns **Buffer** JSON formatted string "EOF" after last packet is sent.
 
 # onGetDeviceAccount
 
-[lib/handlers.js:39-42](https://github.com/animist-io/whale-island/blob/f04fd43ef829dc99592f475efa0af7b3a937d0a8/lib/handlers.js#L39-L42 "Source code on GitHub")
+[lib/handlers.js:39-42](https://github.com/animist-io/whale-island/blob/47a439f8cd5009332e27a0ad012a88887b32813d/lib/handlers.js#L39-L42 "Source code on GitHub")
 
 Publishes animist node's public account number.
 
@@ -258,7 +258,7 @@ Returns **Buffer** JSON formatted hex prefixed account address
 
 # onGetNewSessionId
 
-[lib/handlers.js:100-120](https://github.com/animist-io/whale-island/blob/f04fd43ef829dc99592f475efa0af7b3a937d0a8/lib/handlers.js#L100-L120 "Source code on GitHub")
+[lib/handlers.js:100-120](https://github.com/animist-io/whale-island/blob/47a439f8cd5009332e27a0ad012a88887b32813d/lib/handlers.js#L100-L120 "Source code on GitHub")
 
 Generates, saves and responds with new session id linked to caller account.
 
@@ -280,7 +280,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onGetPin
 
-[lib/handlers.js:26-29](https://github.com/animist-io/whale-island/blob/f04fd43ef829dc99592f475efa0af7b3a937d0a8/lib/handlers.js#L26-L29 "Source code on GitHub")
+[lib/handlers.js:26-29](https://github.com/animist-io/whale-island/blob/47a439f8cd5009332e27a0ad012a88887b32813d/lib/handlers.js#L26-L29 "Source code on GitHub")
 
 Publishes current 'pin' value. This updates every ~30sec and a caller
 signed copy of it is required to access some of the server's endpoints. It's used 
@@ -300,7 +300,7 @@ Returns **Buffer** JSON formatted 32 character alpha-numeric string (resets ever
 
 # onGetPresenceReceipt
 
-[lib/handlers.js:164-180](https://github.com/animist-io/whale-island/blob/f04fd43ef829dc99592f475efa0af7b3a937d0a8/lib/handlers.js#L164-L180 "Source code on GitHub")
+[lib/handlers.js:164-180](https://github.com/animist-io/whale-island/blob/47a439f8cd5009332e27a0ad012a88887b32813d/lib/handlers.js#L164-L180 "Source code on GitHub")
 
 Returns data that can be used to authenticate client's proximity to the animist node. 
 Response includes a timestamp, the timestamp signed by the device account, and the caller's 
@@ -326,7 +326,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onGetTxStatus
 
-[lib/handlers.js:69-88](https://github.com/animist-io/whale-island/blob/f04fd43ef829dc99592f475efa0af7b3a937d0a8/lib/handlers.js#L69-L88 "Source code on GitHub")
+[lib/handlers.js:69-88](https://github.com/animist-io/whale-island/blob/47a439f8cd5009332e27a0ad012a88887b32813d/lib/handlers.js#L69-L88 "Source code on GitHub")
 
 Responds w/ small subset of web3 data about a transaction. Useful for determining whether
 or not a transaction has been mined. (blockNumber field of response will be null if tx is
@@ -350,7 +350,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onGetVerifiedTxStatus
 
-[lib/handlers.js:195-220](https://github.com/animist-io/whale-island/blob/f04fd43ef829dc99592f475efa0af7b3a937d0a8/lib/handlers.js#L195-L220 "Source code on GitHub")
+[lib/handlers.js:195-220](https://github.com/animist-io/whale-island/blob/47a439f8cd5009332e27a0ad012a88887b32813d/lib/handlers.js#L195-L220 "Source code on GitHub")
 
 Returns status data about a transaction submitted in an atomic authAndSend request. 
 Response includes info about the authenticating tx which may be 'pending' or 'failed' 
@@ -375,7 +375,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onSendTx
 
-[lib/handlers.js:324-336](https://github.com/animist-io/whale-island/blob/f04fd43ef829dc99592f475efa0af7b3a937d0a8/lib/handlers.js#L324-L336 "Source code on GitHub")
+[lib/handlers.js:324-336](https://github.com/animist-io/whale-island/blob/47a439f8cd5009332e27a0ad012a88887b32813d/lib/handlers.js#L324-L336 "Source code on GitHub")
 
 Sends tx as rawTransaction if tx signer's sessionId is valid. Will not submit if
 a pending authAndSend request exists in the contractDB for this caller account. 
