@@ -1,5 +1,5 @@
 # whale-island
-[![Build Status](https://travis-ci.org/animist-io/whale-island.svg?branch=master)](https://travis-ci.org/animist-io/whale-island) **This project is in early development. Unusable.**
+[![Build Status](https://travis-ci.org/animist-io/whale-island.svg?branch=master)](https://travis-ci.org/animist-io/whale-island) **This project is in early development. Pre-alpha.**
 
 ## Overview
 Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that connects to mobile devices via BLE server. Its API targets contract contingencies about location but it can also be used as a simple bluetooth-Ethereum interface to process transactions, deploy contracts and call their methods. An Ionic.js module that helps hybrid mobile apps interact with whale-island is under development at [animist-io/wowshuxkluh](https://github.com/animist-io/wowshuxkluh).
@@ -15,6 +15,10 @@ Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that
 + **Presence Receipts:** Whale-island also publishes data that can verify a client's presence without invoking contract methods. Using it's own account, the node signs a timestamp and a verified copy of the clients account address. The client can then present these to an adjudicating authority who extracts the public addresses from the packet and checks the results against node identification data published on IPFS. (See Bluetooth Server API below) 
 
 ### Installation
+
+[Parity installation for Pi3](https://github.com/diglos/pi-gen)
+
+[IPFS installation for Pi](https://github.com/claudiobizzotto/ipfs-rpi)
 
 Raspbian Bleno
 ``` 
@@ -73,7 +77,7 @@ Server API Endpoints respond immediately with a hex code indicating whether or n
 |INVALID_TX_SIGNATURE|0x0B|-      |NO_SIGNED_MSG_IN_REQUEST|0x03| 
 |INSUFFICIENT_GAS|0x0C|-          |NO_TX_DB_ERR|0x04|
 |INSUFFICIENT_BALANCE|0x0D|-      |NO_TX_ADDR_ERR|0x05|
-|DECYPTION_FAILED |0x12|-         |RESULT_SUCCESS|0x00|
+|DECRYPTION_FAILED |0x12|-         |RESULT_SUCCESS|0x00|
 
 
 
