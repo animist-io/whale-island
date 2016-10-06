@@ -117,6 +117,26 @@ describe('BLE Request Handlers', () => {
       });
     });
 
+    describe('onGetPgpKeyId', () => {
+
+        it('should respond w/ the devices public pgp keyID and disconnect', ( done ) => {
+
+            chai.spy.on(bleno, 'disconnect');
+
+            let codes = config.codes;
+            let expected_key = new Buffer(JSON.stringify(config.pgpKeyId));
+            let callback = (code, key) => {
+                expect(bufferEqual(key, expected_key)).to.be.true;
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
+            };
+            ble.onGetPgpKeyId(null, callback);
+
+        });
+    });
+
     describe('onGetAccountBalance', ()=>{
 
         let input, account, cb, updateValueCallback, accounts = web3.eth.accounts;
