@@ -97,6 +97,19 @@ describe('BLE Utilites', () => {
         });
     });
 
+    describe('decrypt()', () => {
+
+        let msg = "hello";
+
+        it('should decrypt a message correctly', () => {
+            return util.encrypt(msg, config.publicKey).then( encrypted => {
+                return expect(util.decrypt(encrypted)).to.eventually.equal(msg);
+            })
+        })
+         
+
+    })
+
     describe('getPin(true)', ()=>{
         it('should generate a new Pin', () => {
             let old_pin, new_pin

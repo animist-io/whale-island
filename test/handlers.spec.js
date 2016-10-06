@@ -13,6 +13,7 @@ let eth = require('../lib/eth');
 const account = require('../test/mocks/wallet');
 const transactions = require('../test/mocks/transaction');
 const bleno = require('../test/mocks/bleno.js');
+const pgp = require('../test/mocks/bleno.js');
 
 // Ethereum 
 const Web3 = require('web3');
@@ -455,11 +456,11 @@ describe('BLE Request Handlers', () => {
         
         // Debugging . . . duplicate recs getting stuck in db
         before( () => {
-            eth_db = new pouchdb('contracts'); 
+            eth_db = new pouchdb('contracts');     
             return eth_db.destroy();
         })
 
-        beforeEach( () => {
+        beforeEach( (done) => {
 
             // Zero out previous write callback
             fns.callback = () => {};
@@ -468,14 +469,14 @@ describe('BLE Request Handlers', () => {
             pin = util.getPin(true);
             msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
             signed =  web3.eth.sign(client, msgHash); 
+    
             input = JSON.stringify(signed);
-
+        
             // Load contract record into contractsDB.
             eth_db = new pouchdb('contracts'); 
             eth.units.setDB(eth_db);
             record = { _id: client, authority: client, contractAddress: deployed.address };
-            return eth_db.put(record);
-
+            eth_db.put(record).then(() =>  done());
         });
 
         // Cleanup
@@ -489,8 +490,10 @@ describe('BLE Request Handlers', () => {
 
             updateValueCallback = val => { done() };
             defs.authTxCharacteristic.updateValueCallback = updateValueCallback;
-            ble.onAuthTx(input, null, null, fns.callback );
 
+            util.encrypt(input).then( encrypted => {
+                ble.onAuthTx(encrypted, null, null, fns.callback );
+            })
         });
 
         it( 'should send the tx hash of the auth contract call and disconnect', (done) => {
@@ -509,8 +512,24 @@ describe('BLE Request Handlers', () => {
                 })
             };
             defs.authTxCharacteristic.updateValueCallback = updateValueCallback;
-            ble.onAuthTx( input, null, null, fns.callback );
+            util.encrypt(input).then( encrypted => {
+                ble.onAuthTx(encrypted, null, null, fns.callback );
+            })
         });
+
+        it('should respond with DECRYPTION_FAILED if input is unencrypted', (done) => {
+
+            chai.spy.on(bleno, 'disconnect');
+        
+            let callback = (code) => { 
+                expect(code).to.equal(config.codes.DECRYPTION_FAILED);
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
+            };
+            ble.onAuthTx(input, null, null, callback );
+        })
 
         it('should respond with NO_SIGNED_MSG_IN_REQUEST if input is malformed and disconnect', (done) => {
 
@@ -518,6 +537,7 @@ describe('BLE Request Handlers', () => {
 
             let malformed = "dd5[w,r,0,,n,g";
             let malformed_input = JSON.stringify(malformed);
+
             
             fns.callback = (code) => { 
                 expect(code).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
@@ -528,7 +548,10 @@ describe('BLE Request Handlers', () => {
             };
 
             chai.spy.on(fns, 'callback');
-            ble.onAuthTx(malformed_input, null, null, fns.callback );
+
+            util.encrypt(malformed_input).then(( encrypted ) =>{
+                ble.onAuthTx(encrypted, null, null, fns.callback );
+            })
         });
 
         it('should send "null" if unable to find tx', (done) => {
@@ -550,7 +573,9 @@ describe('BLE Request Handlers', () => {
             };
             
             defs.authTxCharacteristic.updateValueCallback = updateValueCallback;
-            ble.onAuthTx(input, null, null, fns.callback );
+            util.encrypt(input).then( encrypted => {
+                ble.onAuthTx(encrypted, null, null, fns.callback );
+            })
         });
     });
 
@@ -583,7 +608,10 @@ describe('BLE Request Handlers', () => {
             } 
             let updateValueCallback = (sent) => { done(); };
             defs.authAndSendTxCharacteristic.updateValueCallback = updateValueCallback;
-            ble.onAuthAndSendTx(data, null, null, cb);
+            
+            util.encrypt(data).then( encrypted => {
+                ble.onAuthAndSendTx(encrypted, null, null, cb );
+            })
         });
 
         it('should send the tx hash of the verifyPresence method call and disconnect', (done)=>{
@@ -604,7 +632,9 @@ describe('BLE Request Handlers', () => {
                 })
             };
             defs.authAndSendTxCharacteristic.updateValueCallback = updateValueCallback;    
-            ble.onAuthAndSendTx(data, null, null, cb);
+            util.encrypt(data).then( encrypted => {
+                ble.onAuthAndSendTx(encrypted, null, null, cb );
+            })
         });
 
         it('should call sendTxWhenAuthed', (done)=>{
@@ -619,8 +649,25 @@ describe('BLE Request Handlers', () => {
                 done();
             }
             defs.authAndSendTxCharacteristic.updateValueCallback = updateValueCallback;    
-            ble.onAuthAndSendTx(data, null, null, cb);
+            util.encrypt(data).then( encrypted => {
+                ble.onAuthAndSendTx(encrypted, null, null, cb );
+            })
         });
+
+        it('should respond with DECRYPTION_FAILED if input is unencrypted', (done) => {
+
+            chai.spy.on(bleno, 'disconnect');
+            data = JSON.stringify({pin: signed, tx: goodTx});
+
+            let cb = (code) => { 
+                expect(code).to.equal(config.codes.DECRYPTION_FAILED);
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                })
+            };
+            ble.onAuthAndSendTx(data, null, null, cb );
+        })
 
         it('should respond w/error if sent pin is bad and disconnect', (done)=>{
 
@@ -634,7 +681,9 @@ describe('BLE Request Handlers', () => {
                     done();
                 })
             }    
-            ble.onAuthAndSendTx(data, null, null, cb);
+            util.encrypt(data).then( encrypted => {
+                ble.onAuthAndSendTx(encrypted, null, null, cb );
+            })
         });
 
         it('should respond w/error if sent tx is bad and disconnect', (done)=> {
@@ -649,7 +698,9 @@ describe('BLE Request Handlers', () => {
                     done();
                 })
             }    
-            ble.onAuthAndSendTx(data, null, null, cb);
+            util.encrypt(data).then( encrypted => {
+                ble.onAuthAndSendTx(encrypted, null, null, cb );
+            })
         });
 
     });
@@ -677,7 +728,10 @@ describe('BLE Request Handlers', () => {
             
             util.startSession(orig_session).then( doc => {
                 data = JSON.stringify({id: doc.sessionId, tx: goodTx});
-                ble.onSendTx(data, null, null, cb);
+
+                util.encrypt(data).then( encrypted => {
+                    ble.onSendTx(encrypted, null, null, cb );
+                })
             })
         });
 
@@ -701,9 +755,25 @@ describe('BLE Request Handlers', () => {
             
             util.startSession(orig_session).then( doc => {
                 data = JSON.stringify({id: doc.sessionId, tx: goodTx});
-                ble.onSendTx(data, null, null, cb);
+                util.encrypt(data).then( encrypted => {
+                    ble.onSendTx(encrypted, null, null, cb );
+                })
             })
         });
+
+        it('should response with DECRYPTION_FAILED if input is unencrypted', ()=>{
+            orig_session = {account: client};
+            cb = (val) => {
+                expect(val).to.equal(config.codes.DECRYPTION_FAILED);
+            }
+            let updateValueCallback = (sent) => { done() };
+            defs.sendTxCharacteristic.updateValueCallback = updateValueCallback;
+            
+            util.startSession(orig_session).then( doc => {
+                data = JSON.stringify({id: doc.sessionId, tx: goodTx});
+                ble.onSendTx(data, null, null, cb );
+            })
+        })
 
         it('should respond with error code if caller cant send a tx and disconnect', (done)=>{
 
@@ -722,7 +792,9 @@ describe('BLE Request Handlers', () => {
             
             util.startSession(orig_session).then( doc => {
                 data = JSON.stringify({id: doc.sessionId, tx: goodTx});
-                ble.onSendTx(data, null, null, cb);
+                util.encrypt(data).then( encrypted => {
+                    ble.onSendTx(encrypted, null, null, cb );
+                })
             })
         })
     })
@@ -829,7 +901,9 @@ describe('BLE Request Handlers', () => {
             defs.getVerifiedTxStatusCharacteristic.updateValueCallback = updateValueCallback;
             defs.authAndSendTxCharacteristic.updateValueCallback = () => {};    
             mock_record = { _id: client, authority: client, contractAddress: deployed.address };
-            eth_db.put(mock_record).then( res => ble.onAuthAndSendTx(data, null, null, cb));  
+            eth_db.put(mock_record)
+                .then( res => util.encrypt(data)
+                .then( encrypted => ble.onAuthAndSendTx(encrypted, null, null, cb)));  
         });
 
         it('should send "null" if it cant find the contract record and disconnect', (done)=>{
@@ -872,7 +946,7 @@ describe('BLE Request Handlers', () => {
                     done();
                 })
             }    
-            ble.onAuthAndSendTx(data, null, null, cb);
+            ble.onGetVerifiedTxStatus(data, null, null, cb);
         });
     });
 

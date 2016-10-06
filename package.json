@@ -72,6 +72,7 @@
     "eth-new-contract": "^0.2.2",
     "minimatch": "^3.0.2",
     "node-uuid": "^1.4.7",
+    "openpgp": "^2.3.3",
     "pouchdb": "^5.4.5",
     "pouchdb-upsert": "^2.0.2",
     "randomstring": "^1.1.5",

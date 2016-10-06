@@ -73,7 +73,7 @@ Server API Endpoints respond immediately with a hex code indicating whether or n
 |INVALID_TX_SIGNATURE|0x0B|-      |NO_SIGNED_MSG_IN_REQUEST|0x03| 
 |INSUFFICIENT_GAS|0x0C|-          |NO_TX_DB_ERR|0x04|
 |INSUFFICIENT_BALANCE|0x0D|-      |NO_TX_ADDR_ERR|0x05|
-|NO_ETHEREUM|0x08|-               |RESULT_SUCCESS|0x00|
+|DECYPTION_FAILED |0x12|-         |RESULT_SUCCESS|0x00|
 
 
 
