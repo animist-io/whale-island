@@ -476,7 +476,7 @@ describe('BLE Request Handlers', () => {
         
         // Debugging . . . duplicate recs getting stuck in db
         before( () => {
-            eth_db = new pouchdb('contracts');     
+            eth_db = new pouchdb('proximityContracts'  );     
             return eth_db.destroy();
         })
 
@@ -493,7 +493,7 @@ describe('BLE Request Handlers', () => {
             input = JSON.stringify(signed);
         
             // Load contract record into contractsDB.
-            eth_db = new pouchdb('contracts'); 
+            eth_db = new pouchdb('proximityContracts'  ); 
             eth.units.setDB(eth_db);
             record = { _id: client, authority: client, contractAddress: deployed.address };
             eth_db.put(record).then(() =>  done());
@@ -610,7 +610,7 @@ describe('BLE Request Handlers', () => {
             msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
             signed =  web3.eth.sign(client, msgHash); 
 
-            eth_db = new pouchdb('contracts'); 
+            eth_db = new pouchdb('proximityContracts'  ); 
             eth.units.setDB(eth_db);
             record = { _id: client, authority: client, contractAddress: deployed.address };
             return eth_db.put(record);
@@ -732,7 +732,7 @@ describe('BLE Request Handlers', () => {
         // Session DBs are opened and destroyed at the top of 'Request Handlers'
         // Debug - theres a contract left in the DB somewhere before this test
         before( () => {
-            eth_db = new pouchdb('contracts'); 
+            eth_db = new pouchdb('proximityContracts'  ); 
             eth.units.setDB(eth_db);
             db = new pouchdb('sessions'); 
             return db.destroy().then(() => { return eth_db.destroy() })
@@ -824,7 +824,7 @@ describe('BLE Request Handlers', () => {
         
         // Debugging . . . duplicate recs getting stuck in db
         before( () => {
-            eth_db = new pouchdb('contracts'); 
+            eth_db = new pouchdb('proximityContracts'  ); 
             return eth_db.destroy();
         } )
 
@@ -840,7 +840,7 @@ describe('BLE Request Handlers', () => {
             input = JSON.stringify(signed);
 
             // Load contract record into contractsDB.
-            eth_db = new pouchdb('contracts'); 
+            eth_db = new pouchdb('proximityContracts'  ); 
             eth.units.setDB(eth_db);
 
         });
@@ -1013,7 +1013,7 @@ describe('BLE Request Handlers', () => {
         // Clear state, set a contract to find,  & mock updateValueCallback
         beforeEach((done)=>{
 
-            eth_db = new pouchdb('contracts'); 
+            eth_db = new pouchdb('proximityContracts'  ); 
             eth.units.setDB(eth_db);
 
             util._units.resetSendQueue();

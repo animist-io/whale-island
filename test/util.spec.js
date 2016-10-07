@@ -521,7 +521,7 @@ describe('BLE Utilites', () => {
         let db, eth_db, data, expected, orig_session, mock_auth_request;
         
         before( () => {
-            eth_db = new pouchdb('contracts'); 
+            eth_db = new pouchdb('proximityContracts'  ); 
             db = db = new pouchdb('sessions'); 
             return db.destroy().then(() => { return eth_db.destroy() })
         })
@@ -529,7 +529,7 @@ describe('BLE Utilites', () => {
         // DB creation and cleanup
         beforeEach(()=>{ 
             db = new pouchdb('sessions'); 
-            eth_db = new pouchdb('contracts');
+            eth_db = new pouchdb('proximityContracts'  );
             eth.units.setDB(eth_db);
             util._units.setDB(db);
         });

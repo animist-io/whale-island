@@ -23,6 +23,14 @@ const keys = [
 
 const client = web3.eth.accounts[0];
 
+const eventsABI = module.exports.eventsABI = function(){
+
+    newContract( contracts.AnimistEvent, { from: client }).then( deployed => {
+        console.log('Events ABI:');
+        console.log(JSON.stringify(deployed.abi));
+    });
+}
+
 // Deploys test contract and 
 module.exports.generate = function(){
   
@@ -76,3 +84,5 @@ module.exports.generate = function(){
                 
     });
 };
+
+//eventsABI();
