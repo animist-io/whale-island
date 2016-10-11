@@ -37,6 +37,10 @@ gulp.task('documentation', function () {
     .pipe(documentation({ shallow: 'true', github: 'true', format: 'md', filename: 'util.md' }))
     .pipe(gulp.dest('docs'));
 
+  gulp.src('./lib/events.js')
+    .pipe(documentation({ shallow: 'true', github: 'true', format: 'md', filename: 'events.md' }))
+    .pipe(gulp.dest('docs'));
+
   gulp.src([
           './docs/top.md', 
           './docs/handlersDesc.md',
