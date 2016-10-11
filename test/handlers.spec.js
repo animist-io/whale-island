@@ -110,7 +110,7 @@ describe('BLE Request Handlers', () => {
             setTimeout(()=> { 
                 expect(bleno.disconnect).to.have.been.called();
                 done();
-            })
+            }, 100) 
         };
         
         ble.onGetDeviceAccount(null, callback);
@@ -130,7 +130,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
             ble.onGetPgpKeyId(null, callback);
 
@@ -167,7 +167,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
             defs.getAccountBalanceCharacteristic.updateValueCallback = updateValueCallback;
             ble.onGetAccountBalance(input, null, null, cb );
@@ -186,7 +186,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
 
             defs.getAccountBalanceCharacteristic.updateValueCallback = updateValueCallback;
@@ -207,7 +207,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
             
             defs.getAccountBalanceCharacteristic.updateValueCallback = updateValueCallback;
@@ -252,7 +252,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
             defs.getTxStatusCharacteristic.updateValueCallback = updateValueCallback;
             ble.onGetTxStatus( input, null, null, fns.callback );
@@ -270,7 +270,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
 
             chai.spy.on(fns, 'callback');
@@ -291,7 +291,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
             
             defs.getTxStatusCharacteristic.updateValueCallback = updateValueCallback;
@@ -341,7 +341,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
             defs.getPresenceReceiptCharacteristic.updateValueCallback = updateValueCallback;
             ble.onGetPresenceReceipt(data, null, null, cb );
@@ -359,7 +359,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
             ble.onGetPresenceReceipt(malformed_input, null, null, cb );
         });
@@ -447,7 +447,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
             defs.callTxCharacteristic.updateValueCallback = updateValueCallback;
             ble.onCallTx(data, null, null, cb);
@@ -463,7 +463,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             }
     
             ble.onCallTx(data, null, null, cb);
@@ -529,7 +529,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
             defs.authTxCharacteristic.updateValueCallback = updateValueCallback;
             util.encrypt(input).then( encrypted => {
@@ -546,7 +546,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
             ble.onAuthTx(input, null, null, callback );
         })
@@ -564,7 +564,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
 
             chai.spy.on(fns, 'callback');
@@ -649,7 +649,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
             defs.authAndSendTxCharacteristic.updateValueCallback = updateValueCallback;    
             util.encrypt(data).then( encrypted => {
@@ -684,7 +684,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
             ble.onAuthAndSendTx(data, null, null, cb );
         })
@@ -699,7 +699,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             }    
             util.encrypt(data).then( encrypted => {
                 ble.onAuthAndSendTx(encrypted, null, null, cb );
@@ -716,7 +716,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             }    
             util.encrypt(data).then( encrypted => {
                 ble.onAuthAndSendTx(encrypted, null, null, cb );
@@ -769,7 +769,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
             defs.sendTxCharacteristic.updateValueCallback = updateValueCallback;
             
@@ -805,7 +805,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             }
             let updateValueCallback = (sent) => {};
             defs.sendTxCharacteristic.updateValueCallback = updateValueCallback;
@@ -883,7 +883,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
 
             defs.getVerifiedTxStatusCharacteristic.updateValueCallback = updateValueCallback;
@@ -947,7 +947,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             };
 
             defs.getVerifiedTxStatusCharacteristic.updateValueCallback = updateValueCallback;
@@ -964,7 +964,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             }    
             ble.onGetVerifiedTxStatus(data, null, null, cb);
         });
@@ -989,7 +989,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                })
+                }, 100)
             }
 
             ble.onGetBlockNumber(null, callback);
@@ -1120,7 +1120,7 @@ describe('BLE Request Handlers', () => {
             setTimeout(()=> { 
                 expect(bleno.disconnect).to.have.been.called();
                 done();
-            })
+            }, 100) 
 
             
         });
