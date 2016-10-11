@@ -70,12 +70,14 @@
     "cli-color": "^1.1.0",
     "eth-lightwallet": "^2.4.3",
     "eth-new-contract": "^0.2.2",
+    "lodash": "^4.16.4",
     "minimatch": "^3.0.2",
     "node-uuid": "^1.4.7",
     "openpgp": "^2.3.3",
     "pouchdb": "^5.4.5",
     "pouchdb-upsert": "^2.0.2",
     "randomstring": "^1.1.5",
+    "validator": "^6.0.0",
     "web3": "^0.16.0"
   }
 }
