@@ -25,6 +25,7 @@ const spies = require('chai-spies');
 const chaiAsPromised = require("chai-as-promised");
 
 // ----------------------------------- Setup -----------------------------------------
+
 const expect = chai.expect;
 chai.use(spies);
 chai.use(chaiAsPromised);
@@ -35,9 +36,13 @@ describe('Ethereum Contract Event Listeners', () => {
 
     var node = web3.eth.accounts[0];
     var client = web3.eth.accounts[1];
+    var client2 = web3.eth.accounts[2];
+
     var testContract;
+    var defaultBroadcastDuration = config.MIN_BROADCAST_DURATION;
 
     before(() => {
+
         return newContract( contracts.Test, { from: client })
                 .then( deployed => testContract = deployed )
     });
@@ -79,11 +84,6 @@ describe('Ethereum Contract Event Listeners', () => {
         beforeEach( () => {
             return newContract( contracts.AnimistEvent, { from: client })
                 .then( deployed => eventContract = deployed )
-        })
-
-        after( () => {
-            let db = events._units.getBroadcastDB();
-            return db.destroy();
         })
 
         it('should validate broadcast contract events', (done)=>{
@@ -236,21 +236,95 @@ describe('Ethereum Contract Event Listeners', () => {
 
     describe('addBroadcast', () => {
 
-        it('should start broadcasting the specified channel/content');
+        // Mock broadcasts only have a 10ms duration. 
+        before(() => config.MIN_BROADCAST_DURATION = 0 );
+        after(() => config.MIN_BROADCAST_DURATION = defaultBroadcastDuration );
 
-        it('should stop broadcasting request after specified duration');
+        it('should create a bleno characteristic and add it to the characteristics array', (done)=>{
+    
+            chai.spy.on(bleno, 'disconnect');
+        
+            let expectedChannel = mocks.broadcast_1.args.channel.replace(/-/g, '');
+            let expectedMessage = new Buffer(mocks.broadcast_1.args.message);
+            let broadcasts = events.addBroadcast(mocks.broadcast_1);
+    
+            let cb = (code, response) => {
+
+                code.should.equal(config.codes.RESULT_SUCCESS);
+                Buffer.isBuffer(response).should.be.true;
+                response.equals(expectedMessage).should.be.true;
+
+                setTimeout(() => {
+                    bleno.disconnect.should.have.been.called();
+                    done();
+                }, 100 );
+            }
+
+            broadcasts[0].uuid.should.equal(expectedChannel); // Verify uuid
+            broadcasts[0].onReadRequest(null, cb);            // Test callback  
+
+        });
+
+        it('should stop broadcasting request after specified duration', (done)=> {
+
+            events.addBroadcast(mocks.broadcast_1);
+            events._units.getBroadcasts().length.should.equal(1);
+
+            setTimeout(() => {
+                events._units.getBroadcasts().length.should.equal(0);
+                done();
+            }, 100)
+
+        });
     });
 
-    describe('removeBroadcast', ()=>{
-
-        it('should remove specified channel/content from broadcasts');
-
-    });
 
     describe('startProximityDetectionRequestsFilter', ()=>{
 
-        it('should begin saving proximity detection reqs for this node logged to the blockchain');
-        it('should update the "lastBlock" record the proximityContracts DB after saving each request');     
+        let eventContract, db;
+
+        // Deploy contract, create DB and make block current.
+        beforeEach( () => { 
+            
+            return newContract( contracts.AnimistEvent, { from: client })
+                .then( deployed => {
+                    eventContract = deployed; 
+                    db = new pouchdb('proximityContracts'); 
+                    events._units.setDB(db);
+                    return events.saveBlock(db, web3.eth.blockNumber + 1);
+                })
+        });
+
+        afterEach(() => { return db.destroy() });
+
+        it('should begin saving proximity detection reqs for this node logged to the blockchain', (done)=>{
+
+            let cb = () => {
+        
+                db.get(client)
+                    .then( () => done())
+                    .catch( err => { true.should.be.false; done() });
+            }
+
+            events.startProximityDetectionRequestsFilter( eventContract.address, cb ).then( () => {
+                eventContract.requestProximityDetection( node, client, testContract.address, {from: client});
+            })
+            
+        });
+        it('should update the "lastBlock" record the proximityContracts DB after saving each request', (done)=>{
+
+            let currentBlock = web3.eth.blockNumber;
+           
+            let cb = () => {
+                db.get('lastBlock')
+                    .then( doc => { doc.val.should.be.gt(currentBlock); done() })
+                    .catch( err => { true.should.be.false; done() });
+            }
+
+            events.startProximityDetectionRequestsFilter( eventContract.address, cb ).then( () => {
+                eventContract.requestProximityDetection( node, client2, testContract.address, {from: client});
+            })
+        });     
     });
 
     describe('startBroadcastRequestsFilter', () => {
