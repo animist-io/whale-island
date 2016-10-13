@@ -77,11 +77,36 @@ describe('Ethereum Contract Event Listeners', () => {
 
     });
 
+    describe('isValidUUID', ()=>{
+
+        after(() => events._units.clearBroadcasts() )
+
+        it('should return true if uuid is valid', ()=> {
+            let uuid = "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8";
+            events.isValidUUID(uuid).should.be.true;
+        });
+
+        it('should return false if uuid is malformed', ()=> {
+            let uuid = "12355641";
+            events.isValidUUID(uuid).should.be.false;
+
+        });
+
+        it('should return false if theres already a broadcast w/ same uuid', ()=>{
+
+            let uuid = mocks.broadcast_1.args.channel;
+            events.addBroadcast(mocks.broadcast_1);
+            events.isValidUUID(uuid).should.be.false;
+
+        })
+    })
+
     describe('isValidBroadcastEvent', ()=>{
 
         let eventContract;
 
         beforeEach( () => {
+            events._units.clearBroadcasts();
             return newContract( contracts.AnimistEvent, { from: client })
                 .then( deployed => eventContract = deployed )
         })
@@ -297,7 +322,7 @@ describe('Ethereum Contract Event Listeners', () => {
 
         afterEach(() => { return db.destroy() });
 
-        it('should begin saving proximity detection reqs for this node logged to the blockchain', (done)=>{
+        it('should begin saving proximity detection reqs for this node that are logged to the blockchain', (done)=>{
 
             let cb = () => {
         
@@ -329,7 +354,32 @@ describe('Ethereum Contract Event Listeners', () => {
 
     describe('startBroadcastRequestsFilter', () => {
 
-        it('should begin broadcasting any broadcast reqs for this node logged to the blockchain');
-        it('should upate the "lastBlock" record of the broadcastContracts DB after each request');
+        let eventContract, db;
+
+        // Deploy contract
+        beforeEach( () => { 
+            events._units.clearBroadcasts();
+            return newContract( contracts.AnimistEvent, { from: client })
+                .then( deployed => eventContract = deployed )
+        });
+
+        it('should begin broadcasting any broadcast reqs for this node that are logged to the blockchain', (done)=>{
+
+            let uuid = "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8";
+            let expected_uuid = uuid.replace(/-/g, '');
+            let message = "hello";
+            let duration = "2000";
+
+            let cb = () => {
+                events._units.getBroadcasts().length.should.equal(1);
+                events._units.getBroadcasts()[0].uuid.should.equal(expected_uuid);
+                done();
+            }
+
+            events.startBroadcastRequestsFilter( eventContract.address, web3.eth.blockNumber + 1, cb )
+            eventContract.requestBroadcast( node, uuid, message, duration, {from: client});
+
+        });
+
     });
 });

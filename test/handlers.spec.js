@@ -915,7 +915,7 @@ describe('BLE Request Handlers', () => {
             // Wait for simulated authAndSendTx call to (probably) finish
             setTimeout(()=>{
                 ble.onGetVerifiedTxStatus(input, null, null, cb);
-            }, 1000)
+            }, 2000)
 
             // Simulate an authAndSendTx call.
             defs.getVerifiedTxStatusCharacteristic.updateValueCallback = updateValueCallback;
