@@ -16,7 +16,7 @@ const contracts = require('../contracts/Test.js');
 
 // DB
 const pouchdb = require('pouchdb');
-const upsert = require('pouchDB-upsert');
+const upsert = require('pouchdb-upsert');
 pouchdb.plugin(upsert);
 
 // Testing
