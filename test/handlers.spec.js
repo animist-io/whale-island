@@ -699,7 +699,7 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                }, 100)
+                }, 500)
             }    
             util.encrypt(data).then( encrypted => {
                 ble.onAuthAndSendTx(encrypted, null, null, cb );

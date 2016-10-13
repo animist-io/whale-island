@@ -22,17 +22,21 @@ const keys = [
 ];
 
 const client = web3.eth.accounts[0];
+const caller = web3.eth.accounts[1];
 
+// Deploys events contracts
 const eventsABI = module.exports.eventsABI = function(){
-
     newContract( contracts.AnimistEvent, { from: client }).then( deployed => {
         console.log('Events ABI:');
         console.log(JSON.stringify(deployed.abi));
     });
-}
+};
 
-// Deploys test contract and 
-module.exports.generate = function(){
+
+
+
+// Deploys test contract. Generates and signs various success / fail transaction cases.
+const generate = module.exports.generate = function(){
   
     return newContract( contracts.Test, { from: client }).then( deployed => {
         

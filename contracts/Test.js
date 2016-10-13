@@ -45,29 +45,22 @@ module.exports.Test = `
         }
     }`;
 
+
 module.exports.AnimistEvent = `
 
     contract AnimistEvent {
 
-        // LogRegistration(node, account, contract)
-        // node: the account address of the node targeted by this event
-        // account: the user account the node will expect to interact with.
-        // contract: the address of the contract node will invoke Animist API functions on.*/
-        event LogRegistration( address indexed node, address indexed account, address indexed contractAddress);
         
-        // LogBroadcast(node, channel, duration)
-        // node: the account address of the node targeted by this event
-        // channel: not sure. (a characteristic string though, right?)
-        // duration: don't know. Default? 
-        event LogBroadcast( address indexed node, uint indexed channel, uint indexed value);
+        event LogProximityDetectionRequest( address indexed node, address indexed account, address indexed contractAddress);
+        event LogBroadcastRequest( address indexed node, string channel, string message, uint duration);
 
 
         // Event wrappers 
-        function register(address node, address account, address contractAddress) {
-            LogRegistration(node, account, contractAddress);
+        function requestProximityDetection(address node, address account, address contractAddress) {
+            LogProximityDetectionRequest(node, account, contractAddress);
         }
 
-        function broadcast(address node, uint channel, uint val){
-            LogBroadcast(node, channel, val);
+        function requestBroadcast(address node, string channel, string message, uint32 duration){
+            LogBroadcastRequest(node, channel, message, duration);
         }
     }`;
