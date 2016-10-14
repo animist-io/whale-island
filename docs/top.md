@@ -4,17 +4,19 @@
 ## Overview
 Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that connects to mobile devices via BLE server. Its API targets contract contingencies about location but it can also be used as a simple bluetooth-Ethereum interface to process transactions, deploy contracts and call their methods. An Ionic module that helps hybrid mobile apps interact with whale-island is under development at [animist-io/wowshuxkluh](https://github.com/animist-io/wowshuxkluh).
 
-### Proximity Oracle and Signal Broadcasting by Contract. 
+### Contract driven proximity detection and signal broadcasting 
 
-The Animist events contract exists on Ethereum at: `0xf802 . . . .69cd7` and its Solidity file can be found at [animist-io/wallowa](https://github.com/animist-io/wallowa/blob/master/contracts/AnimistEvent.sol).
+The Animist events contract exists on Ethereum at: `0xf802....69cd7`.
 
-A list of available whale-island node locations and their Ethereum addresses can be found at `ipfs.io/ipfs/QmYwAPJ . . .bdG`
+The events contract Solidity file can be found at [animist-io/wallowa](https://github.com/animist-io/wallowa/blob/master/contracts/AnimistEvent.sol).
+
+Whale-island node locations and their Ethereum addresses can be found at `ipfs.io/ipfs/QmYwAPJ...bdG`
 
 **Proximity detection example:**
 
-You can verify a contract participant's presence at a location by making a request through the AnimistEvent contract and implementing a public method in your contract with form: `verifyPresence(address client, uint64 time)`. 
+You can verify a contract participant's presence at a location by requesting proximity detection services from the AnimistEvent contract and implementing a public method in your contract with form: `verifyPresence(address client, uint64 time)`. 
 
-```
+```javascript
 import AnimistEvent.sol
 
 contract Visit {
@@ -37,11 +39,12 @@ contract Visit {
 }
 ```
 
+
 **Broadcast message example:**
 
-You can also ask to broadcast a message over Bluetooth LE on an arbitrary characteristic [uuid](https://www.npmjs.com/package/node-uuid) from any node. This is useful if you want to co-ordinate or direct the behavior of mobile clients. 
+You can also broadcast a message over Bluetooth LE on an arbitrary characteristic [uuid](https://www.npmjs.com/package/node-uuid) from any node. This is useful if you want to co-ordinate or direct the behavior of mobile clients. 
 
-```
+```javascript
 import AnimistEvent.sol
 
 contract Message {
