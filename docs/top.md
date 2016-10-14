@@ -30,9 +30,9 @@ contract Visit {
     AnimistEvent public api;        // AnimistEvent contract instance.
 
     function Visit(){
-        client = address(0xab3....90b);         
+        client = address(0xab3....ceb);         
         node = address(0x757...abc);            
-        animistAddress = address(0xf8...69cd7); 
+        animistAddress = address(0xf8...cdf); 
         visited = false;                        
         expires = 17523...098;                  
         
@@ -84,7 +84,7 @@ contract Message {
         message = "You are beautiful";             
         duration = "3000";                          
         node = address(0x757...abc);               
-        animistAddress = address(0xf802 ...69cd7); 
+        animistAddress = address(0xf802 ...cda); 
 
         // Instantiate AnimistEvent contract request broadcast  
         api = AnimistEvent(animistAddress);        
