@@ -42,14 +42,14 @@ contract Visit {
     }
 
     // Implement method the node will execute on proximity detection
-    function verifyPresence(address visitor, uint64 time) public {
+    function verifyPresence(address visitor, uint64 time) {
         if (msg.sender == node && visitor == client && time <= expires){
             visited = true;
         }
     }
 
     // Client could execute this method on whale-island over Bluetooth using the sendTx endpoint.
-    function rewardVisit() public {
+    function rewardVisit() {
         if( msg.sender == client and visited == true){
             // Reward client...
         }
