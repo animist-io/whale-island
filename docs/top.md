@@ -2,39 +2,57 @@
 [![Build Status](https://travis-ci.org/animist-io/whale-island.svg?branch=master)](https://travis-ci.org/animist-io/whale-island) **This project is in early development. Under construction.**
 
 ## Overview
-Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that connects to mobile devices via BLE server. Its API targets contract contingencies about location but it can also be used as a simple bluetooth-Ethereum interface to process transactions, deploy contracts and call their methods. An Ionic module that helps hybrid mobile apps interact with whale-island is under development at [animist-io/wowshuxkluh](https://github.com/animist-io/wowshuxkluh).
+Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that connects to mobile devices via BLE server. Its API targets contract contingencies about location but it also has Bluetooth endpoints to process transactions, deploy contracts and call their methods. An Ionic module that helps hybrid mobile apps interact with whale-island is under development at [animist-io/wowshuxkluh](https://github.com/animist-io/wowshuxkluh).
 
 ### Contract driven proximity detection and signal broadcasting 
 
-+ The Animist events contract exists on Ethereum at: `0xf802....69cd7`.
-
-+ The events contract Solidity file can be found at [animist-io/wallowa](https://github.com/animist-io/wallowa/blob/master/contracts/AnimistEvent.sol).
++ A contract to request services from whale-island nodes exists on Ethereum at: `0xf802....69cd7` and its Solidity file can be found at [animist-io/wallowa/contracts](https://github.com/animist-io/wallowa/blob/master/contracts/AnimistEvent.sol).
 
 + Whale-island locations and their Ethereum addresses can be found at `ipfs.io/ipfs/QmY...bdG`
 
-**Proximity detection example:**
+**Presence verification example:**
 
-You can verify a contract participant's presence at a location by requesting proximity detection services from the AnimistEvent contract and implementing the public method `verifyPresence(address client, uint64 time)` in your contract. 
+You can verify a contract participant's presence at a location by:
++ Making a proximity detection request through the deployed AnimistEvent contract at `0xf802....69cd7` 
+
++ Implementing a public method with the signature: `verifyPresence(address client, uint64 time)` in your contract. 
 
 ```javascript
 import AnimistEvent.sol
 
 contract Visit {
     
-    address client = "0xab3....90b";             // Client to proximity detect
-    address node = "0x757...abc";                // Eth address of the node they should visit (from IPFS)
-    bool visited = false;                        // Client state prior to proximity detection
-    uint64 expires = "17483...002";              // Date (unix) client must visit by
-    address animistAddress = "0xf802 ...69cd7";  // Address of deployed Animist contract for events. 
+    address public client;          
+    address public node;  
+    address public animistAddress;            
+    bool public visited;                     
+    uint64 public expires;           
+    AnimistEvent public api;    
+
+    function Visit(){
+        client = address(0xab3....90b);         // Client to proximity detect
+        node = address(0x757...abc);            // Node they should visit (from IPFS)
+        animistAddress = address(0xf8...69cd7); // Deployed Animist contract for events.
+        visited = false;                        // Client state prior to proximity detection
+        expires = 17523...098;                  // Date (unix) client must visit by
+        api = AnimistEvent(animistAddress);     // Animist event contract instance
+    }
 
     // Request proximity detection
-    AnimistEvent api = AnimistEvent(animistAddress);
     api.requestProximityDetection(node, client, address(this));
 
     // Implement method the node will execute on proximity detection
     function verifyPresence(address visitor, uint64 time) public {
-        if (msg.sender == node && visitor == client && time <= expires)
+        if (msg.sender == node && visitor == client && time <= expires){
             visited = true;
+        }
+    }
+
+    // Client could execute this method on whale-island over Bluetooth using the sendTx endpoint.
+    function rewardVisit() public {
+        if( msg.sender == client and visited == true){
+            // Reward client...
+        }
     }
 }
 ```
@@ -42,21 +60,35 @@ contract Visit {
 
 **Broadcast message example:**
 
-You can also broadcast a message over Bluetooth LE on an arbitrary characteristic [uuid](https://www.npmjs.com/package/node-uuid) from any node. This is useful if you want to co-ordinate or direct the behavior of mobile clients. 
+You can broadcast a message over Bluetooth LE from any whale-island node by: 
++ Generating a new v4 uuid with [node-uuid](https://www.npmjs.com/package/node-uuid).
+
++ Making a broadcast request through the deployed AnimistEvent contract at `0xf802....69cd7`.
+
+(This is useful if you want to co-ordinate or direct the behavior of mobile clients.) 
 
 ```javascript
 import AnimistEvent.sol
 
 contract Message {
     
-    string channel = "A01D64E6-B...7-8338527B4E10";  // Arbitrary v4 characteristic uuid. 
-    string message = "I love you";                   // Message to broadcast
-    uint32 duration = "3000";                        // Duration (ms) of broadcast 
-    address node = "0x757...abc";                    // Eth address of the broadcasting node (from IPFS)
-    address animistAddress = "0xf802 ...69cd7";      // Address of deployed Animist contract for events. 
+    string public channel;
+    string public message;
+    uint32 public duration;
+    address public node;
+    address public animistAddress;
+    AnimistEvent public api;
 
+    function Message(){
+        channel = "A01D64E6-B...7-8338527B4E10";   // Arbitrary v4 characteristic uuid. 
+        message = "You are beautiful";             // Message to broadcast
+        duration = "3000";                         // Duration (ms) of broadcast 
+        node = address(0x757...abc);               // Address of the broadcasting node (from IPFS)
+        animistAddress = address(0xf802 ...69cd7); // Address of deployed Animist contract for events.
+        api = AnimistEvent(animistAddress);        // Animist event contract instance       
+    }
+     
     // Request broadcast  
-    AnimistEvent api = AnimistEvent(animistAddress);
     api.requestBroadcast(channel, message, duration);
 }
 ```
@@ -69,7 +101,7 @@ contract Message {
 
 + **Presence Receipts:** Whale-island also publishes data that can verify a client's presence without invoking contract methods. Using it's own account, the node signs a timestamp and a verified copy of the clients account address. The client can then present these to an adjudicating authority who extracts the public addresses from the packet and checks the results against node identification data published on IPFS. (See Bluetooth Server API below).
 
-+ **Security:** Endpoints that can change a contract's state have to be encrypted. Every whale-island node has a PGP key that can be read from its pgpKeyID endpoint and used to query `https://pgp.mit.edu` for the public key. [openpgpjs](https://github.com/openpgpjs/openpgpjs) is a good mobile-ready library for encrypting messages this way.     
++ **Security:** Messages that can change a contract's state have to be encrypted. Every whale-island node has a PGP key that can be read from its pgpKeyID endpoint and used to query `https://pgp.mit.edu` for the public key. [openpgpjs](https://github.com/openpgpjs/openpgpjs) is a good mobile-ready pgp library to manage client-side encryption with.     
 
 ### Installation
 
