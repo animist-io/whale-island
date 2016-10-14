@@ -22,24 +22,24 @@ import AnimistEvent.sol
 
 contract Visit {
     
-    address public client;          
-    address public node;  
-    address public animistAddress;            
-    bool public visited;                     
-    uint64 public expires;           
-    AnimistEvent public api;    
+    address public client;          // Client to proximity detect     
+    address public node;            // Node they should visit (from IPFS)
+    address public animistAddress;  // Deployed Animist contract for events.          
+    bool public visited;            // Client state prior to proximity detection        
+    uint64 public expires;          // Date (unix) client must visit by  
+    AnimistEvent public api;        // AnimistEvent contract instance.
 
     function Visit(){
-        client = address(0xab3....90b);         // Client to proximity detect
-        node = address(0x757...abc);            // Node they should visit (from IPFS)
-        animistAddress = address(0xf8...69cd7); // Deployed Animist contract for events.
-        visited = false;                        // Client state prior to proximity detection
-        expires = 17523...098;                  // Date (unix) client must visit by
-        api = AnimistEvent(animistAddress);     // Animist event contract instance
+        client = address(0xab3....90b);         
+        node = address(0x757...abc);            
+        animistAddress = address(0xf8...69cd7); 
+        visited = false;                        
+        expires = 17523...098;                  
+        
+        // Instatiate AnimistEvent contract and request proximity detection
+        api = AnimistEvent(animistAddress);    
+        api.requestProximityDetection(node, client, address(this));
     }
-
-    // Request proximity detection
-    api.requestProximityDetection(node, client, address(this));
 
     // Implement method the node will execute on proximity detection
     function verifyPresence(address visitor, uint64 time) public {
@@ -72,24 +72,24 @@ import AnimistEvent.sol
 
 contract Message {
     
-    string public channel;
-    string public message;
-    uint32 public duration;
-    address public node;
-    address public animistAddress;
-    AnimistEvent public api;
+    string public channel;          // Arbitrary v4 characteristic uuid message. 
+    string public message;          // Message to broadcast
+    uint32 public duration;         // Duration (ms) of broadcast
+    address public node;            // Address of the broadcasting node (from IPFS)
+    address public animistAddress;  // Address of deployed Animist contract for events.
+    AnimistEvent public api;        // AnimistEvent contract instance
 
     function Message(){
-        channel = "A01D64E6-B...7-8338527B4E10";   // Arbitrary v4 characteristic uuid. 
-        message = "You are beautiful";             // Message to broadcast
-        duration = "3000";                         // Duration (ms) of broadcast 
-        node = address(0x757...abc);               // Address of the broadcasting node (from IPFS)
-        animistAddress = address(0xf802 ...69cd7); // Address of deployed Animist contract for events.
-        api = AnimistEvent(animistAddress);        // Animist event contract instance       
+        channel = "A01D64E6-B...7-8338527B4E10";   
+        message = "You are beautiful";             
+        duration = "3000";                          
+        node = address(0x757...abc);               
+        animistAddress = address(0xf802 ...69cd7); 
+
+        // Instantiate AnimistEvent contract request broadcast  
+        api = AnimistEvent(animistAddress);        
+        api.requestBroadcast(channel, message, duration);    
     }
-     
-    // Request broadcast  
-    api.requestBroadcast(channel, message, duration);
 }
 ```
 
@@ -192,7 +192,7 @@ Server API Endpoints respond immediately with a hex code indicating whether or n
 
 # onAuthAndSendTx
 
-[lib/handlers.js:497-539](https://github.com/animist-io/whale-island/blob/aecf00c4c69099d22b40d00eacb1844632b2e0e1/lib/handlers.js#L497-L539 "Source code on GitHub")
+[lib/handlers.js:497-539](https://github.com/animist-io/whale-island/blob/1db701e01af62683a4534fa82844a807db50d6d8/lib/handlers.js#L497-L539 "Source code on GitHub")
 
 Authenticates client's proximity to node by invoking their contract's "verifyPresence" 
 method with the device account. Waits for auth to be mined and sends clients raw transaction. 
@@ -217,7 +217,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onAuthTx
 
-[lib/handlers.js:446-483](https://github.com/animist-io/whale-island/blob/aecf00c4c69099d22b40d00eacb1844632b2e0e1/lib/handlers.js#L446-L483 "Source code on GitHub")
+[lib/handlers.js:446-483](https://github.com/animist-io/whale-island/blob/1db701e01af62683a4534fa82844a807db50d6d8/lib/handlers.js#L446-L483 "Source code on GitHub")
 
 Authenticates client's proximity to node by invoking their contract's "verifyPresence" 
 method with the device account.
@@ -241,7 +241,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onCallTx
 
-[lib/handlers.js:372-391](https://github.com/animist-io/whale-island/blob/aecf00c4c69099d22b40d00eacb1844632b2e0e1/lib/handlers.js#L372-L391 "Source code on GitHub")
+[lib/handlers.js:372-391](https://github.com/animist-io/whale-island/blob/1db701e01af62683a4534fa82844a807db50d6d8/lib/handlers.js#L372-L391 "Source code on GitHub")
 
 Executes web3.eth.call on public constant contract methods that use no gas and do not need to be signed. 
 This endpoint is useful if you wish to retrieve data 'synchronously' from a contract.
@@ -263,7 +263,7 @@ Returns **Buffer** JSON formatted string of web3.eth.call result.
 
 # onGetAccountBalance
 
-[lib/handlers.js:174-195](https://github.com/animist-io/whale-island/blob/aecf00c4c69099d22b40d00eacb1844632b2e0e1/lib/handlers.js#L174-L195 "Source code on GitHub")
+[lib/handlers.js:174-195](https://github.com/animist-io/whale-island/blob/1db701e01af62683a4534fa82844a807db50d6d8/lib/handlers.js#L174-L195 "Source code on GitHub")
 
 Responds w/ wei balance of requested account.
 
@@ -286,7 +286,7 @@ Returns **Buffer** JSON formatted string: "0" on error.
 
 # onGetBlockNumber
 
-[lib/handlers.js:65-69](https://github.com/animist-io/whale-island/blob/aecf00c4c69099d22b40d00eacb1844632b2e0e1/lib/handlers.js#L65-L69 "Source code on GitHub")
+[lib/handlers.js:65-69](https://github.com/animist-io/whale-island/blob/1db701e01af62683a4534fa82844a807db50d6d8/lib/handlers.js#L65-L69 "Source code on GitHub")
 
 Publishes current blockNumber.
 
@@ -305,7 +305,7 @@ Returns **Buffer** JSON formatted string: "152..2"
 
 # onGetContract
 
-[lib/handlers.js:299-330](https://github.com/animist-io/whale-island/blob/aecf00c4c69099d22b40d00eacb1844632b2e0e1/lib/handlers.js#L299-L330 "Source code on GitHub")
+[lib/handlers.js:299-330](https://github.com/animist-io/whale-island/blob/1db701e01af62683a4534fa82844a807db50d6d8/lib/handlers.js#L299-L330 "Source code on GitHub")
 
 Returns `code` of the contract which wants to verify caller's presence at this node. This is a lot
 of data so it gets sent in a series of packets. onGetContractIndicate handler publishes these as the client 
@@ -328,7 +328,7 @@ Returns **Buffer** JSON formatted object: {code: '0x5d3e..11', sessionId: '4ydw2
 
 # onGetContractIndicate
 
-[lib/handlers.js:340-359](https://github.com/animist-io/whale-island/blob/aecf00c4c69099d22b40d00eacb1844632b2e0e1/lib/handlers.js#L340-L359 "Source code on GitHub")
+[lib/handlers.js:340-359](https://github.com/animist-io/whale-island/blob/1db701e01af62683a4534fa82844a807db50d6d8/lib/handlers.js#L340-L359 "Source code on GitHub")
 
 De-queues and sends contract code packet.
 
@@ -343,7 +343,7 @@ Returns **Buffer** JSON formatted string "EOF" after last packet is sent.
 
 # onGetDeviceAccount
 
-[lib/handlers.js:50-54](https://github.com/animist-io/whale-island/blob/aecf00c4c69099d22b40d00eacb1844632b2e0e1/lib/handlers.js#L50-L54 "Source code on GitHub")
+[lib/handlers.js:50-54](https://github.com/animist-io/whale-island/blob/1db701e01af62683a4534fa82844a807db50d6d8/lib/handlers.js#L50-L54 "Source code on GitHub")
 
 Publishes node's public account number.
 
@@ -362,7 +362,7 @@ Returns **Buffer** JSON formatted hex prefixed account address
 
 # onGetNewSessionId
 
-[lib/handlers.js:141-161](https://github.com/animist-io/whale-island/blob/aecf00c4c69099d22b40d00eacb1844632b2e0e1/lib/handlers.js#L141-L161 "Source code on GitHub")
+[lib/handlers.js:141-161](https://github.com/animist-io/whale-island/blob/1db701e01af62683a4534fa82844a807db50d6d8/lib/handlers.js#L141-L161 "Source code on GitHub")
 
 Generates, saves and responds with new session id linked to caller account.
 
@@ -384,7 +384,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onGetPgpKeyId
 
-[lib/handlers.js:80-84](https://github.com/animist-io/whale-island/blob/aecf00c4c69099d22b40d00eacb1844632b2e0e1/lib/handlers.js#L80-L84 "Source code on GitHub")
+[lib/handlers.js:80-84](https://github.com/animist-io/whale-island/blob/1db701e01af62683a4534fa82844a807db50d6d8/lib/handlers.js#L80-L84 "Source code on GitHub")
 
 Publishes a PGP keyID that can be used to fetch the nodes public PGP key from '<https://pgp.mit.edu>'.
 
@@ -403,7 +403,7 @@ Returns **Buffer** JSON formatted string: '32e6aa. . .4f922'
 
 # onGetPin
 
-[lib/handlers.js:36-39](https://github.com/animist-io/whale-island/blob/aecf00c4c69099d22b40d00eacb1844632b2e0e1/lib/handlers.js#L36-L39 "Source code on GitHub")
+[lib/handlers.js:36-39](https://github.com/animist-io/whale-island/blob/1db701e01af62683a4534fa82844a807db50d6d8/lib/handlers.js#L36-L39 "Source code on GitHub")
 
 Generates a new 'pin' value. A signed copy of the pin is required to access server
 endpoints that execute account-specific transactions on the blockchain. 
@@ -428,7 +428,7 @@ Returns **Buffer** JSON formatted 32 character alpha-numeric string (resets ever
 
 # onGetPresenceReceipt
 
-[lib/handlers.js:212-234](https://github.com/animist-io/whale-island/blob/aecf00c4c69099d22b40d00eacb1844632b2e0e1/lib/handlers.js#L212-L234 "Source code on GitHub")
+[lib/handlers.js:212-234](https://github.com/animist-io/whale-island/blob/1db701e01af62683a4534fa82844a807db50d6d8/lib/handlers.js#L212-L234 "Source code on GitHub")
 
 Returns data that can be used to authenticate client's proximity to the node. 
 Response includes a timestamp, the timestamp signed by the device account, and the caller's 
@@ -454,7 +454,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onGetTxStatus
 
-[lib/handlers.js:100-129](https://github.com/animist-io/whale-island/blob/aecf00c4c69099d22b40d00eacb1844632b2e0e1/lib/handlers.js#L100-L129 "Source code on GitHub")
+[lib/handlers.js:100-129](https://github.com/animist-io/whale-island/blob/1db701e01af62683a4534fa82844a807db50d6d8/lib/handlers.js#L100-L129 "Source code on GitHub")
 
 Responds w/ small subset of web3 data about a transaction. Useful for determining whether
 or not a transaction has been mined. (blockNumber field of response will be null if tx is
@@ -479,7 +479,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onGetVerifiedTxStatus
 
-[lib/handlers.js:250-284](https://github.com/animist-io/whale-island/blob/aecf00c4c69099d22b40d00eacb1844632b2e0e1/lib/handlers.js#L250-L284 "Source code on GitHub")
+[lib/handlers.js:250-284](https://github.com/animist-io/whale-island/blob/1db701e01af62683a4534fa82844a807db50d6d8/lib/handlers.js#L250-L284 "Source code on GitHub")
 
 Returns status data about a transaction submitted in an atomic authAndSend request. 
 Response includes info about the authenticating tx which may be 'pending' or 'failed' 
@@ -505,7 +505,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onSendTx
 
-[lib/handlers.js:406-432](https://github.com/animist-io/whale-island/blob/aecf00c4c69099d22b40d00eacb1844632b2e0e1/lib/handlers.js#L406-L432 "Source code on GitHub")
+[lib/handlers.js:406-432](https://github.com/animist-io/whale-island/blob/1db701e01af62683a4534fa82844a807db50d6d8/lib/handlers.js#L406-L432 "Source code on GitHub")
 
 Sends tx as rawTransaction if tx signer's sessionId is valid. Will not submit if
 a pending authAndSend request exists in the contractDB for this caller account. 

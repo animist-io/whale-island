@@ -22,24 +22,24 @@ import AnimistEvent.sol
 
 contract Visit {
     
-    address public client;          
-    address public node;  
-    address public animistAddress;            
-    bool public visited;                     
-    uint64 public expires;           
-    AnimistEvent public api;    
+    address public client;          // Client to proximity detect     
+    address public node;            // Node they should visit (from IPFS)
+    address public animistAddress;  // Deployed Animist contract for events.          
+    bool public visited;            // Client state prior to proximity detection        
+    uint64 public expires;          // Date (unix) client must visit by  
+    AnimistEvent public api;        // AnimistEvent contract instance.
 
     function Visit(){
-        client = address(0xab3....90b);         // Client to proximity detect
-        node = address(0x757...abc);            // Node they should visit (from IPFS)
-        animistAddress = address(0xf8...69cd7); // Deployed Animist contract for events.
-        visited = false;                        // Client state prior to proximity detection
-        expires = 17523...098;                  // Date (unix) client must visit by
-        api = AnimistEvent(animistAddress);     // Animist event contract instance
+        client = address(0xab3....90b);         
+        node = address(0x757...abc);            
+        animistAddress = address(0xf8...69cd7); 
+        visited = false;                        
+        expires = 17523...098;                  
+        
+        // Instatiate AnimistEvent contract and request proximity detection
+        api = AnimistEvent(animistAddress);    
+        api.requestProximityDetection(node, client, address(this));
     }
-
-    // Request proximity detection
-    api.requestProximityDetection(node, client, address(this));
 
     // Implement method the node will execute on proximity detection
     function verifyPresence(address visitor, uint64 time) public {
@@ -72,24 +72,24 @@ import AnimistEvent.sol
 
 contract Message {
     
-    string public channel;
-    string public message;
-    uint32 public duration;
-    address public node;
-    address public animistAddress;
-    AnimistEvent public api;
+    string public channel;          // Arbitrary v4 characteristic uuid message. 
+    string public message;          // Message to broadcast
+    uint32 public duration;         // Duration (ms) of broadcast
+    address public node;            // Address of the broadcasting node (from IPFS)
+    address public animistAddress;  // Address of deployed Animist contract for events.
+    AnimistEvent public api;        // AnimistEvent contract instance
 
     function Message(){
-        channel = "A01D64E6-B...7-8338527B4E10";   // Arbitrary v4 characteristic uuid. 
-        message = "You are beautiful";             // Message to broadcast
-        duration = "3000";                         // Duration (ms) of broadcast 
-        node = address(0x757...abc);               // Address of the broadcasting node (from IPFS)
-        animistAddress = address(0xf802 ...69cd7); // Address of deployed Animist contract for events.
-        api = AnimistEvent(animistAddress);        // Animist event contract instance       
+        channel = "A01D64E6-B...7-8338527B4E10";   
+        message = "You are beautiful";             
+        duration = "3000";                          
+        node = address(0x757...abc);               
+        animistAddress = address(0xf802 ...69cd7); 
+
+        // Instantiate AnimistEvent contract request broadcast  
+        api = AnimistEvent(animistAddress);        
+        api.requestBroadcast(channel, message, duration);    
     }
-     
-    // Request broadcast  
-    api.requestBroadcast(channel, message, duration);
 }
 ```
 
