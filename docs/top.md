@@ -6,15 +6,15 @@ Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that
 
 ### Contract driven proximity detection and signal broadcasting 
 
-The Animist events contract exists on Ethereum at: `0xf802....69cd7`.
++ The Animist events contract exists on Ethereum at: `0xf802....69cd7`.
 
-The events contract Solidity file can be found at [animist-io/wallowa](https://github.com/animist-io/wallowa/blob/master/contracts/AnimistEvent.sol).
++ The events contract Solidity file can be found at [animist-io/wallowa](https://github.com/animist-io/wallowa/blob/master/contracts/AnimistEvent.sol).
 
-Whale-island node locations and their Ethereum addresses can be found at `ipfs.io/ipfs/QmYwAPJ...bdG`
++ Whale-island locations and their Ethereum addresses can be found at `ipfs.io/ipfs/QmY...bdG`
 
 **Proximity detection example:**
 
-You can verify a contract participant's presence at a location by requesting proximity detection services from the AnimistEvent contract and implementing a public method in your contract with form: `verifyPresence(address client, uint64 time)`. 
+You can verify a contract participant's presence at a location by requesting proximity detection services from the AnimistEvent contract and implementing the public method `verifyPresence(address client, uint64 time)` in your contract. 
 
 ```javascript
 import AnimistEvent.sol
@@ -24,7 +24,7 @@ contract Visit {
     address client = "0xab3....90b";             // Client to proximity detect
     address node = "0x757...abc";                // Eth address of the node they should visit (from IPFS)
     bool visited = false;                        // Client state prior to proximity detection
-    uint64 expires = "17483...002";              // System time date client must visit by
+    uint64 expires = "17483...002";              // Date (unix) client must visit by
     address animistAddress = "0xf802 ...69cd7";  // Address of deployed Animist contract for events. 
 
     // Request proximity detection
@@ -33,7 +33,7 @@ contract Visit {
 
     // Implement method the node will execute on proximity detection
     function verifyPresence(address visitor, uint64 time) public {
-        if (this.address == node && time <= expires)
+        if (msg.sender == node && visitor == client && time <= expires)
             visited = true;
     }
 }
