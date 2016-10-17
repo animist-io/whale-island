@@ -13,30 +13,30 @@ Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that
 **Presence verification example:**
 
 You can verify a contract participant's presence at a location by:
-+ Making a proximity detection request through the deployed AnimistEvent contract at `0xf802....69cd7` 
++ Making a proximity detection request through the deployed AnimistEvent contract at `0xf802....cde` 
 
 + Implementing a public method with the signature: `verifyPresence(address client, uint64 time)` in your contract. 
 
 ```javascript
-import AnimistEvent.sol
+import 'AnimistEvent.sol';
 
 contract Visit {
-    
+
     address public client;          // Client to proximity detect     
-    address public node;            // Node they should visit (from IPFS)
+    address public node;            // Node client should visit (from IPFS)
     address public animistAddress;  // Deployed Animist contract for events.          
     bool public visited;            // Client state prior to proximity detection        
-    uint64 public expires;          // Date (unix) client must visit by  
+    uint64 public expires;          // Date (since Epoch) client must visit by  
     AnimistEvent public api;        // AnimistEvent contract instance.
 
     function Visit(){
-        client = address(0xab3....ceb);         
-        node = address(0x757...abc);            
-        animistAddress = address(0xf8...cdf); 
+        client = address(0x579f...eec);         
+        node = address(0x2d0b...abc);            
+        animistAddress = address(0xf802....cde); 
         visited = false;                        
-        expires = 17523...098;                  
-        
-        // Instatiate AnimistEvent contract and request proximity detection
+        expires = 175232548098;                  
+
+        // Instantiate AnimistEvent contract and request proximity detection
         api = AnimistEvent(animistAddress);    
         api.requestProximityDetection(node, client, address(this));
     }
@@ -50,8 +50,8 @@ contract Visit {
 
     // Client could execute this method on whale-island over Bluetooth using the sendTx endpoint.
     function rewardVisit() {
-        if( msg.sender == client and visited == true){
-            // Reward client...
+        if( msg.sender == client && visited == true){
+            // Reward client
         }
     }
 }
@@ -60,35 +60,36 @@ contract Visit {
 
 **Broadcast message example:**
 
-You can broadcast a message over Bluetooth LE from any whale-island node by: 
+You can publish a message over Bluetooth LE on an arbitrary characteristic from any whale-island node by: 
+
 + Generating a new v4 uuid with [node-uuid](https://www.npmjs.com/package/node-uuid).
 
-+ Making a broadcast request through the deployed AnimistEvent contract at `0xf802....69cd7`.
++ Making a broadcast request through the deployed AnimistEvent contract at `0xf802....cde`.
 
-(This is useful if you want to co-ordinate or direct the behavior of mobile clients.) 
+(This is useful if you want to pass a dynamically generated signal to mobile clients without using contract storage ) 
 
 ```javascript
-import AnimistEvent.sol
+import 'AnimistEvent.sol';
 
 contract Message {
-    
-    string public channel;          // Arbitrary v4 characteristic uuid message. 
-    string public message;          // Message to broadcast
+
+    string public uuid;             // Arbitrary v4 characteristic uuid. 
+    string public message;          // Message to broadcast at `uuid`
     uint32 public duration;         // Duration (ms) of broadcast
     address public node;            // Address of the broadcasting node (from IPFS)
     address public animistAddress;  // Address of deployed Animist contract for events.
     AnimistEvent public api;        // AnimistEvent contract instance
 
     function Message(){
-        channel = "A01D64E6-B...7-8338527B4E10";   
+        uuid = "A01D64E6-B...7-8338527B4E10";   
         message = "You are beautiful";             
-        duration = "3000";                          
-        node = address(0x757...abc);               
-        animistAddress = address(0xf802 ...cda); 
+        duration = 3000;                          
+        node = address(0x579f...aec);               
+        animistAddress = address(0xf802....cde); 
 
         // Instantiate AnimistEvent contract request broadcast  
         api = AnimistEvent(animistAddress);        
-        api.requestBroadcast(channel, message, duration);    
+        api.requestMessagePublication(node, uuid, message, duration);    
     }
 }
 ```
