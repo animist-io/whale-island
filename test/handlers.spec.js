@@ -610,7 +610,7 @@ describe('BLE Request Handlers', () => {
             msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
             signed =  web3.eth.sign(client, msgHash); 
 
-            eth_db = new pouchdb('proximityContracts'  ); 
+            eth_db = new pouchdb('proximityContracts'); 
             eth.units.setDB(eth_db);
             record = { _id: client, authority: client, contractAddress: deployed.address };
             return eth_db.put(record);
@@ -626,7 +626,9 @@ describe('BLE Request Handlers', () => {
             let cb = (val) => {
                 expect(val).to.equal(config.codes.RESULT_SUCCESS);
             } 
-            let updateValueCallback = (sent) => { done(); };
+            let updateValueCallback = (sent) => { 
+                setTimeout(() => done(), 55); 
+            };
             defs.authAndSendTxCharacteristic.updateValueCallback = updateValueCallback;
             
             util.encrypt(data).then( encrypted => {
