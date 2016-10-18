@@ -50,17 +50,25 @@ module.exports.AnimistEvent = `
 
     contract AnimistEvent {
 
-        
-        event LogProximityDetectionRequest( address indexed node, address indexed account, address indexed contractAddress);
-        event LogBroadcastRequest( address indexed node, string channel, string message, uint duration);
+        event LogPresenceVerificationRequest( address indexed node, address indexed account, address indexed contractAddress);
+        event LogMessagePublicationRequest( address indexed node, string uuid, string message, uint32 duration);
+        event LogBeaconBroadcastRequest( address indexed node, string uuid, address contractAddress );
 
+        // ------------------------------------------  Event wrappers ------------------------------------------------------
+        function requestPresenceVerification(address node, address account, address contractAddress) {
 
-        // Event wrappers 
-        function requestProximityDetection(address node, address account, address contractAddress) {
-            LogProximityDetectionRequest(node, account, contractAddress);
+            LogPresenceVerificationRequest(node, account, contractAddress);
         }
 
-        function requestBroadcast(address node, string channel, string message, uint32 duration){
-            LogBroadcastRequest(node, channel, message, duration);
+        function requestMessagePublication(address node, string uuid, string message, uint32 duration){
+
+            LogMessagePublicationRequest(node, uuid, message, duration);
         }
+
+        function requestBeaconBroadcast(address node, string uuid, address contractAddress ){
+
+            LogBeaconBroadcastRequest( node, uuid, contractAddress );
+
+        }
+
     }`;

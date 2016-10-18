@@ -43,7 +43,7 @@ module.exports.broadcast_1 = {
   "event": "LogBroadcastRequest",
   "args": {
     "node": "0x579fadbb36a7b7284ef4e50bbc83f3f294e9a8ec",
-    "channel": "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8",
+    "uuid": "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8",
     "message": "hello",
     "duration": new util.BN(10)
   }
@@ -60,7 +60,7 @@ module.exports.broadcast_2 = {
   "event": "LogBroadcastRequest",
   "args": {
     "node": "0x579fadbb36a7b7284ef4e50bbc83f3f294e9a8ec",
-    "channel": "9138DF9F-39D5-49A5-A590-047550432ACC",
+    "uuid": "9138DF9F-39D5-49A5-A590-047550432ACC",
     "message": "hello",
     "duration": new util.BN(10)
   }

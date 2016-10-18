@@ -6,11 +6,11 @@ Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that
 
 ### Contract driven proximity detection and signal broadcasting 
 
-+ A contract to request services from whale-island nodes exists on Ethereum at: `0xf802....69cd7` and its Solidity file can be found at [animist-io/wallowa/contracts](https://github.com/animist-io/wallowa/blob/master/contracts/AnimistEvent.sol).
++ A contract to request services from whale-island nodes exists on Ethereum at: `0xf802....69cd7` and its Solidity file can be found at [animist-io/wallowa/contracts](https://github.com/animist-io/wallowa/blob/master/contracts/AnimistEvent.sol). Nodes continuously listen for, store and respond to events fired on this contract. 
 
 + Whale-island locations and their Ethereum addresses can be found at `ipfs.io/ipfs/QmY...bdG`
 
-**Presence verification example:**
+**Presence verification:**
 
 You can verify a contract participant's presence at a location by:
 + Making a proximity detection request through the deployed AnimistEvent contract at `0xf802....cde` 
@@ -38,7 +38,7 @@ contract Visit {
 
         // Instantiate AnimistEvent contract and request proximity detection
         api = AnimistEvent(animistAddress);    
-        api.requestProximityDetection(node, client, address(this));
+        api.requestPresenceVerification(node, client, address(this));
     }
 
     // Implement method the node will execute on proximity detection
@@ -65,8 +65,6 @@ You can publish a message over Bluetooth LE on an arbitrary characteristic from 
 + Generating a new v4 uuid with [node-uuid](https://www.npmjs.com/package/node-uuid).
 
 + Making a broadcast request through the deployed AnimistEvent contract at `0xf802....cde`.
-
-(This is useful if you want to pass a dynamically generated signal to mobile clients without using contract storage ) 
 
 ```javascript
 import 'AnimistEvent.sol';
@@ -96,9 +94,9 @@ contract Message {
 
 ### Other Features
 
-+ **Client Verification**: Nodes identify their clients by asking them to sign a connection-specific pin published on a bluetooth channel. While this doesn't absolutely guarantee a client is proximate to the node, it may be adequate for many moderately valued, well-designed contracts. Spoofing the node typically requires establishing parrallel physical infrastructure that relays node transmissions and client responses in real time. Whale-island can also be combined with data sources like Google geo-location to make an oracle that's harder to corrupt. Dapps that rely on client based geo-location alone are vulnerable to highly programmatic spoofing if someone decompiles the app, engineers a way to feed arbitrary location to it and makes the resulting application available to a wider public. 
++ **Client Verification**: Nodes identify their clients by requiring them to sign a connection-specific pin published on a bluetooth channel each time they submit a transaction or request services bound to their identity. While this doesn't absolutely guarantee a client is proximate to the node, it may be adequate for many moderately valued, well-designed contracts. Spoofing the node typically requires establishing parrallel physical infrastructure that relays node transmissions and client responses in real time. Whale-island can also be combined with data sources like Google geo-location to make an oracle that's harder to corrupt. Dapps that rely on client based geo-location alone are vulnerable to highly programmatic spoofing if someone decompiles the app, engineers a way to feed arbitrary location to it and makes the resulting application available to a wider public. 
 
-+ **Beacon:** iOS and Android apps that register with their OS to listen for beacon signal will wake up from a backgrounded/killed state when those signals are encountered in the environment and are allowed to run pre-defined subroutines on their device's CPU for ~90 seconds. This means you can design long-running location-based mobile dapps that automatically connect to whale-island nodes and publish to the blockchain without requiring a user's explicit engagement. An example use-case for this behavior is a race where the user intentionally places a wager at the beginning and is automatically detected at the end, resolving the contest. Another would be a contract that rewards a client for visiting a location every day for a month without requiring that they check in somewhere. 
++ **Beacon:** Nodes emit two beacon signals: a persistent **identity beacon** that helps mobile devices locate them and a **requestable beacon** that allows contracts to emit a brief, unique signal to coordinate the behavior of multiple mobile clients in the same place at the same time. iOS and Android apps that register with their OS to listen for the identity beacon signal will wake up from a backgrounded/killed state when those signals are encountered in the environment and are allowed to run pre-defined subroutines on their device's CPU for ~90 seconds. This means you can design long-running location-based mobile dapps that automatically connect to whale-island nodes and publish to the blockchain without requiring a user's explicit engagement. An example use-case for this behavior is a race where the user intentionally places a wager at the beginning and is automatically detected at the end, resolving the contest. Another would be a contract that rewards a client for visiting a location every day for a month without requiring that they check in somewhere. 
 
 + **Presence Receipts:** Whale-island also publishes data that can verify a client's presence without invoking contract methods. Using it's own account, the node signs a timestamp and a verified copy of the clients account address. The client can then present these to an adjudicating authority who extracts the public addresses from the packet and checks the results against node identification data published on IPFS. (See Bluetooth Server API below).
 
