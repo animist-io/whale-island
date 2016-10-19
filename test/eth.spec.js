@@ -206,7 +206,7 @@ describe('Eth Client', function(){
             });
         });
 
-        describe( 'authTx(pin, signed)', () => {
+        describe( 'verifyPresence(pin, signed)', () => {
 
             let pin, signed, msgHash, client = web3.eth.accounts[0];
 
@@ -226,7 +226,7 @@ describe('Eth Client', function(){
                 let mock = { _id: client, authority: client, contractAddress: contractAddress };
                 
                 db.put(mock).then(() => {
-                    eth.authTx(pin, signed).then( result => {
+                    eth.verifyPresence(pin, signed).then( result => {
                         tx = web3.eth.getTransaction(result); 
                         tx.hash.should.equal(result);
                         tx.blockNumber.should.equal(block_before + 1);
@@ -239,20 +239,20 @@ describe('Eth Client', function(){
                 let mock = { _id: 'do_not_exist', authority: hexAddress, contractAddress: '12345'};
 
                 db.put(mock).then( () => { 
-                    eth.authTx(pin, signed).should.eventually.be.rejected.notify(done);
+                    eth.verifyPresence(pin, signed).should.eventually.be.rejected.notify(done);
                 });
             });
 
             it('should reject if unable to extract an address from the signed msg', () => {
                 let garbage = 'garbage';
-                return eth.authTx(pin, garbage).should.eventually.be.rejected;
+                return eth.verifyPresence(pin, garbage).should.eventually.be.rejected;
             });
         });
 
-        // ----------------------------------- authAndSendTx ------------------------------------------
-        describe( 'sendTxWhenAuthed(authTxHash, signedTx, address', ()=> {
+        // ----------------------------------- verifyPresenceAndSendTx ------------------------------------------
+        describe( 'sendTxWhenPresenceVerified(verifyPresenceTxHash, signedTx, address)', ()=> {
 
-            let pin, signed, msgHash, authTxHash, client = web3.eth.accounts[0];
+            let pin, signed, msgHash, verifyPresenceTxHash, client = web3.eth.accounts[0];
 
             // Debugging . . . duplicate recs getting stuck in db
             before( () => {
@@ -267,14 +267,14 @@ describe('Eth Client', function(){
                 msgHash = util.addHexPrefix(util.sha3(pin).toString('hex'));
                 signed =  web3.eth.sign(client, msgHash);   
 
-                // Auth the tx, get authTxHash.
+                // verifyPresence, get verifyPresenceTxHash.
                 let mock = { _id: client, authority: client, contractAddress: deployed.address };
                 return db.put(mock).then( res => {
-                    return eth.authTx(pin, signed).then( result => authTxHash = result );  
+                    return eth.verifyPresence(pin, signed).then( result => verifyPresenceTxHash = result );  
                 });
             });
 
-            it('should update the contract record to show pending auth', (done)=>{
+            it('should update the contract record to show presenceVerifiedStatus as "pending" ', (done)=>{
                 let original_cycles = config.MAX_CONFIRMATION_CYCLES;
                 let original_mining = config.MINING_CHECK_INTERVAL;
                 let mock_record = { _id: hexAddress, authority: hexAddress, contractAddress: deployed.address };
@@ -284,9 +284,9 @@ describe('Eth Client', function(){
                 // This should get called in the conf. cycles check block.
                 let cb = () => {
                     db.get(client).then( doc => {
-                        expect(doc.authStatus).to.equal('pending');
-                        expect(doc.authTxHash).to.equal(authTxHash);
-                        expect(doc.verifiedTxHash).to.equal(null);
+                        expect(doc.verifyPresenceStatus).to.equal('pending');
+                        expect(doc.verifyPresenceTxHash).to.equal(verifyPresenceTxHash);
+                        expect(doc.clientTxHash).to.equal(null);
 
                         // Clean-up
                         eth.units.setConfCycles(original_cycles); 
@@ -295,10 +295,10 @@ describe('Eth Client', function(){
                     });
                 };
 
-                eth.sendTxWhenAuthed(authTxHash, goodTx, client, cb );
+                eth.sendTxWhenPresenceVerified(verifyPresenceTxHash, goodTx, client, cb );
             });
 
-            it('should send the tx when auth is mined, save txHash and update auth status', (done)=>{
+            it('should send the tx when verifyPresence tx is mined, save its txHash and update verifyPresence status', (done)=>{
 
                 let original_mining = config.MINING_CHECK_INTERVAL;
                 eth.units.setMiningCheckInterval(2000); // 
@@ -306,12 +306,12 @@ describe('Eth Client', function(){
                 // This should get called post db update on success.
                 let cb = () => {
                     db.get(client).then( doc => {
-                        expect(doc.authStatus).to.equal('success');
-                        expect(doc.authTxHash).to.equal(authTxHash);
+                        expect(doc.verifyPresenceStatus).to.equal('success');
+                        expect(doc.verifyPresenceTxHash).to.equal(verifyPresenceTxHash);
 
                         // Don't really know what this is, so check form.
-                        expect(util.isHexPrefixed(doc.verifiedTxHash)).to.be.true;
-                        expect(doc.verifiedTxHash.length).to.equal(0x42);
+                        expect(util.isHexPrefixed(doc.clientTxHash)).to.be.true;
+                        expect(doc.clientTxHash.length).to.equal(0x42);
                         
                         // Clean up
                         eth.units.setMiningCheckInterval(original_mining); 
@@ -319,18 +319,18 @@ describe('Eth Client', function(){
                     })
                 }
 
-                eth.sendTxWhenAuthed(authTxHash, goodTx, client, cb );
+                eth.sendTxWhenPresenceVerified(verifyPresenceTxHash, goodTx, client, cb );
 
             });
 
-            it('should continue cycling while authTx is pending', (done)=> {
+            it('should continue cycling while verifyPresenceTx is pending', (done)=> {
                 
                 let original_cycles = config.MAX_CONFIRMATION_CYCLES;
                 let original_mining = config.MINING_CHECK_INTERVAL;
                 eth.units.setConfCycles(2); // Cycle a couple times
                 eth.units.setMiningCheckInterval(10); // Fast!
 
-                // Mock pending auth tx by mocking web3 local to eth.js
+                // Mock pending verifyPresence tx by mocking web3 local to eth.js
                 let local_web3 = eth.units.getWeb3();
                 let original_getTx = local_web3.eth.getTransaction;
                 local_web3.eth.getTransaction = (hash) => { return { blockNumber: null }};
@@ -338,9 +338,9 @@ describe('Eth Client', function(){
                 let cb = (waitCycles) => {
                     db.get(client).then( doc => {
                         expect(waitCycles).to.be.gt(0);
-                        expect(doc.authStatus).to.equal('pending');
-                        expect(doc.authTxHash).to.equal(authTxHash);
-                        expect(doc.verifiedTxHash).to.equal(null);
+                        expect(doc.verifyPresenceStatus).to.equal('pending');
+                        expect(doc.verifyPresenceTxHash).to.equal(verifyPresenceTxHash);
+                        expect(doc.clientTxHash).to.equal(null);
 
                         //Clean-up
                         local_web3.eth.getTransaction = original_getTx;
@@ -350,10 +350,10 @@ describe('Eth Client', function(){
                     });
                 }
 
-                eth.sendTxWhenAuthed(authTxHash, goodTx, client, cb );
+                eth.sendTxWhenPresenceVerified(verifyPresenceTxHash, goodTx, client, cb );
             });
 
-            it('should mark contract auth status as failed if the auth throws', (done)=>{
+            it('should mark contracts verifyPresence status as "failed" if verifyPresence throws', (done)=>{
                 
                 let gasLimit = 4712388; // Default test-rpc limit
 
@@ -361,16 +361,16 @@ describe('Eth Client', function(){
                 let original_mining = config.MINING_CHECK_INTERVAL;
                 eth.units.setMiningCheckInterval(1000); // 
 
-                // Mock an authtx that used gasLimit gas.
+                // Mock an verifyPresenceTx that used gasLimit gas.
                 let local_web3 = eth.units.getWeb3();
                 let original_getTx = local_web3.eth.getTransactionReceipt;
                 local_web3.eth.getTransactionReceipt = (hash) => { return { gasUsed: gasLimit }};
 
                 let cb = () => {
                     db.get(client).then( doc => {
-                        expect(doc.authStatus).to.equal('failed');
-                        expect(doc.authTxHash).to.equal(authTxHash);
-                        expect(doc.verifiedTxHash).to.equal(null);
+                        expect(doc.verifyPresenceStatus).to.equal('failed');
+                        expect(doc.verifyPresenceTxHash).to.equal(verifyPresenceTxHash);
+                        expect(doc.clientTxHash).to.equal(null);
 
                         //Clean-up
                         local_web3.eth.getTransactionReceipt = original_getTx;
@@ -378,7 +378,7 @@ describe('Eth Client', function(){
                         done();
                     });
                 }
-                eth.sendTxWhenAuthed(authTxHash, goodTx, client, cb );
+                eth.sendTxWhenPresenceVerified(verifyPresenceTxHash, goodTx, client, cb );
             });            
         });
     });  

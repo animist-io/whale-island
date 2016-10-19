@@ -547,10 +547,10 @@ describe('BLE Utilites', () => {
 
         });
 
-        it('should resolve signedTx if a completed authAndSend event exists for client', (done)=>{
+        it('should resolve signedTx if a completed verifyPresenceAndSend event exists for client', (done)=>{
             
-            // Insert completed auth request for client into contractsDB
-            mock_auth_request = { _id: client, authority: client, contractAddress: deployed.address, authStatus: 'success' };
+            // Insert completed verifyPresence request for client into contractsDB
+            mock_auth_request = { _id: client, authority: client, contractAddress: deployed.address, verifyPresenceStatus: 'success' };
             orig_session = {account: client};
 
             eth.db().put(mock_auth_request).then( res => { 
@@ -567,10 +567,10 @@ describe('BLE Utilites', () => {
 
         });
 
-        it('should reject w/ TX_PENDING if a pending authAndSend requirement exists for client', (done)=>{
+        it('should reject w/ TX_PENDING if a pending verifyPresenceAndSend requirement exists for client', (done)=>{
             
-            // Insert pending auth request for client into contractsDB
-            mock_auth_request = { _id: client, authority: client, contractAddress: deployed.address, authStatus: 'pending' };
+            // Insert pending verifyPresence request for client into contractsDB
+            mock_auth_request = { _id: client, authority: client, contractAddress: deployed.address, verifyPresenceStatus: 'pending' };
             orig_session = {account: client};
 
             eth.db().put(mock_auth_request).then( res => { 

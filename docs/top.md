@@ -5,8 +5,8 @@
 Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that connects to mobile devices via BLE server. Its API targets smart-contract logic about the physical location of contract participants but it also has Bluetooth endpoints to process transactions and provides general access to some web3 methods. Use cases for the presence verification services and BLE signal broadcasting components of this system include:
 
 + Competitive races 
-+ Any game where presence of the players together in the same space is a key component (ex: Assassins) 
-+ Location dependent incentive/reward programs
++ Any game where presence of the players together in the same space is a key component. 
++ Location or path dependent reward programs
 
 An Ionic module that helps mobile Dapps interact with whale-island is under development at [animist-io/wowshuxkluh](https://github.com/animist-io/wowshuxkluh).
 

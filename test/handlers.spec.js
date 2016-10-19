@@ -470,7 +470,7 @@ describe('BLE Request Handlers', () => {
         });
     })
 
-    describe('onAuthTx', function(){
+    describe('onVerifyPresence', function(){
 
         let pin, signed, msgHash, input, eth_db, record, updateValueCallback, fns = {};
         
@@ -509,14 +509,14 @@ describe('BLE Request Handlers', () => {
             };
 
             updateValueCallback = val => { done() };
-            defs.authTxCharacteristic.updateValueCallback = updateValueCallback;
+            defs.verifyPresenceCharacteristic.updateValueCallback = updateValueCallback;
 
             util.encrypt(input).then( encrypted => {
-                ble.onAuthTx(encrypted, null, null, fns.callback );
+                ble.onVerifyPresence(encrypted, null, null, fns.callback );
             })
         });
 
-        it( 'should send the tx hash of the auth contract call and disconnect', (done) => {
+        it( 'should send the tx hash of the verifyPresence call and disconnect', (done) => {
 
             chai.spy.on(bleno, 'disconnect');
             fns.callback = () => {};
@@ -531,9 +531,9 @@ describe('BLE Request Handlers', () => {
                     done();
                 }, 100)
             };
-            defs.authTxCharacteristic.updateValueCallback = updateValueCallback;
+            defs.verifyPresenceCharacteristic.updateValueCallback = updateValueCallback;
             util.encrypt(input).then( encrypted => {
-                ble.onAuthTx(encrypted, null, null, fns.callback );
+                ble.onVerifyPresence(encrypted, null, null, fns.callback );
             })
         });
 
@@ -548,7 +548,7 @@ describe('BLE Request Handlers', () => {
                     done();
                 }, 100)
             };
-            ble.onAuthTx(input, null, null, callback );
+            ble.onVerifyPresence(input, null, null, callback );
         })
 
         it('should respond with NO_SIGNED_MSG_IN_REQUEST if input is malformed and disconnect', (done) => {
@@ -570,7 +570,7 @@ describe('BLE Request Handlers', () => {
             chai.spy.on(fns, 'callback');
 
             util.encrypt(malformed_input).then(( encrypted ) =>{
-                ble.onAuthTx(encrypted, null, null, fns.callback );
+                ble.onVerifyPresence(encrypted, null, null, fns.callback );
             })
         });
 
@@ -592,14 +592,14 @@ describe('BLE Request Handlers', () => {
                 done();
             };
             
-            defs.authTxCharacteristic.updateValueCallback = updateValueCallback;
+            defs.verifyPresenceCharacteristic.updateValueCallback = updateValueCallback;
             util.encrypt(input).then( encrypted => {
-                ble.onAuthTx(encrypted, null, null, fns.callback );
+                ble.onVerifyPresence(encrypted, null, null, fns.callback );
             })
         });
     });
 
-    describe('onAuthAndSendTx', ()=> {
+    describe('onVerifyPresenceAndSendTx', ()=> {
 
         let data, record, output, pin, msgHash, signed, eth_db;
 
@@ -629,10 +629,10 @@ describe('BLE Request Handlers', () => {
             let updateValueCallback = (sent) => { 
                 setTimeout(() => done(), 55); 
             };
-            defs.authAndSendTxCharacteristic.updateValueCallback = updateValueCallback;
+            defs.verifyPresenceAndSendTxCharacteristic.updateValueCallback = updateValueCallback;
             
             util.encrypt(data).then( encrypted => {
-                ble.onAuthAndSendTx(encrypted, null, null, cb );
+                ble.onVerifyPresenceAndSendTx(encrypted, null, null, cb );
             })
         });
 
@@ -653,26 +653,26 @@ describe('BLE Request Handlers', () => {
                     done();
                 }, 100)
             };
-            defs.authAndSendTxCharacteristic.updateValueCallback = updateValueCallback;    
+            defs.verifyPresenceAndSendTxCharacteristic.updateValueCallback = updateValueCallback;    
             util.encrypt(data).then( encrypted => {
-                ble.onAuthAndSendTx(encrypted, null, null, cb );
+                ble.onVerifyPresenceAndSendTx(encrypted, null, null, cb );
             })
         });
 
-        it('should call sendTxWhenAuthed', (done)=>{
+        it('should call sendTxWhenPresenceVerified', (done)=>{
 
             data = JSON.stringify({pin: signed, tx: goodTx});
             
             let cb = (val) => {};
-            chai.spy.on(eth, 'sendTxWhenAuthed');
+            chai.spy.on(eth, 'sendTxWhenPresenceVerified');
 
             let updateValueCallback = (sent) => {
-                expect(eth.sendTxWhenAuthed).to.have.been.called();
+                expect(eth.sendTxWhenPresenceVerified).to.have.been.called();
                 done();
             }
-            defs.authAndSendTxCharacteristic.updateValueCallback = updateValueCallback;    
+            defs.verifyPresenceAndSendTxCharacteristic.updateValueCallback = updateValueCallback;    
             util.encrypt(data).then( encrypted => {
-                ble.onAuthAndSendTx(encrypted, null, null, cb );
+                ble.onVerifyPresenceAndSendTx(encrypted, null, null, cb );
             })
         });
 
@@ -688,7 +688,7 @@ describe('BLE Request Handlers', () => {
                     done();
                 }, 100)
             };
-            ble.onAuthAndSendTx(data, null, null, cb );
+            ble.onVerifyPresenceAndSendTx(data, null, null, cb );
         })
 
         it('should respond w/error if sent pin is bad and disconnect', (done)=>{
@@ -704,7 +704,7 @@ describe('BLE Request Handlers', () => {
                 }, 500)
             }    
             util.encrypt(data).then( encrypted => {
-                ble.onAuthAndSendTx(encrypted, null, null, cb );
+                ble.onVerifyPresenceAndSendTx(encrypted, null, null, cb );
             })
         });
 
@@ -718,10 +718,10 @@ describe('BLE Request Handlers', () => {
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
-                }, 100)
+                }, 500)
             }    
             util.encrypt(data).then( encrypted => {
-                ble.onAuthAndSendTx(encrypted, null, null, cb );
+                ble.onVerifyPresenceAndSendTx(encrypted, null, null, cb );
             })
         });
 
@@ -821,7 +821,7 @@ describe('BLE Request Handlers', () => {
         })
     })
 
-    describe('onGetVerifiedTxStatus', () => {
+    describe('onGetClientTxStatus', () => {
         let pin, data, signed, msgHash, input, eth_db, mock_record, updateValueCallback, fns = {};
         
         // Debugging . . . duplicate recs getting stuck in db
@@ -857,21 +857,21 @@ describe('BLE Request Handlers', () => {
             };
 
             updateValueCallback = val => { done() };
-            defs.getVerifiedTxStatusCharacteristic.updateValueCallback = updateValueCallback;
-            ble.onGetVerifiedTxStatus(input, null, null, cb );
+            defs.getClientTxStatusCharacteristic.updateValueCallback = updateValueCallback;
+            ble.onGetClientTxStatus(input, null, null, cb );
 
         });
 
-        it('should send authStatus, authTxHash & VerifiedTxStatus data and disconnect', (done)=>{
+        it('should send verifyPresenceStatus, verifyPresenceTxHash & clientTxStatus data and disconnect', (done)=>{
 
             chai.spy.on(bleno, 'disconnect');
 
             mock_record = { 
                 _id: client, 
                 contractAddress: deployed.address,
-                authStatus: 'pending', 
-                authTxHash: '0x00001', 
-                verifiedTxHash: null 
+                verifyPresenceStatus: 'pending', 
+                verifyPresenceTxHash: '0x00001', 
+                clientTxHash: null 
             };
 
             let cb = (code) => {};
@@ -879,53 +879,53 @@ describe('BLE Request Handlers', () => {
             updateValueCallback = val => { 
                 expect(Buffer.isBuffer(val)).to.be.true;
                 val = JSON.parse(val);    
-                expect(val.authStatus).to.equal('pending');
-                expect(val.authTxHash).to.equal('0x00001');
-                expect(val.verifiedTxHash).to.equal(null);
+                expect(val.verifyPresenceStatus).to.equal('pending');
+                expect(val.verifyPresenceTxHash).to.equal('0x00001');
+                expect(val.clientTxHash).to.equal(null);
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
                 }, 100)
             };
 
-            defs.getVerifiedTxStatusCharacteristic.updateValueCallback = updateValueCallback;
-            eth_db.put(mock_record).then( res => ble.onGetVerifiedTxStatus(input, null, null, cb));
+            defs.getClientTxStatusCharacteristic.updateValueCallback = updateValueCallback;
+            eth_db.put(mock_record).then( res => ble.onGetClientTxStatus(input, null, null, cb));
 
 
         });
 
         it('should behave as expected: e2e', (done)=>{
             
-            // Fast mine authAndSendTx
+            // Fast mine verifyPresenceAndSendTx
             let original_mining = config.MINING_CHECK_INTERVAL;
             eth.units.setMiningCheckInterval(10); // Fast!
 
             data = JSON.stringify({pin: signed, tx: goodTx});
             
-            // Check getVerifiedTxStatus val after +1 sec.
+            // Check getClientTxStatus val after +1 sec.
             let cb = (val) => {};
             let updateValueCallback = (val) => {
                 expect(Buffer.isBuffer(val)).to.be.true;
                 val = JSON.parse(val);    
-                expect(val.authStatus).to.equal('success');
-                expect(val.authTxHash.length).to.equal(66);
-                expect(val.verifiedTxHash.length).to.equal(66);
+                expect(val.verifyPresenceStatus).to.equal('success');
+                expect(val.verifyPresenceTxHash.length).to.equal(66);
+                expect(val.clientTxHash.length).to.equal(66);
                 eth.units.setMiningCheckInterval(original_mining);
                 done();
             };
         
-            // Wait for simulated authAndSendTx call to (probably) finish
+            // Wait for simulated verifyPresenceAndSendTx call to (probably) finish
             setTimeout(()=>{
-                ble.onGetVerifiedTxStatus(input, null, null, cb);
+                ble.onGetClientTxStatus(input, null, null, cb);
             }, 2000)
 
-            // Simulate an authAndSendTx call.
-            defs.getVerifiedTxStatusCharacteristic.updateValueCallback = updateValueCallback;
-            defs.authAndSendTxCharacteristic.updateValueCallback = () => {};    
+            // Simulate an verifyPresenceAndSendTx call.
+            defs.getClientTxStatusCharacteristic.updateValueCallback = updateValueCallback;
+            defs.verifyPresenceAndSendTxCharacteristic.updateValueCallback = () => {};    
             mock_record = { _id: client, authority: client, contractAddress: deployed.address };
             eth_db.put(mock_record)
                 .then( res => util.encrypt(data)
-                .then( encrypted => ble.onAuthAndSendTx(encrypted, null, null, cb)));  
+                .then( encrypted => ble.onVerifyPresenceAndSendTx(encrypted, null, null, cb)));  
         });
 
         it('should send "null" if it cant find the contract record and disconnect', (done)=>{
@@ -937,9 +937,9 @@ describe('BLE Request Handlers', () => {
             mock_record = { 
                 _id: 'not_the_id_you_need', 
                 contractAddress: deployed.address,
-                authStatus: 'pending', 
-                authTxHash: '0x00001', 
-                verifiedTxHash: null 
+                verifyPresenceStatus: 'pending', 
+                verifyPresenceTxHash: '0x00001', 
+                clientTxHash: null 
             };
 
             let cb = (code) => {};
@@ -952,8 +952,8 @@ describe('BLE Request Handlers', () => {
                 }, 100)
             };
 
-            defs.getVerifiedTxStatusCharacteristic.updateValueCallback = updateValueCallback;
-            eth_db.put(mock_record).then( res => ble.onGetVerifiedTxStatus(input, null, null, cb));
+            defs.getClientTxStatusCharacteristic.updateValueCallback = updateValueCallback;
+            eth_db.put(mock_record).then( res => ble.onGetClientTxStatus(input, null, null, cb));
         });
 
         it('should respond w/ error code if pin signature doesnt parse and disconnect', (done)=>{
@@ -968,7 +968,7 @@ describe('BLE Request Handlers', () => {
                     done();
                 }, 100)
             }    
-            ble.onGetVerifiedTxStatus(data, null, null, cb);
+            ble.onGetClientTxStatus(data, null, null, cb);
         });
     });
 
