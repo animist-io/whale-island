@@ -68,15 +68,7 @@ describe('BLE Request Handlers', () => {
             callGetVerified = mock.callGetVerified;  // array vals: call getVerified
         });
     });
-
-    // New server per test
-    beforeEach(() => { 
-        db = new pouchdb('sessions'); 
-        util._units.setDB(db);
-    });
-
-    afterEach(()=>{ return db.destroy() });
-        
+    
     describe('onGetPin', () => {
 
         it('should respond w/ a newly generated pin', (done) => {
@@ -180,7 +172,6 @@ describe('BLE Request Handlers', () => {
             let malformed = '0x000000000000000012345';
             let malformed_input = JSON.stringify(malformed);
             
-
             cb = (code) => { 
                 expect(code).to.equal(config.codes.NO_TX_ADDR_ERR);
                 setTimeout(()=> { 
@@ -363,62 +354,6 @@ describe('BLE Request Handlers', () => {
             };
             ble.onGetPresenceReceipt(malformed_input, null, null, cb );
         });
-    });
-
-    describe('onGetNewSessionId', () => {
-
-        let input, pin, signed, msgHash, fns = {}, updateValueCallback;
-        
-        beforeEach(() => {
-            // Zero out previous write callback
-            fns.callback = () => {};
-
-            // Mock client signed pin (web3 style),
-            pin = util.getPin(true);
-            msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
-            signed =  web3.eth.sign(client, msgHash); 
-            input = JSON.stringify(signed);
-            
-        });
-
-        it('should respond w/ RESULT_SUCCESS', (done) => {
-
-            fns.callback = (code) => { 
-                expect(code).to.equal(config.codes.RESULT_SUCCESS);
-            };
-
-            updateValueCallback = val => { done() };
-            defs.getNewSessionIdCharacteristic.updateValueCallback = updateValueCallback;
-            ble.onGetNewSessionId(input, null, null, fns.callback );
-
-        });
-
-        it( 'should send sessionId data', (done) => {
-            
-            updateValueCallback = (val) => {
-                let out = JSON.parse(val.toString());
-                expect(out.sessionId).to.be.a('string');
-                expect(out.sessionId.length).to.equal(10);
-                expect(out.expires).to.be.a('number');
-                done();
-            };
-            defs.getNewSessionIdCharacteristic.updateValueCallback = updateValueCallback;
-            ble.onGetNewSessionId(input, null, null, fns.callback );
-        });
-
-        it('should respond with NO_SIGNED_MSG_IN_REQUEST if input is malformed', (done) => {
-            let malformed = "dd5[w,r,0,,n,g";
-            let malformed_input = JSON.stringify(malformed);
-            
-            fns.callback = (code) => { 
-                expect(code).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST);
-                done();
-            };
-
-            chai.spy.on(fns, 'callback');
-            ble.onGetNewSessionId(malformed_input, null, null, fns.callback );
-        });
-
     });
 
     describe('onCallTx', function() {
@@ -729,38 +664,46 @@ describe('BLE Request Handlers', () => {
 
     describe('onSendTx', ()=>{
 
-        let db, eth_db, cb, data, expected, orig_session, mock_auth_request;
+        let data, cb, output, expected, pin, msgHash, 
+            record, signed, eth_db, mock_auth_request;
 
-        // Session DBs are opened and destroyed at the top of 'Request Handlers'
-        // Debug - theres a contract left in the DB somewhere before this test
-        before( () => {
-            eth_db = new pouchdb('proximityContracts'  ); 
+        beforeEach(()=>{
+
+            // Mock client signed pin (web3 style),
+            pin = util.getPin(true);
+            msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
+
+            signed =  web3.eth.sign(client, msgHash); 
+        
+            eth_db = new pouchdb('proximityContracts'); 
             eth.units.setDB(eth_db);
-            db = new pouchdb('sessions'); 
-            return db.destroy().then(() => { return eth_db.destroy() })
-        })
-            
+            record = { _id: client, authority: client, contractAddress: deployed.address };
+
+            return eth_db.put(record);
+    
+        });
+
+        // Cleanup
+        afterEach( () => { return eth_db.destroy() });
+    
         it('should respond w/ RESULT_SUCCESS if sent data ok', (done)=>{
-            orig_session = {account: client};
             cb = (val) => {
                 expect(val).to.equal(config.codes.RESULT_SUCCESS);
             }
             let updateValueCallback = (sent) => { done() };
             defs.sendTxCharacteristic.updateValueCallback = updateValueCallback;
             
-            util.startSession(orig_session).then( doc => {
-                data = JSON.stringify({id: doc.sessionId, tx: goodTx});
+            data = JSON.stringify({pin: signed, tx: goodTx});
 
-                util.encrypt(data).then( encrypted => {
-                    ble.onSendTx(encrypted, null, null, cb );
-                })
+            util.encrypt(data).then( encrypted => {
+                ble.onSendTx(encrypted, null, null, cb );
             })
         });
 
         it('should send txHash of the sent transaction and disconnect', (done)=>{
 
             chai.spy.on(bleno, 'disconnect');
-            orig_session = {account: client};
+            
             cb = (val) => {};
 
             // Check for hash form
@@ -775,35 +718,34 @@ describe('BLE Request Handlers', () => {
             };
             defs.sendTxCharacteristic.updateValueCallback = updateValueCallback;
             
-            util.startSession(orig_session).then( doc => {
-                data = JSON.stringify({id: doc.sessionId, tx: goodTx});
-                util.encrypt(data).then( encrypted => {
-                    ble.onSendTx(encrypted, null, null, cb );
-                })
+            
+            data = JSON.stringify({ pin: signed, tx: goodTx});
+            util.encrypt(data).then( encrypted => {
+                ble.onSendTx(encrypted, null, null, cb );
             })
+           
         });
 
         it('should response with DECRYPTION_FAILED if input is unencrypted', ()=>{
-            orig_session = {account: client};
+            
             cb = (val) => {
                 expect(val).to.equal(config.codes.DECRYPTION_FAILED);
             }
             let updateValueCallback = (sent) => { done() };
             defs.sendTxCharacteristic.updateValueCallback = updateValueCallback;
             
-            util.startSession(orig_session).then( doc => {
-                data = JSON.stringify({id: doc.sessionId, tx: goodTx});
-                ble.onSendTx(data, null, null, cb );
-            })
+            
+            data = JSON.stringify({pin: signed, tx: goodTx});
+            ble.onSendTx(data, null, null, cb );
+            
         })
 
-        it('should respond with error code if caller cant send a tx and disconnect', (done)=>{
+        it('should respond with TX_PENDING if caller cant send a tx and disconnect', (done)=>{
 
             chai.spy.on(bleno, 'disconnect');
-            orig_session = {account: web3.eth.accounts[2]};
-
+        
             cb = (val) => {
-                expect(val).to.equal(config.codes.INVALID_TX_SENDER_ADDRESS);
+                expect(val).to.equal(config.codes.TX_PENDING);
                 setTimeout(()=> { 
                     expect(bleno.disconnect).to.have.been.called();
                     done();
@@ -812,12 +754,18 @@ describe('BLE Request Handlers', () => {
             let updateValueCallback = (sent) => {};
             defs.sendTxCharacteristic.updateValueCallback = updateValueCallback;
             
-            util.startSession(orig_session).then( doc => {
-                data = JSON.stringify({id: doc.sessionId, tx: goodTx});
-                util.encrypt(data).then( encrypted => {
-                    ble.onSendTx(encrypted, null, null, cb );
+            data = JSON.stringify({pin: signed, tx: goodTx});
+
+            eth_db.get(client).then(doc => {
+                doc.verifyPresenceStatus = "pending";
+                eth_db.put(doc).then( doc => {
+
+                    util.encrypt(data).then( encrypted => {
+                        ble.onSendTx(encrypted, null, null, cb );
+                    })
                 })
             })
+            
         })
     })
 
