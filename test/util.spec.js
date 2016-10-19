@@ -106,8 +106,6 @@ describe('BLE Utilites', () => {
                 return expect(util.decrypt(encrypted)).to.eventually.equal(msg);
             })
         })
-         
-
     })
 
     describe('getPin(true)', ()=>{

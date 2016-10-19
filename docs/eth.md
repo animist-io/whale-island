@@ -1,22 +1,6 @@
-# authTx
-
-[lib/eth.js:184-200](https://github.com/animist-io/whale-island/blob/1e2c65d4871cb9e42acbb39e00f9199a734104e6/lib/eth.js#L184-L200 "Source code on GitHub")
-
-Invokes verifyPresence on the contract discovered in the contractsDB. 
-verifyPresence prints caller was here, 'timestamped' now, to chain.
-
-**Parameters**
-
--   `pin`  
--   `signed`  
-
-Returns **Promise** Resolves hash string of pending AuthTx
-
-Returns **Promise** Rejects w/ hex code: NO_TX_FOUND
-
 # callTx
 
-[lib/eth.js:119-121](https://github.com/animist-io/whale-island/blob/1e2c65d4871cb9e42acbb39e00f9199a734104e6/lib/eth.js#L119-L121 "Source code on GitHub")
+[lib/eth.js:119-121](https://github.com/animist-io/whale-island/blob/fdb6391ea3f14cbca997614d07b93faeb24c2f3a/lib/eth.js#L119-L121 "Source code on GitHub")
 
 Wraps web3.eth.call. Method should require no gas and no "from" parameter. See onCallTx
 
@@ -28,7 +12,7 @@ Returns **String** hex encoded value per web3
 
 # getAccountBalance
 
-[lib/eth.js:84-86](https://github.com/animist-io/whale-island/blob/1e2c65d4871cb9e42acbb39e00f9199a734104e6/lib/eth.js#L84-L86 "Source code on GitHub")
+[lib/eth.js:84-86](https://github.com/animist-io/whale-island/blob/fdb6391ea3f14cbca997614d07b93faeb24c2f3a/lib/eth.js#L84-L86 "Source code on GitHub")
 
 Wraps web3.eth.getBalance
 
@@ -40,7 +24,7 @@ Returns **String** representing amount of wei
 
 # getBlockNumber
 
-[lib/eth.js:75-77](https://github.com/animist-io/whale-island/blob/1e2c65d4871cb9e42acbb39e00f9199a734104e6/lib/eth.js#L75-L77 "Source code on GitHub")
+[lib/eth.js:75-77](https://github.com/animist-io/whale-island/blob/fdb6391ea3f14cbca997614d07b93faeb24c2f3a/lib/eth.js#L75-L77 "Source code on GitHub")
 
 Wraps web3.eth.blockNumber.
 
@@ -48,7 +32,7 @@ Returns **Number**
 
 # getContract
 
-[lib/eth.js:157-175](https://github.com/animist-io/whale-island/blob/1e2c65d4871cb9e42acbb39e00f9199a734104e6/lib/eth.js#L157-L175 "Source code on GitHub")
+[lib/eth.js:157-175](https://github.com/animist-io/whale-island/blob/fdb6391ea3f14cbca997614d07b93faeb24c2f3a/lib/eth.js#L157-L175 "Source code on GitHub")
 
 Extracts address from signed pin and looks for record from contractsDB with that id.
 
@@ -75,7 +59,7 @@ Returns **Promise** Rejects with hex code: NO_TX_DB_ERR or NO_TX_ADDR_ERR
 
 # getPresenceReceipt
 
-[lib/eth.js:97-112](https://github.com/animist-io/whale-island/blob/1e2c65d4871cb9e42acbb39e00f9199a734104e6/lib/eth.js#L97-L112 "Source code on GitHub")
+[lib/eth.js:97-112](https://github.com/animist-io/whale-island/blob/fdb6391ea3f14cbca997614d07b93faeb24c2f3a/lib/eth.js#L97-L112 "Source code on GitHub")
 
 Responds with data that can be used to authenticate clients presence near
 endpoint. (See onGetPresenceReceipt in lib/handlers.js)
@@ -91,7 +75,7 @@ Returns **Object** Null on error.
 
 # getTx
 
-[lib/eth.js:131-141](https://github.com/animist-io/whale-island/blob/1e2c65d4871cb9e42acbb39e00f9199a734104e6/lib/eth.js#L131-L141 "Source code on GitHub")
+[lib/eth.js:131-141](https://github.com/animist-io/whale-island/blob/fdb6391ea3f14cbca997614d07b93faeb24c2f3a/lib/eth.js#L131-L141 "Source code on GitHub")
 
 Queries blockchain for transaction receipt.
 
@@ -105,7 +89,7 @@ Returns **Promise** Rejects w/ hex code: NO_TX_DB_ERR
 
 # recover
 
-[lib/eth.js:48-66](https://github.com/animist-io/whale-island/blob/1e2c65d4871cb9e42acbb39e00f9199a734104e6/lib/eth.js#L48-L66 "Source code on GitHub")
+[lib/eth.js:48-66](https://github.com/animist-io/whale-island/blob/fdb6391ea3f14cbca997614d07b93faeb24c2f3a/lib/eth.js#L48-L66 "Source code on GitHub")
 
 Recovers address used to sign a message, which may be encoded in eth-lightwallet or web3.sign 
 formats. (Will generate non-existent address if data signed and 'rawMsg' are not identical.
@@ -121,7 +105,7 @@ Returns **** undefined if ethereumjs-util throws an error during recovery.
 
 # sendTx
 
-[lib/eth.js:208-210](https://github.com/animist-io/whale-island/blob/1e2c65d4871cb9e42acbb39e00f9199a734104e6/lib/eth.js#L208-L210 "Source code on GitHub")
+[lib/eth.js:208-210](https://github.com/animist-io/whale-island/blob/fdb6391ea3f14cbca997614d07b93faeb24c2f3a/lib/eth.js#L208-L210 "Source code on GitHub")
 
 Prints client-signed tx to blockchain. A wrapper for web3 sendRawTransaction.
 
@@ -131,16 +115,33 @@ Prints client-signed tx to blockchain. A wrapper for web3 sendRawTransaction.
 
 Returns **String** txHash of sendRawTransaction
 
-# sendTxWhenAuthed
+# sendTxWhenPresenceVerified
 
-[lib/eth.js:221-293](https://github.com/animist-io/whale-island/blob/1e2c65d4871cb9e42acbb39e00f9199a734104e6/lib/eth.js#L221-L293 "Source code on GitHub")
+[lib/eth.js:222-294](https://github.com/animist-io/whale-island/blob/fdb6391ea3f14cbca997614d07b93faeb24c2f3a/lib/eth.js#L222-L294 "Source code on GitHub")
 
-Waits for auth tx to be mined then sends tx. Updates client's contract record with auth status when 
-pending, successful, failed and saves signedTx transaction hash to record on success.
+Waits for verifyPresence tx to be mined then sends tx. Updates client's contract record with 
+verifyPresenceTx's status when pending, successful, failed and saves signed client Tx transaction hash to 
+record on success.
 
 **Parameters**
 
--   `authTxHash` **String** : hash of pending presence verification tx sent by animist device
+-   `verifyPresenceTxHash` **String** : hash of pending presence verification tx sent by animist device
 -   `signedTx` **String** : signed tx submittable w/ eth.sendRawTransaction
 -   `address` **String** : the client account address
 -   `cb` **Function** : optional callback for unit testing.
+
+# verifyPresence
+
+[lib/eth.js:184-200](https://github.com/animist-io/whale-island/blob/fdb6391ea3f14cbca997614d07b93faeb24c2f3a/lib/eth.js#L184-L200 "Source code on GitHub")
+
+Invokes verifyPresence on the contract discovered in the contractsDB. 
+verifyPresence prints caller was here, 'timestamped' now, to chain.
+
+**Parameters**
+
+-   `pin`  
+-   `signed`  
+
+Returns **Promise** Resolves hash string of pending presence verification tx.
+
+Returns **Promise** Rejects w/ hex code: NO_TX_FOUND
