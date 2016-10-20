@@ -6,14 +6,13 @@
 let config = require('../lib/config');
 let ble = require('../lib/handlers');
 let util = require('../lib/util');
-let defs = require('../lib/characteristics');
 let eth = require('../lib/eth');
+let defs = ble.defs;
 
 // Mocks
 const account = require('../test/mocks/wallet');
 const transactions = require('../test/mocks/transaction');
 const bleno = require('../test/mocks/bleno.js');
-const pgp = require('../test/mocks/bleno.js');
 
 // Ethereum 
 const Web3 = require('web3');

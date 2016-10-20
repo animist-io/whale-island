@@ -2,15 +2,15 @@
 [![Build Status](https://travis-ci.org/animist-io/whale-island.svg?branch=master)](https://travis-ci.org/animist-io/whale-island) **This project is in early development. Under construction.**
 
 ## Overview
-Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that connects to mobile devices via BLE server. Its API targets contract logic about the physical location of contract participants but it also has Bluetooth endpoints to process transactions and provides general access to some web3 methods. Use cases for whale-island's services include:
+Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that connects to mobile devices via BLE server. Its API targets smart-contract logic about the physical location of mobile Dapp users but it also has Bluetooth endpoints to process transactions and provides general access to some web3 methods. Use cases for whale-island's services include:
 
-+ Competitive races 
++ Competitive races
 + Any game where the co-location of players is a key component. 
-+ Place or path contingent reward programs
++ Path or place contingent reward programs.
 
 An Ionic module that helps mobile Dapps interact with whale-island is under development at [animist-io/wowshuxkluh](https://github.com/animist-io/wowshuxkluh).
 
-## Services available to mobile Dapps
+## Services
 
 + A contract to request services from whale-island nodes exists on Ethereum at: `0xf802....69cd7` and its Solidity file can be found at [animist-io/wallowa/contracts](https://github.com/animist-io/wallowa/blob/master/contracts/AnimistEvent.sol). Nodes continuously listen for, store and respond to events fired on this contract. 
 
@@ -29,11 +29,11 @@ import 'AnimistEvent.sol';
 
 contract Visit {
 
-    address public client;          // Client to verify presence of     
-    address public node;            // Node client should visit (from IPFS)
+    address public client;          // Mobile client to verify presence of     
+    address public node;            // Node that client should visit (from IPFS)
     address public animistAddress;  // Deployed Animist contract for events.          
     bool public visited;            // Client state prior to proximity detection        
-    uint64 public expires;          // Date (since Epoch) client must visit by  
+    uint64 public expires;          // Date (since Epoch ms) client must visit by  
     AnimistEvent public api;        // AnimistEvent contract instance.
 
     function Visit(){
