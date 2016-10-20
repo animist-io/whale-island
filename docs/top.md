@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/animist-io/whale-island.svg?branch=master)](https://travis-ci.org/animist-io/whale-island) **This project is in early development. Under construction.**
 
 ## Overview
-Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that connects to mobile devices via BLE server. Its API targets smart-contract logic about the physical location of contract participants but it also has Bluetooth endpoints to process transactions and provides general access to some web3 methods. Use cases for the services whale-island provides include:
+Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that connects to mobile devices via BLE server. Its API targets contract logic about the physical location of contract participants but it also has Bluetooth endpoints to process transactions and provides general access to some web3 methods. Use cases for whale-island's services include:
 
 + Competitive races 
 + Any game where the co-location of players is a key component. 
@@ -22,7 +22,7 @@ You can verify a contract participant's presence at a location by:
 
 + Making a presence verfication request through the deployed AnimistEvent contract at `0xf802....cde` **and**
 
-+ Implementing a public method with the signature: `verifyPresence(address client, uint64 time)` in your contract. 
++ Implementing a public method with the signature: `verifyPresence(address visitor, uint64 time)` in your contract. 
 
 ```javascript
 import 'AnimistEvent.sol';
@@ -43,19 +43,19 @@ contract Visit {
         visited = false;                        
         expires = 175232548098;                  
 
-        // Instantiate AnimistEvent contract and request proximity detection
+        // Instantiate AnimistEvent contract and request presence verification
         api = AnimistEvent(animistAddress);    
         api.requestPresenceVerification(node, client, address(this));
     }
 
-    // Implement method the node will execute on proximity detection
+    // Implement method the node will execute when client calls its verifyPresence endpoint over BLE
     function verifyPresence(address visitor, uint64 time) {
         if (msg.sender == node && visitor == client && time <= expires){
             visited = true;
         }
     }
 
-    // Client could execute this method on whale-island over Bluetooth using the sendTx endpoint.
+    // Client could call this method on whale-island over Bluetooth using the sendTx endpoint.
     function rewardVisit() {
         if( msg.sender == client && visited == true){
             // Reward client
@@ -101,7 +101,7 @@ contract Message {
 
 ### Features
 
-+ **Client Verification**: Nodes identify their clients by requiring them to sign a connection-specific pin published on a bluetooth channel each time they submit a transaction or request services bound to their identity. While this doesn't absolutely guarantee a client is proximate to the node, it may be adequate for many moderately valued, well-designed contracts. Spoofing the node typically requires establishing parrallel physical infrastructure that relays node transmissions and client responses in real time. Whale-island can also be combined with data sources like Google geo-location to make an oracle that's harder to corrupt. Dapps that rely on client based geo-location alone are vulnerable to highly programmatic spoofing if someone decompiles the app, engineers a way to feed arbitrary location to it and makes the resulting application available to a wider public. 
++ **Client Verification**: Nodes identify their clients by requiring them to sign a connection-specific pin published over BLE each time they submit a transaction or request services bound to their identity. While this doesn't absolutely guarantee a client is proximate to the node, it may be adequate for many moderately valued, well-designed contracts. Spoofing the node typically requires establishing parrallel physical infrastructure that relays node transmissions and client responses in real time. Whale-island can also be combined with data sources like Google geo-location to make an oracle that's harder to corrupt. Dapps that rely on client based geo-location alone are vulnerable to highly programmatic spoofing if someone decompiles the app, engineers a way to feed arbitrary location to it and makes the resulting application available to a wider public. 
 
 + **Beacon:** Nodes emit two beacon signals: a persistent **identity beacon** that helps mobile devices locate them and a **requestable beacon** that allows contracts to emit a brief, unique signal to coordinate the behavior of multiple clients in the same place. iOS and Android apps that register with their OS to listen for the identity beacon will wake up from a backgrounded/killed state when those signals are encountered in the environment and are allowed to run pre-defined subroutines on their device's CPU for ~90 seconds. This means you can design long-running location-based mobile dapps that automatically connect to whale-island nodes and publish to the blockchain without requiring a user's explicit engagement. An example use-case for this behavior is a race where the user intentionally places a wager at the beginning and is automatically detected at the end, resolving the contest. Another would be a contract that rewards a client for visiting a location every day for a month without requiring that they check in somewhere. 
 

@@ -95,7 +95,7 @@ describe('Eth Client', function(){
 
         // DB creation and cleanup
         beforeEach( () => { 
-            db = new pouchdb('proximityContracts'); 
+            db = new pouchdb('animistEvents'); 
             eth.units.setDB(db);
         });
 
@@ -256,7 +256,7 @@ describe('Eth Client', function(){
 
             // Debugging . . . duplicate recs getting stuck in db
             before( () => {
-                let eth_db = new pouchdb('proximityContracts'); 
+                let eth_db = new pouchdb('animistEvents'); 
                 return eth_db.destroy();
             })
             
