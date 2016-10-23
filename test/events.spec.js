@@ -286,6 +286,58 @@ describe('Ethereum Contract Event Listeners', () => {
         });     
     });
 
+    describe('startBeaconBroadcastRequestsFilter', ()=>{
+
+        let eventContract;
+
+        // Deploy contract
+        beforeEach( () => { 
+            return newContract( contracts.AnimistEvent, { from: client })
+                .then( deployed => eventContract = deployed );
+        });
+
+        it('should NOT submit a signed beacon id if the beacon uuid doesnt validate', (done) => {
+
+            let uuid = "I am bad";
+            let fn = { addBeacon: ()=>{} }
+            let cb = (err) => {
+                if (err) {
+                    err.should.equal(config.events.filters.validationError);
+                    fn.addBeacon.should.not.have.been.called();
+                    events.stopBeaconFilter();
+                    done();
+                }   
+            }
+
+            chai.spy.on(fn, 'addBeacon');
+            events.startBeaconBroadcastRequestsFilter(eventContract.address, fn.addBeacon, cb);
+            eventContract.requestBeaconBroadcast(node, uuid, testContract.address, {from: client}); 
+        });
+
+        it('should submit a verifiably signed beacon id to the client contract', (done) => {
+
+            let receivedBeacon, uuid = "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8";
+
+            // Construct received Beacon
+            let addBeacon = (uuid, major, minor)=> {
+                receivedBeacon = uuid + ':' + major + ':' + minor;
+                return Promise.resolve();
+            };
+            
+            // Run solidity test that uses received beacon to ecrecover the node address.
+            let cb = (err) => {
+                if (err) return;
+               
+                testContract.receivedBeaconMatchesSignedBeacon(receivedBeacon, node).should.be.true;
+                events.stopBeaconFilter();
+                done();
+            }
+
+            events.startBeaconBroadcastRequestsFilter(eventContract.address, addBeacon, cb);
+            eventContract.requestBeaconBroadcast(node, uuid, testContract.address, {from: client});        
+        });
+    });
+
     describe('startMessagePublicationRequestsFilter', () => {
 
         let eventContract, db;
@@ -361,57 +413,5 @@ describe('Ethereum Contract Event Listeners', () => {
         });   
     });
 
-    describe('startBeaconBroadcastRequestsFilter', ()=>{
-
-        let eventContract;
-
-        // Deploy contract
-        beforeEach( () => { 
-            return newContract( contracts.AnimistEvent, { from: client })
-                .then( deployed => eventContract = deployed );
-        });
-
-        it('should NOT submit a signed beacon id if the beacon uuid doesnt validate', (done) => {
-
-            let uuid = "I am bad";
-            let fn = { addBeacon: ()=>{} }
-            let cb = (err) => {
-                if (err) {
-                    err.should.equal(config.events.filters.validationError);
-                    fn.addBeacon.should.not.have.been.called();
-                    events.stopBeaconFilter();
-                    done();
-                }   
-            }
-
-            chai.spy.on(fn, 'addBeacon');
-            events.startBeaconBroadcastRequestsFilter(eventContract.address, fn.addBeacon, cb);
-            eventContract.requestBeaconBroadcast(node, uuid, testContract.address, {from: client}); 
-        });
-
-        it('should submit a verifiably signed beacon id to the client contract', (done) => {
-
-            let receivedBeacon, uuid = "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8";
-
-            // Construct received Beacon
-            let addBeacon = (uuid, major, minor)=> {
-                receivedBeacon = uuid + ':' + major + ':' + minor;
-                return Promise.resolve();
-            };
-            
-            // Run solidity test that uses received beacon to ecrecover the node address.
-            let cb = (err) => {
-                if (err) return;
-               
-                testContract.receivedBeaconMatchesSignedBeacon(receivedBeacon, node).should.be.true;
-                events.stopBeaconFilter();
-                done();
-            }
-
-            events.startBeaconBroadcastRequestsFilter(eventContract.address, addBeacon, cb);
-            eventContract.requestBeaconBroadcast(node, uuid, testContract.address, {from: client});        
-        });
-
-        
-    });
+    
 });
