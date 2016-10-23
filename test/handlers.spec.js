@@ -57,6 +57,10 @@ describe('BLE Request Handlers', () => {
         address = keystore.getAddresses()[0];    // Lightwallets addresses are not prefixed.
         hexAddress = '0x' + address;             // Eth's are prefixed - we recover them as this.
 
+        // Occasionally we need to generate the ABI for the config.
+        // transactions.methodsABI();
+        // transactions.eventsABI();
+        
         // Deploy TestContract, compose some signed transactions for rawTx submission.
         return transactions.generate().then( mock => {   
 

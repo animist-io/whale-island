@@ -70,6 +70,7 @@
     "cli-color": "^1.1.0",
     "eth-lightwallet": "^2.4.3",
     "eth-new-contract": "^0.2.2",
+    "ethereumjs-util": "^4.5.0",
     "lodash": "^4.16.4",
     "minimatch": "^3.0.2",
     "node-uuid": "^1.4.7",

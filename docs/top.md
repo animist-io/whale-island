@@ -80,7 +80,7 @@ contract Message {
 
     string public uuid;             // Arbitrary v4 characteristic uuid. 
     string public message;          // Message to publish at `uuid`
-    uint32 public duration;         // Duration (ms) of broadcast
+    uint32 public expires;          // Date (since Epoch ms) broadcast ends.
     address public node;            // Address of the broadcasting node (from IPFS)
     address public animistAddress;  // Address of deployed Animist contract for events.
     AnimistEvent public api;        // AnimistEvent contract instance
@@ -94,7 +94,7 @@ contract Message {
 
         // Instantiate AnimistEvent contract and request message publication  
         api = AnimistEvent(animistAddress);        
-        api.requestMessagePublication(node, uuid, message, duration);    
+        api.requestMessagePublication(node, uuid, message, expires);    
     }
 }
 ```
