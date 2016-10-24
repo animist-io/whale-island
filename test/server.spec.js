@@ -1,32 +1,33 @@
-/* describe('isUniqueUUID', ()=>{
+'use strict'
 
-        after(() => events._units.clearBroadcasts() )
+describe('BLE Server', ()=>{
 
-        it('should return true if uuid is valid', ()=> {
-            let uuid = "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8";
-            events.isValidUUID(uuid).should.be.true;
-        });
+    describe('prepPublicationsOnLaunch', () => {
 
-        it('should return false if uuid is malformed', ()=> {
-            let uuid = "12355641";
-            events.isValidUUID(uuid).should.be.false;
+        it('should remove expired publications from the events DB');
 
-        });
+        it('should correctly schedule the removal of existing publications in the DB');
 
-        it('should return false if theres already a broadcast w/ same uuid', ()=>{
+        it('should ensure the publication set is correct: e2e');
+    });
 
+    describe('isUniqueUUID', ()=>{
+
+        it('should return false if theres already a publication w/ same uuid')
+
+        /*
             let uuid = mocks.broadcast_1.args.uuid;
             events.addPublication(mocks.broadcast_1);
             events.isValidUUID(uuid).should.be.false;
+        */
+        
+    })
 
-        })
-    })*/
+    describe('addPublication', () => {
 
-    /*describe('addPublication', () => {
-
-        it('should create a bleno characteristic and add it to the characteristics array', (done)=>{
+        it('should create a bleno characteristic and add it the DBs publications list');
     
-            chai.spy.on(bleno, 'disconnect');
+            /*chai.spy.on(bleno, 'disconnect');
         
             let expectedChannel = mocks.broadcast_1.args.uuid.replace(/-/g, '');
             let expectedMessage = new Buffer(mocks.broadcast_1.args.message);
@@ -45,19 +46,39 @@
             }
 
             broadcasts[0].uuid.should.equal(expectedChannel); // Verify uuid
-            broadcasts[0].onReadRequest(null, cb);            // Test callback  
+            broadcasts[0].onReadRequest(null, cb);            // Test callback*/  
 
-        });
 
-        it('should stop broadcasting request after specified duration', (done)=> {
+        it('should schedule publication removal correctly');
 
-            events.addPublication(mocks.broadcast_1);
+            /*events.addPublication(mocks.broadcast_1);
             events._units.getBroadcasts().length.should.equal(1);
 
             setTimeout(() => {
                 events._units.getBroadcasts().length.should.equal(0);
                 done();
-            }, 100)
+            }, 100)*/
 
-        });
-    });*/
+        it('should update the broadcast');
+        
+    });
+
+    describe('scheduleRemoval', () => {
+
+        it( 'should delete the publication from the events DB');
+        it( 'should update the broadcast after removal');
+    });
+
+    describe('updateBroadcast', () => {
+
+        it('should call Bleno setServices with the correct set of default/requested characteristics');
+        it('should call Bleno setServices with the default char set if eventsDB is empty');
+    });
+
+    describe('onAdvertisingStart', () => {
+
+        it('should set up the publications correctly, start broadcasting, and begin filtering for events');
+
+    });
+
+});

@@ -217,12 +217,12 @@ $ unset TRAVIS
 
 ### Node Service UUIDs
 
-Every animist node broadcasts a platform specific beacon uuid and provides access to server API endpoints and contract-triggered broadcast events at corresponding BLE service uuids. 
+Every animist node broadcasts a platform specific beacon uuid and provides access to server endpoints and contract-triggered broadcast events at corresponding BLE service uuids. 
 
 |   Service   | UUID         | Description    |
 | ----------- | ------------ | -------------- |
 | Identity Beacon      | 4F7C5946-87BB-4C50-8051-D503CEBA2F19 | Read       |
-| Requestable Beacon   | CF5873BB-8F1F-416B-9073-7145864BD97D | Read       |
+| Requestable Beacon   | v4 uuid defined by client contract | Read       |
 | Server               | 05DEE885-E723-438F-B733-409E4DBFA694 | Read/Write |
 
 
