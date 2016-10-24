@@ -215,20 +215,41 @@ $ unset TRAVIS
 % gulp documentation
 ```
 
-### Device UUIDs
+### Node Service UUIDs
 
 Every animist node broadcasts a platform specific beacon uuid and provides access to server API endpoints and contract-triggered broadcast events at corresponding BLE service uuids. 
 
 |   Service   | UUID         | Description    |
 | ----------- | ------------ | -------------- |
-| Beacon      | 4F7C5946-87BB-4C50-8051-D503CEBA2F19 | Read       |
-| Server      | 05DEE885-E723-438F-B733-409E4DBFA694 | Read/Write |
-| Broadcast   | CF5873BB-8F1F-416B-9073-7145864BD97D | Read       |
- 
+| Identity Beacon      | 4F7C5946-87BB-4C50-8051-D503CEBA2F19 | Read       |
+| Requestable Beacon   | CF5873BB-8F1F-416B-9073-7145864BD97D | Read       |
+| Server               | 05DEE885-E723-438F-B733-409E4DBFA694 | Read/Write |
+
+
+### Server Characteristic UUIDS
+
+| Endpoint Name            | UUID |
+| --------                 | ---- |
+|  getPin                  | C40C94B3-D9FF-45A0-9A37-032D72E423A9 |
+|  getDeviceAccount        | 1FD26CCA-EA2B-4B9E-A59E-17AA7E61A0AC |
+|  getBlockNumber          | C888866C-3499-4B80-B145-E1A61620F885 |
+|  getPgpKeyId             | 75C06966-FEF2-4B23-A5AE-60BA8A5C622C |
+|  getAccountBalance       | A85B7044-F1C5-43AD-873A-CF923B6D62E7 |
+|  getTxStatus             | 03796948-4475-4E6F-812E-18807B28A84A |
+|  getClientTxStatus       | 421522D1-C7EE-494C-A1E4-029BBE644E8D |
+|  getContract             | BFA15C55-ED8F-47B4-BD6A-31280E98C7BA |
+|  getContractAddress      | 007A62CC-068F-4E85-898E-7EA98AD4E31B |
+|  verifyPresence          | 297E3B0A-F353-4531-9D44-3686CC8C4036 |
+|  verifyPresenceAndSendTx | 8D8577B9-E2F0-4750-BB82-421750D9BF86 |
+|  getPresenceReceipt      | BA2C3091-DAB8-4D51-BF92-3A6F023E9AD7 |
+|  sendTx                  | 3340BC2C-70AE-4E7A-BE24-8B2ED8E3ED06 | 
+|  callTx                  | 4506C117-0A27-4D90-94A1-08BB81B0738F |
+
+
 
 ### Hex Response Codes
 
-Server API Endpoints respond immediately with a hex code indicating whether or not the request is valid. For subscription requests, data (if available) follows after a min. 50ms delay. 
+Server endpoints respond immediately with a hex code indicating whether or not the request is valid. For subscription requests, data (if available) follows after a min. 50ms delay. 
 
 | Name | Value | -                | Name | Value |
 |------|-------|------------------|------|-------|
