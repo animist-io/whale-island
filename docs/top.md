@@ -8,11 +8,11 @@ Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that
 + Any game where the co-location of players is a key component. 
 + Path or place contingent reward programs.
 
-An Ionic module that helps mobile Dapps interact with whale-island is under development at [animist-io/wowshuxkluh](https://github.com/animist-io/wowshuxkluh).
+Javascript libraries to help mobile Dapps interact with whale-island are under development at [animist-io/wowshuxkluh](https://github.com/animist-io/wowshuxkluh).
 
 ## Services
 
-+ A contract to request services from whale-island nodes exists on Ethereum at: `0xf802....69cd7` and its Solidity file can be found at [animist-io/wallowa/contracts](https://github.com/animist-io/wallowa/blob/master/contracts/AnimistEvent.sol). Nodes continuously listen for, store and respond to events fired on this contract. 
++ A contract to request services from whale-island nodes exists on Ethereum at: `0xf802....cde` and its Solidity file can be found at [animist-io/wallowa/contracts](https://github.com/animist-io/wallowa/blob/master/contracts/AnimistEvent.sol). Nodes continuously listen for, store and respond to events fired on this contract. 
 
 + Whale-island locations and their Ethereum addresses can be found at `ipfs.io/ipfs/QmY...bdG`
 
@@ -64,6 +64,72 @@ contract Visit {
 }
 ```
 
+#### Beacon Broadcasting
+
+You can broadcast an arbitrary beacon signal from any whale-island node by:
+
++ Generating a new v4 uuid with [node-uuid](https://www.npmjs.com/package/node-uuid) **and**
+
++ Making a beacon broadcast request through the deployed AnimistEvent contract at `0xf802....cde` **and**
+
++ Implementing a public method with the signature: `submitSignedBeaconId( uint8 v, bytes32 r, bytes32 s` in your contract.
+
+This is useful if you want to co-ordinate the behavior of several mobile clients in the same place by firing a brief signal (like a starting shot) that all clients will hear simultaneously. The node broadcasts the beacon with the requested uuid but dynamically generates the signal's major / minor values. It then signs a string with form `<uuid>:<major>:<minor>` and submits it to the clients' contract via `submitSignedBeaconId `. You can verify that a client was present when the signal was fired by asking them to use their received beacon values to extract the node's address from the signed copy stored in the contract using Solidity's `ecrecover` method. 
+
+```javascript
+import 'AnimistEvent.sol';
+
+contract Beacon {
+
+    struct SignedBeacon {    // Storage for Elliptic curve signature of beacon-signal 
+        uint8 v;             // emitted by node as a start signal. 
+        bytes32 r;           // (See submitSignedBeaconId and receivedMatchesSigned methods below)
+        bytes32 s; 
+    }
+
+    string public uuid;             // Arbitrary v4 beacon uuid. 
+    address public node;            // Address of the broadcasting node (from IPFS)
+    address public animistAddress;  // Address of deployed Animist contract for events.
+    AnimistEvent public api;        // AnimistEvent contract instance
+    SignedBeacon signedBeacon;      // '<uuid>:<major>:<minor>' signed by node.
+
+    function Beacon(){
+        uuid = "A01D64E6-B...7-8338527B4E10";                           
+        node = address(0x579f...aec);               
+        animistAddress = address(0xf802....cde); 
+
+        // Instantiate AnimistEvent contract and request beacon broadcast 
+        api = AnimistEvent(animistAddress);        
+        api.requestBeaconBroadcast(node, uuid, address(this));    
+    }
+
+    // Implement method the node will execute on this contract when it begins 
+    // broadcasting the beacon. Params v, r, s are the elliptic curve signature 
+    // components of the string '<uuid>:<major>:<minor>', signed with the node's public address.
+    function submitSignedBeaconId( uint8 v, bytes32 r, bytes32 s) public {
+        signedBeacon.v = v;
+        signedBeacon.r = r;
+        signedBeacon.s = s;
+    }
+
+    // Implement a function which verifies that the beacon signal heard by the client is 
+    // identical to the one signed by the node. Param 'received' is a string with form:
+    // <uuid>:<major>:<minor> encoding the values the client heard when it captured
+    // the beacon signal. Param 'signingNode' is the address of the node the contract asked to
+    // fire the beacon.
+    function receivedMatchesSigned( string received, address signingNode ) constant returns (bool result){
+            
+        var receivedHash = sha3(received);
+        var recovered = ecrecover(receivedHash, signedBeacon.v, signedBeacon.r, signedBeacon.s);
+
+        if (recovered == signingNode)
+            return true;
+        else
+            return false;
+    }
+}
+```
+
 
 #### Message Publication
 
@@ -101,7 +167,7 @@ contract Message {
 
 ### Features
 
-+ **Client Verification**: Nodes identify their clients by requiring them to sign a connection-specific pin published over BLE each time they submit a transaction or request services bound to their identity. While this doesn't absolutely guarantee a client is proximate to the node, it may be adequate for many moderately valued, well-designed contracts. Spoofing the node typically requires establishing parrallel physical infrastructure that relays node transmissions and client responses in real time. Whale-island can also be combined with data sources like Google geo-location to make an oracle that's harder to corrupt. Dapps that rely on client based geo-location alone are vulnerable to highly programmatic spoofing if someone decompiles the app, engineers a way to feed arbitrary location to it and makes the resulting application available to a wider public. 
++ **Client Verification**: Nodes identify their clients by requiring that they sign a connection-specific pin published over BLE each time they submit a transaction or request services bound to their identity. While this doesn't absolutely guarantee a client is proximate to the node, it may be adequate for many moderately valued, well-designed contracts. Spoofing the node typically requires establishing parrallel physical infrastructure that relays node transmissions and client responses in real time. Whale-island can also be combined with data sources like Google geo-location to make an oracle that's harder to corrupt. Dapps that rely on client based geo-location alone are vulnerable to highly programmatic spoofing if someone decompiles the app, engineers a way to feed arbitrary location to it and makes the resulting application available to a wider public. 
 
 + **Beacon:** Nodes emit two beacon signals: a persistent **identity beacon** that helps mobile devices locate them and a **requestable beacon** that allows contracts to emit a brief, unique signal to coordinate the behavior of multiple clients in the same place. iOS and Android apps that register with their OS to listen for the identity beacon will wake up from a backgrounded/killed state when those signals are encountered in the environment and are allowed to run pre-defined subroutines on their device's CPU for ~90 seconds. This means you can design long-running location-based mobile dapps that automatically connect to whale-island nodes and publish to the blockchain without requiring a user's explicit engagement. An example use-case for this behavior is a race where the user intentionally places a wager at the beginning and is automatically detected at the end, resolving the contest. Another would be a contract that rewards a client for visiting a location every day for a month without requiring that they check in somewhere. 
 
