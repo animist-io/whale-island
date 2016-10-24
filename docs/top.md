@@ -155,7 +155,7 @@ contract Message {
     function Message(){
         uuid = "A01D64E6-B...7-8338527B4E10";   
         message = "You are beautiful";             
-        duration = 3000;                          
+        expires = 15756..21;                          
         node = address(0x579f...aec);               
         animistAddress = address(0xf802....cde); 
 
