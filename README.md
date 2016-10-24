@@ -8,7 +8,7 @@ Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that
 + Any game where the co-location of players is a key component. 
 + Path or place contingent reward programs.
 
-Javascript libraries to help mobile Dapps interact with whale-island are under development at [animist-io/wowshuxkluh](https://github.com/animist-io/wowshuxkluh).
+Javascript libraries to help mobile Dapps interact with whale-island are in development at [animist-io/wowshuxkluh](https://github.com/animist-io/wowshuxkluh).
 
 ## Services
 
@@ -48,14 +48,15 @@ contract Visit {
         api.requestPresenceVerification(node, client, address(this));
     }
 
-    // Implement method the node will execute when client calls its verifyPresence endpoint over BLE
+    // Method the node will execute when client calls its verifyPresence endpoint over BLE
     function verifyPresence(address visitor, uint64 time) {
         if (msg.sender == node && visitor == client && time <= expires){
             visited = true;
         }
     }
 
-    // Client could call this method on whale-island over Bluetooth using the sendTx endpoint.
+    // Method mobile client could invoke on the contract by using the ethereumjs-tx library to compose 
+    // the transaction and transmitting the serialized result to whale-island's sendTx endpoint.
     function rewardVisit() {
         if( msg.sender == client && visited == true){
             // Reward client
@@ -72,16 +73,16 @@ You can broadcast an arbitrary beacon signal from any whale-island node by:
 
 + Making a beacon broadcast request through the deployed AnimistEvent contract at `0xf802....cde` **and**
 
-+ Implementing a public method with the signature: `submitSignedBeaconId( uint8 v, bytes32 r, bytes32 s` in your contract.
++ Implementing a public method with the signature: `submitSignedBeaconId( uint8 v, bytes32 r, bytes32 s)` in your contract.
 
-This is useful if you want to co-ordinate the behavior of several mobile clients in the same place by firing a brief signal (like a starting shot) that all clients will hear simultaneously. The node broadcasts the beacon with the requested uuid but dynamically generates the signal's major / minor values. It then signs a string with form `<uuid>:<major>:<minor>` and submits it to the clients' contract via `submitSignedBeaconId `. You can verify that a client was present when the signal was fired by asking them to use their received beacon values to extract the node's address from the signed copy stored in the contract using Solidity's `ecrecover` method. 
+This is useful if you want to coordinate the behavior of several mobile clients in the same place by firing a brief signal (like a starting shot) that all clients will hear simultaneously. The node broadcasts the requested beacon uuid with randomly generated values for its 2 byte major / minor components. It then signs a string with form `<uuid>:<major>:<minor>` and submits it to the clients' contract via `submitSignedBeaconId `. You can verify that a client was present when the signal was fired by asking them to use their received beacon values to extract the node's address from the signed copy stored in the contract using Solidity's `ecrecover` method. 
 
 ```javascript
 import 'AnimistEvent.sol';
 
 contract Beacon {
 
-    struct SignedBeacon {    // Storage for Elliptic curve signature of beacon-signal 
+    struct SignedBeacon {    // Storage for elliptic curve signature of beacon-signal 
         uint8 v;             // emitted by node as a start signal. 
         bytes32 r;           // (See submitSignedBeaconId and receivedMatchesSigned methods below)
         bytes32 s; 
@@ -103,20 +104,20 @@ contract Beacon {
         api.requestBeaconBroadcast(node, uuid, address(this));    
     }
 
-    // Implement method the node will execute on this contract when it begins 
+    // Method the node will execute on this contract when it begins 
     // broadcasting the beacon. Params v, r, s are the elliptic curve signature 
-    // components of the string '<uuid>:<major>:<minor>', signed with the node's public address.
+    // components of the string '<uuid>:<major>:<minor>', signed with the node's public address. 
     function submitSignedBeaconId( uint8 v, bytes32 r, bytes32 s) public {
         signedBeacon.v = v;
         signedBeacon.r = r;
         signedBeacon.s = s;
     }
 
-    // Implement a function which verifies that the beacon signal heard by the client is 
+    // Method which verifies that the beacon signal heard by the client is 
     // identical to the one signed by the node. Param 'received' is a string with form:
     // <uuid>:<major>:<minor> encoding the values the client heard when it captured
     // the beacon signal. Param 'signingNode' is the address of the node the contract asked to
-    // fire the beacon.
+    // fire the beacon. 
     function receivedMatchesSigned( string received, address signingNode ) constant returns (bool result){
             
         var receivedHash = sha3(received);
@@ -167,7 +168,7 @@ contract Message {
 
 ### Features
 
-+ **Client Verification**: Nodes identify their clients by requiring that they sign a connection-specific pin published over BLE each time they submit a transaction or request services bound to their identity. While this doesn't absolutely guarantee a client is proximate to the node, it may be adequate for many moderately valued, well-designed contracts. Spoofing the node typically requires establishing parrallel physical infrastructure that relays node transmissions and client responses in real time. Whale-island can also be combined with data sources like Google geo-location to make an oracle that's harder to corrupt. Dapps that rely on client based geo-location alone are vulnerable to highly programmatic spoofing if someone decompiles the app, engineers a way to feed arbitrary location to it and makes the resulting application available to a wider public. 
++ **Client Verification**: Nodes identify their clients by requiring that they sign a connection-specific pin published over BLE each time they submit a transaction or request services bound to their identity. While this doesn't absolutely guarantee a client is proximate to the node, it may be adequate for many moderately valued, well-designed contracts. Spoofing the node typically requires establishing parrallel physical infrastructure that relays node transmissions and client responses in real time. Whale-island can also be combined with data sources like Google geo-location to make an oracle that's harder to corrupt. Dapps that rely on client based geo-location alone are vulnerable to [programmatic spoofing](https://devs-lab.com/pokemon-go-hacks-without-moving-anywhere.html) if someone decompiles the app, engineers a way to feed arbitrary location to it and makes the resulting application available to a wider public. 
 
 + **Beacon:** Nodes emit two beacon signals: a persistent **identity beacon** that helps mobile devices locate them and a **requestable beacon** that allows contracts to emit a brief, unique signal to coordinate the behavior of multiple clients in the same place. iOS and Android apps that register with their OS to listen for the identity beacon will wake up from a backgrounded/killed state when those signals are encountered in the environment and are allowed to run pre-defined subroutines on their device's CPU for ~90 seconds. This means you can design long-running location-based mobile dapps that automatically connect to whale-island nodes and publish to the blockchain without requiring a user's explicit engagement. An example use-case for this behavior is a race where the user intentionally places a wager at the beginning and is automatically detected at the end, resolving the contest. Another would be a contract that rewards a client for visiting a location every day for a month without requiring that they check in somewhere. 
 
@@ -264,7 +265,7 @@ Server API Endpoints respond immediately with a hex code indicating whether or n
 
 # onCallTx
 
-[lib/handlers.js:341-360](https://github.com/animist-io/whale-island/blob/09523716ac9480aaa2deb6a5169ab2d4a64a3deb/lib/handlers.js#L341-L360 "Source code on GitHub")
+[lib/handlers.js:341-360](https://github.com/animist-io/whale-island/blob/83f5200e33ac8cf30d91ec2c12ec140fa4bddba9/lib/handlers.js#L341-L360 "Source code on GitHub")
 
 Executes web3.eth.call on public constant contract methods that use no gas and do not need to be signed. 
 This endpoint is useful if you wish to retrieve data 'synchronously' from a contract.
@@ -286,7 +287,7 @@ Returns **Buffer** JSON formatted string of web3.eth.call result.
 
 # onGetAccountBalance
 
-[lib/handlers.js:141-162](https://github.com/animist-io/whale-island/blob/09523716ac9480aaa2deb6a5169ab2d4a64a3deb/lib/handlers.js#L141-L162 "Source code on GitHub")
+[lib/handlers.js:141-162](https://github.com/animist-io/whale-island/blob/83f5200e33ac8cf30d91ec2c12ec140fa4bddba9/lib/handlers.js#L141-L162 "Source code on GitHub")
 
 Responds w/ wei balance of requested account.
 
@@ -309,7 +310,7 @@ Returns **Buffer** JSON formatted string: "0" on error.
 
 # onGetBlockNumber
 
-[lib/handlers.js:64-68](https://github.com/animist-io/whale-island/blob/09523716ac9480aaa2deb6a5169ab2d4a64a3deb/lib/handlers.js#L64-L68 "Source code on GitHub")
+[lib/handlers.js:64-68](https://github.com/animist-io/whale-island/blob/83f5200e33ac8cf30d91ec2c12ec140fa4bddba9/lib/handlers.js#L64-L68 "Source code on GitHub")
 
 Publishes current blockNumber.
 
@@ -328,7 +329,7 @@ Returns **Buffer** JSON formatted string: `"152..2"`
 
 # onGetClientTxStatus
 
-[lib/handlers.js:219-253](https://github.com/animist-io/whale-island/blob/09523716ac9480aaa2deb6a5169ab2d4a64a3deb/lib/handlers.js#L219-L253 "Source code on GitHub")
+[lib/handlers.js:219-253](https://github.com/animist-io/whale-island/blob/83f5200e33ac8cf30d91ec2c12ec140fa4bddba9/lib/handlers.js#L219-L253 "Source code on GitHub")
 
 Returns status data about both of the transactions that are executed in a verifyPresenceAndSendTx 
 request. (Whale-island waits for the presence verification request to mined before it sends the
@@ -356,7 +357,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onGetContract
 
-[lib/handlers.js:269-299](https://github.com/animist-io/whale-island/blob/09523716ac9480aaa2deb6a5169ab2d4a64a3deb/lib/handlers.js#L269-L299 "Source code on GitHub")
+[lib/handlers.js:269-299](https://github.com/animist-io/whale-island/blob/83f5200e33ac8cf30d91ec2c12ec140fa4bddba9/lib/handlers.js#L269-L299 "Source code on GitHub")
 
 Returns `code` of the contract which requested presence verification services for the mobile client at this node.
 Caller can use this to generate signed rawTransactions and publish them via whale-island.
@@ -380,7 +381,7 @@ Returns **Buffer** JSON formatted string (contract code): `0x5d3e..11`
 
 # onGetContractIndicate
 
-[lib/handlers.js:309-328](https://github.com/animist-io/whale-island/blob/09523716ac9480aaa2deb6a5169ab2d4a64a3deb/lib/handlers.js#L309-L328 "Source code on GitHub")
+[lib/handlers.js:309-328](https://github.com/animist-io/whale-island/blob/83f5200e33ac8cf30d91ec2c12ec140fa4bddba9/lib/handlers.js#L309-L328 "Source code on GitHub")
 
 De-queues and sends contract code packet.
 
@@ -395,7 +396,7 @@ Returns **Buffer** JSON formatted string "EOF" after last packet is sent.
 
 # onGetDeviceAccount
 
-[lib/handlers.js:49-53](https://github.com/animist-io/whale-island/blob/09523716ac9480aaa2deb6a5169ab2d4a64a3deb/lib/handlers.js#L49-L53 "Source code on GitHub")
+[lib/handlers.js:49-53](https://github.com/animist-io/whale-island/blob/83f5200e33ac8cf30d91ec2c12ec140fa4bddba9/lib/handlers.js#L49-L53 "Source code on GitHub")
 
 Publishes node's public account number.
 
@@ -414,7 +415,7 @@ Returns **Buffer** JSON formatted hex prefixed account address
 
 # onGetPgpKeyId
 
-[lib/handlers.js:79-83](https://github.com/animist-io/whale-island/blob/09523716ac9480aaa2deb6a5169ab2d4a64a3deb/lib/handlers.js#L79-L83 "Source code on GitHub")
+[lib/handlers.js:79-83](https://github.com/animist-io/whale-island/blob/83f5200e33ac8cf30d91ec2c12ec140fa4bddba9/lib/handlers.js#L79-L83 "Source code on GitHub")
 
 Publishes a PGP keyID that can be used to fetch the nodes public PGP key from '<https://pgp.mit.edu>'.
 
@@ -433,7 +434,7 @@ Returns **Buffer** JSON formatted string: `'32e6aa. . .4f922'`
 
 # onGetPin
 
-[lib/handlers.js:35-38](https://github.com/animist-io/whale-island/blob/09523716ac9480aaa2deb6a5169ab2d4a64a3deb/lib/handlers.js#L35-L38 "Source code on GitHub")
+[lib/handlers.js:35-38](https://github.com/animist-io/whale-island/blob/83f5200e33ac8cf30d91ec2c12ec140fa4bddba9/lib/handlers.js#L35-L38 "Source code on GitHub")
 
 Generates a new 'pin' value. A signed copy of the pin is required to access server
 endpoints that execute account-specific transactions on the blockchain. 
@@ -458,7 +459,7 @@ Returns **Buffer** JSON formatted 32 character alpha-numeric string (resets ever
 
 # onGetPresenceReceipt
 
-[lib/handlers.js:179-201](https://github.com/animist-io/whale-island/blob/09523716ac9480aaa2deb6a5169ab2d4a64a3deb/lib/handlers.js#L179-L201 "Source code on GitHub")
+[lib/handlers.js:179-201](https://github.com/animist-io/whale-island/blob/83f5200e33ac8cf30d91ec2c12ec140fa4bddba9/lib/handlers.js#L179-L201 "Source code on GitHub")
 
 Returns data that can be used to authenticate client's proximity to the node. 
 Response includes a timestamp, the timestamp signed by the node account, and the caller's 
@@ -484,7 +485,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onGetTxStatus
 
-[lib/handlers.js:99-128](https://github.com/animist-io/whale-island/blob/09523716ac9480aaa2deb6a5169ab2d4a64a3deb/lib/handlers.js#L99-L128 "Source code on GitHub")
+[lib/handlers.js:99-128](https://github.com/animist-io/whale-island/blob/83f5200e33ac8cf30d91ec2c12ec140fa4bddba9/lib/handlers.js#L99-L128 "Source code on GitHub")
 
 Responds w/ small subset of web3 data about a transaction. Useful for determining whether
 or not a transaction has been mined. (blockNumber field of response will be null if tx is
@@ -509,7 +510,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onSendTx
 
-[lib/handlers.js:374-416](https://github.com/animist-io/whale-island/blob/09523716ac9480aaa2deb6a5169ab2d4a64a3deb/lib/handlers.js#L374-L416 "Source code on GitHub")
+[lib/handlers.js:374-416](https://github.com/animist-io/whale-island/blob/83f5200e33ac8cf30d91ec2c12ec140fa4bddba9/lib/handlers.js#L374-L416 "Source code on GitHub")
 
 Sends tx as rawTransaction. Will not submit if a pending verifyPresenceAndSend request exists 
 in the contractDB for this caller account. (This endpoint is intended primarily as a convenience 
@@ -532,7 +533,7 @@ Returns **Buffer** txHash:
 
 # onVerifyPresence
 
-[lib/handlers.js:430-467](https://github.com/animist-io/whale-island/blob/09523716ac9480aaa2deb6a5169ab2d4a64a3deb/lib/handlers.js#L430-L467 "Source code on GitHub")
+[lib/handlers.js:430-467](https://github.com/animist-io/whale-island/blob/83f5200e33ac8cf30d91ec2c12ec140fa4bddba9/lib/handlers.js#L430-L467 "Source code on GitHub")
 
 Authenticates client's proximity to node by invoking their contract's "verifyPresence" 
 method with the node account.
@@ -556,7 +557,7 @@ Returns **Buffer** JSON formatted null value on error.
 
 # onVerifyPresenceAndSendTx
 
-[lib/handlers.js:481-523](https://github.com/animist-io/whale-island/blob/09523716ac9480aaa2deb6a5169ab2d4a64a3deb/lib/handlers.js#L481-L523 "Source code on GitHub")
+[lib/handlers.js:481-523](https://github.com/animist-io/whale-island/blob/83f5200e33ac8cf30d91ec2c12ec140fa4bddba9/lib/handlers.js#L481-L523 "Source code on GitHub")
 
 Authenticates client's proximity to node by invoking their contract's "verifyPresence" 
 method with the node account. Waits for verifyPresence tx to be mined and sends clients raw transaction. 
