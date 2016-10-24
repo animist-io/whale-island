@@ -949,6 +949,104 @@ describe('BLE Request Handlers', () => {
         });    
     });
 
+    describe('onGetContractAddress', () => {
+        
+        let req, eth_db, mock_contract, fns = {};
+
+        // Mocks
+        before(()=>{
+            req = wallet.signing.signMsg( keystore, account.key, util.getPin(true), address); 
+            req = JSON.stringify(req);
+            mock_contract = { _id: hexAddress, contractAddress: deployed.address };
+        });
+
+        // Clear state, set a contract to find,  & mock updateValueCallback
+        beforeEach((done)=>{
+
+            eth_db = new pouchdb('animistEvents'); 
+            eth.units.setDB(eth_db);
+
+            defs.getContractAddressCharacteristic.updateValueCallback = (val) => {};
+
+            eth_db.put(mock_contract).then(() => {
+                done();
+            });
+        });
+
+        afterEach((done)=>{ 
+            eth_db.destroy().then(() => { done() });
+        }); 
+
+        it('should respond w/ RESULT_SUCCESS if a tx matching the address is found', (done)=>{
+
+            // Make sure you run the timeout too or it will f the subsequent tests
+            let callback = (code) => { 
+                expect(code).to.equal(config.codes.RESULT_SUCCESS);
+                setTimeout(done, 55); 
+            };
+            ble.onGetContractAddress(req, null, null, callback);
+            
+        });
+
+        it('should respond with the contract address', (done) => {
+    
+            let cb = (code) => {};
+
+            let updateValueCallback = val => { 
+                expect(Buffer.isBuffer(val)).to.be.true;
+                val = JSON.parse(val);    
+                expect(val).to.equal(deployed.address);
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                }, 500)
+            };
+
+            chai.spy.on(bleno, 'disconnect');
+            defs.getContractAddressCharacteristic.updateValueCallback = updateValueCallback;
+        
+            // Run fn
+            ble.onGetContractAddress(req, null, null, cb)
+    
+        });
+
+        it('should respond w/ NO_TX_DB_ERR if there is no tx matching the address and disconnect', (done)=>{
+
+            let fn = {cb: (code) => {}};
+            chai.spy.on(fn, 'cb');
+            chai.spy.on(bleno, 'disconnect');
+            
+            // Setup: delete mock from contracts DB
+            eth_db.get(hexAddress)
+                .then( doc => { return eth_db.remove(doc) })
+                .then( () => {
+                    setTimeout(() => {
+                        expect(fn.cb).to.have.been.called.with(config.codes.NO_TX_DB_ERR);
+                        expect(bleno.disconnect).to.have.been.called();
+                        done();
+                    }, 55)
+                    ble.onGetContractAddress(req, null, null, fn.cb);
+                 })
+        });
+
+        it('should respond w/ error code if req is un-parseable and disconnect', (done)=>{
+
+            let req = "dd5[w,r,0,,n,g";
+            let fn = {cb: (code) => {}};
+
+            chai.spy.on(fn, 'cb');
+            chai.spy.on(bleno, 'disconnect');
+
+            ble.onGetContractAddress(req, null, null, fn.cb);
+            expect(fn.cb).to.have.been.called.with(config.codes.INVALID_JSON_IN_REQUEST);
+            setTimeout(()=> { 
+                expect(bleno.disconnect).to.have.been.called();
+                done();
+            }, 500) 
+        });
+
+    });
+
     describe('onGetContract', () => {
         
         let req, eth_db, mock_contract, fns = {};
@@ -959,7 +1057,7 @@ describe('BLE Request Handlers', () => {
             req = wallet.signing.signMsg( keystore, account.key, util.getPin(true), address); 
             req = JSON.stringify(req);
 
-            mock_contract = { _id: hexAddress, authority: hexAddress, contractAddress: deployed.address };
+            mock_contract = { _id: hexAddress, contractAddress: deployed.address };
             
         });
 
@@ -1003,7 +1101,6 @@ describe('BLE Request Handlers', () => {
             // Test state in success callback - make sure you run the timeout too
             // or it will f the subsequent tests
             fns.callback = (code) => { 
-                expect(code).to.equal(config.codes.RESULT_SUCCESS);
                 new_queue_size = util._units.getSendQueue().length;
                 expect(initial_queue_size).to.equal(0);
                 expect(new_queue_size).to.be.gt(0);
@@ -1032,7 +1129,6 @@ describe('BLE Request Handlers', () => {
 
                 setTimeout(() => {
                     new_queue_size = util._units.getSendQueue().length;
-                    expect(code).to.equal(config.codes.RESULT_SUCCESS);
                     expect(defs.getContractCharacteristic.updateValueCallback).to.have.been.called();
                     expect(new_queue_size).to.equal(full_queue_size - 1);
                     done();

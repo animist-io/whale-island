@@ -181,10 +181,8 @@ describe('Eth Client', function(){
             })
 
             it('should resolve a contract object matching the acct. address', (done) =>{
-                let mock = { _id: hexAddress, authority: hexAddress, contractAddress: deployed.address };
+                let mock = { _id: hexAddress, contractAddress: deployed.address };
                 let expected = { 
-                    account: hexAddress, 
-                    authority: hexAddress, 
                     contractAddress: deployed.address, 
                     code: web3.eth.getCode(deployed.address) 
                 }
@@ -194,7 +192,7 @@ describe('Eth Client', function(){
             });
 
             it('should reject if it cant find a contract matching the acct. address', (done)=>{
-                let mock = { _id: 'do_not_exist', authority: hexAddress, contract: '12345'};
+                let mock = { _id: 'do_not_exist', contract: '12345'};
                 db.put(mock).then(()=>{
                     eth.getContract(pin, signed).should.eventually.be.rejected.notify(done);
                 });
@@ -206,6 +204,40 @@ describe('Eth Client', function(){
             });
         });
 
+        // -------------------------------- getContractAddress ------------------------------------
+        describe('getContractAddress(pin, signed)', ()=>{
+
+            let pin, signed;
+
+            before(()=>{
+                pin = '1234';
+                signed = wallet.signing.signMsg( keystore, account.key, pin, address); 
+
+            })
+
+            it('should resolve a contract object matching the acct. address', (done) =>{
+                let mock = { _id: hexAddress, contractAddress: deployed.address };
+                let expected = deployed.address; 
+                    
+                db.put(mock).then(()=>{
+                    eth.getContractAddress(pin, signed).should.eventually.equal(expected).notify(done);
+                });
+            });
+
+            it('should reject if it cant find a contract matching the acct. address', (done)=>{
+                let mock = { _id: 'do_not_exist', contract: '12345'};
+                db.put(mock).then(()=>{
+                    eth.getContractAddress(pin, signed).should.eventually.be.rejected.notify(done);
+                });
+            });
+
+            it('should reject if unable to extract an address from the signed msg', ()=>{
+                let garbage = 'garbage';
+                return eth.getContractAddress(pin, garbage).should.eventually.be.rejected;
+            });
+        });
+
+        // -------------------------------- verifyPresence ------------------------------------
         describe( 'verifyPresence(pin, signed)', () => {
 
             let pin, signed, msgHash, client = web3.eth.accounts[0];
