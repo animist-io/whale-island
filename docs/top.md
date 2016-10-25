@@ -67,7 +67,7 @@ contract Visit {
 
 #### Beacon Broadcasting
 
-You can broadcast an arbitrary beacon signal from any whale-island node by:
+You can broadcast an arbitrary beacon signal from any whale-island node and implement delivery confirmation by:
 
 + Generating a new v4 uuid with [node-uuid](https://www.npmjs.com/package/node-uuid) **and**
 
@@ -106,7 +106,7 @@ contract Beacon {
 
     // Method the node will execute on this contract when it begins 
     // broadcasting the beacon. Params v, r, s are the elliptic curve signature 
-    // components of the string '<uuid>:<major>:<minor>', signed with the node's public address. 
+    // components of the string '<uuid>:<major>:<minor>', signed with the node's private key. 
     function submitSignedBeaconId( uint8 v, bytes32 r, bytes32 s) public {
         signedBeacon.v = v;
         signedBeacon.r = r;
@@ -134,7 +134,7 @@ contract Beacon {
 
 #### Message Publication
 
-You can publish a message over Bluetooth LE on an arbitrary characteristic from any whale-island node by: 
+You can publish a message over Bluetooth LE on an arbitrary characteristic from any whale-island node and receive delivery confirmation by: 
 
 + Generating a new v4 uuid with [node-uuid](https://www.npmjs.com/package/node-uuid) **and**
 
@@ -253,7 +253,7 @@ Server endpoints respond immediately with a hex code indicating whether or not t
 
 | Name | Value | -                | Name | Value |
 |------|-------|------------------|------|-------|
-|INVALID_JSON_IN_REQUEST|0x02|-   |UNDEFINED|0x0E|
+|INVALID_JSON_IN_REQUEST|0x02|-   |NOT_AUTHORIZED|0x0E|
 |INVALID_TX_HASH|0x07|-           |INVALID_CALL_DATA|0x11|
 |INVALID_PIN|0x09|-               |SESSION_NOT_FOUND|0x10|
 |INVALID_TX_SENDER_ADDRESS|0x0A|- |TX_PENDING|0x0F|

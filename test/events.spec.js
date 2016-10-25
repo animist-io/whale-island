@@ -4,6 +4,8 @@ let config = require('../lib/config.js');
 const events = require('../lib/events.js');
 const transaction = require('../test/mocks/transaction.js');
 const mocks = require('../test/mocks/event.js');
+const server = require('../lib/server.js');
+const requestableBeacon = require('../lib/requestableBeacon.js');
 
 // Ethereum
 const util = require('ethereumjs-util');
@@ -60,6 +62,8 @@ describe('Ethereum Contract Event Listeners', () => {
             let expires = new util.BN( Date.now() - 5000)
             events.isValidExpirationDate(expires).should.be.false;
         });
+
+        it('should return false for BN values larger than 53bits (Max safe val JS)');
 
     });
 
@@ -299,18 +303,17 @@ describe('Ethereum Contract Event Listeners', () => {
         it('should NOT submit a signed beacon id if the beacon uuid doesnt validate', (done) => {
 
             let uuid = "I am bad";
-            let fn = { addBeacon: ()=>{} }
             let cb = (err) => {
                 if (err) {
                     err.should.equal(config.events.filters.validationError);
-                    fn.addBeacon.should.not.have.been.called();
+                    requestableBeacon.addBeacon.should.not.have.been.called();
                     events.stopBeaconFilter();
                     done();
                 }   
             }
 
-            chai.spy.on(fn, 'addBeacon');
-            events.startBeaconBroadcastRequestsFilter(eventContract.address, fn.addBeacon, cb);
+            chai.spy.on(requestableBeacon, 'addBeacon');
+            events.startBeaconBroadcastRequestsFilter(eventContract.address, requestableBeacon.addBeacon, cb);
             eventContract.requestBeaconBroadcast(node, uuid, testContract.address, {from: client}); 
         });
 
@@ -319,7 +322,7 @@ describe('Ethereum Contract Event Listeners', () => {
             let receivedBeacon, uuid = "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8";
 
             // Construct received Beacon
-            let addBeacon = (uuid, major, minor)=> {
+            requestableBeacon.addBeacon = (uuid, major, minor)=> {
                 receivedBeacon = uuid + ':' + major + ':' + minor;
                 return Promise.resolve();
             };
@@ -333,7 +336,7 @@ describe('Ethereum Contract Event Listeners', () => {
                 done();
             }
 
-            events.startBeaconBroadcastRequestsFilter(eventContract.address, addBeacon, cb);
+            events.startBeaconBroadcastRequestsFilter(eventContract.address, requestableBeacon.addBeacon, cb);
             eventContract.requestBeaconBroadcast(node, uuid, testContract.address, {from: client});        
         });
     });
@@ -357,50 +360,55 @@ describe('Ethereum Contract Event Listeners', () => {
 
         it('should pass valid event data to "addPublication" callback', (done)=>{
 
-            let uuid = "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8";
-            let message = "hello";
-            let expires = Date.now() + 5000;
-            let fn = { addPublication: (arg1, arg2, arg3) => {} };
-
-            chai.spy.on( fn, 'addPublication');
+            let args = {
+                node: node,
+                uuid: "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8",
+                message: "hello",
+                expires: Date.now() + 5000
+            }
+            
+            chai.spy.on( server, 'addPublication');
 
             let cb = () => {
-                fn.addPublication.should.have.been.called.with( uuid, message, expires );
+                server.addPublication.should.have.been.called.with(args);
                 done();
             }
 
-            events.startMessagePublicationRequestsFilter( eventContract.address, fn.addPublication, cb );
-            eventContract.requestMessagePublication( node, uuid, message, expires, {from: client});
+            events.startMessagePublicationRequestsFilter( eventContract.address, server.addPublication, cb );
+            eventContract.requestMessagePublication( node, args.uuid, args.message, args.expires, {from: client});
 
         });
 
         it('should NOT pass invalid event data to "addPublication" callback', (done)=>{
 
-            // BAD DATE
-            let uuid = "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8";
-            let message = "hello";
-            let expires = 5000;
-            let fn = { addPublication: (arg1, arg2, arg3) => {} };
-
-            chai.spy.on( fn, 'addPublication');
+            let args = {
+                node: node,
+                uuid: "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8",
+                message: "hello",
+                expires: 5000
+            }
+            
+            chai.spy.on( server, 'addPublication');
 
             let cb = (err) => {
-                fn.addPublication.should.not.have.been.called();
+                server.addPublication.should.not.have.been.called();
                 err.should.equal(config.events.filters.validationError);
                 done();
             }
-            events.startMessagePublicationRequestsFilter( eventContract.address, fn.addPublication, cb );
-            eventContract.requestMessagePublication( node, uuid, message, expires, {from: client});
+            events.startMessagePublicationRequestsFilter( eventContract.address, server.addPublication, cb );
+            eventContract.requestMessagePublication( node, args.uuid, args.message, args.expires, {from: client});
 
         });
 
         it('should update the "lastBlock" record the animistEvents DB after saving each request', (done)=>{
 
             let currentBlock = web3.eth.blockNumber;
-            let uuid = "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8";
-            let message = "hello";
-            let expires = Date.now() + 5000;
-            let fn = { addPublication: (arg1, arg2, arg3) => {} };
+            let args = {
+                node: node,
+                uuid: "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8",
+                message: "hello",
+                expires: Date.now() + 5000
+            };
             
             let cb = () => {
                 db.get('lastBlock')
@@ -408,8 +416,8 @@ describe('Ethereum Contract Event Listeners', () => {
                     .catch( err => { true.should.be.false; done() });
             }
 
-            events.startMessagePublicationRequestsFilter( eventContract.address, fn.addPublication, cb );
-            eventContract.requestMessagePublication( node, uuid, message, expires, {from: client});
+            events.startMessagePublicationRequestsFilter( eventContract.address, server.addPublication, cb );
+            eventContract.requestMessagePublication( node, args.uuid, args.message, args.expires, {from: client});
         });   
     });
 
