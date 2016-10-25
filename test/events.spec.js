@@ -349,6 +349,7 @@ describe('Ethereum Contract Event Listeners', () => {
     /*describe.only('pummel', () => {
         it('should always work', ()=>{
             events.fromRpcPummel("C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8");
+            try again . . .
         })
     });*/
 
