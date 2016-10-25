@@ -63,7 +63,12 @@ describe('Ethereum Contract Event Listeners', () => {
             events.isValidExpirationDate(expires).should.be.false;
         });
 
-        it('should return false for BN values larger than 53bits (Max safe val JS)');
+        it('should return false for BN values larger than 53bits (Max safe val JS)', () => {
+            // This oversize # grabbed from the BN test suite
+            let expires = new util.BN(1).iushln(54);
+            events.isValidExpirationDate(expires).should.be.false;
+
+        });
 
     });
 

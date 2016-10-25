@@ -413,6 +413,20 @@ describe('Eth Client', function(){
                 eth.sendTxWhenPresenceVerified(verifyPresenceTxHash, goodTx, client, cb );
             });            
         });
+
+        describe('isAuthorizedToReadMessage', () => {
+
+            it('should return true if contract says client can read published message');
+            it('should return false if contract says client not authorized');
+            it('should return false if the contractAddress is bad');
+
+        });
+
+        describe('confirmMessageRead', () => {
+
+            it('should invoke the client contracts confirmMessageRead method successfully and return true');
+            it('should return false if the contract address is bad');
+        })
     });  
 });
 

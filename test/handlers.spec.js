@@ -1244,4 +1244,14 @@ describe('BLE Request Handlers', () => {
             },0);
         });
     });
+
+    describe('generatePublicationHandler() [returned handler behavior tests] ', () => {
+        it('should respond w/ RESULT SUCCESS');
+        it('should invoke confirmMessageDelivery on the contract');
+        it('should send client the message and disconnect');
+        it('should work as expected: e2e');
+        it('should respond w/ INVALID_JSON_IN_REQUEST if signed pin is bad and disconnect');
+        it('should respond w/ NOT_AUTHORIZED if client not authorized by contract to read msg and disconnect');
+        it('should respond w/ NOT_AUTHORIZED if node cannot invoke confirmMessageDelivery and disconnect');
+    });
 });
