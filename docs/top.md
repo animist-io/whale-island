@@ -22,8 +22,10 @@ You can verify a contract participant's presence at a location by:
 
 + Making a presence verfication request through the deployed AnimistEvent contract at `0xf802....cde` **and**
 
-+ Implementing a public method with the signature: `verifyPresence(address visitor, uint64 time)` in your contract. 
++ Implementing a public contract method with the following function signature: 
+  * `verifyPresence(address visitor, uint64 time)` 
 
+**Example**
 ```javascript
 import 'AnimistEvent.sol';
 
@@ -73,10 +75,12 @@ You can broadcast an arbitrary beacon signal from any whale-island node and impl
 
 + Making a beacon broadcast request through the deployed AnimistEvent contract at `0xf802....cde` **and**
 
-+ Implementing a public method with the signature: `submitSignedBeaconId( uint8 v, bytes32 r, bytes32 s)` in your contract.
++ Implementing a public contract method with the following function signature: 
+  * `submitSignedBeaconId( uint8 v, bytes32 r, bytes32 s)`
 
 This is useful if you want to coordinate the behavior of several mobile clients in the same place by firing a brief signal (like a starting shot) that all clients will hear simultaneously. The node broadcasts the requested beacon uuid with randomly generated values for its 2 byte major / minor components. It then signs a string with form `<uuid>:<major>:<minor>` and submits it to the clients' contract via `submitSignedBeaconId `. You can verify that a client was present when the signal was fired by asking them to use their received beacon values to extract the node's address from the signed copy stored in the contract using Solidity's `ecrecover` method. 
 
+**Example**
 ```javascript
 import 'AnimistEvent.sol';
 
@@ -134,12 +138,18 @@ contract Beacon {
 
 #### Message Publication
 
-You can publish a message over Bluetooth LE on an arbitrary characteristic from any whale-island node and receive delivery confirmation by: 
+You can publish a message to mobile clients on a contract-defined BLE characteristic at any whale-island node and receive delivery confirmation when the client reads it by: 
 
 + Generating a new v4 uuid with [node-uuid](https://www.npmjs.com/package/node-uuid) **and**
 
-+ Making a message publication request through the deployed AnimistEvent contract at `0xf802....cde`.
++ Making a message publication request through the deployed AnimistEvent contract at `0xf802....cde` **and**
 
++ Implementing two public contract methods with the following function signatures:
+  * `isAuthorizedToReadMessage( address client, string uuid ) constant returns (bool result)`
+  * `confirmMessageDelivery( address client, string uuid, uint64 time )`
+
+
+**Example**
 ```javascript
 import 'AnimistEvent.sol';
 
@@ -150,19 +160,39 @@ contract Message {
     uint32 public expires;          // Date (since Epoch ms) broadcast ends.
     address public node;            // Address of the broadcasting node (from IPFS)
     address public animistAddress;  // Address of deployed Animist contract for events.
+    address public authorizedClient // Address of client authorized to read message.
+    bool public messageDelivered    // Flag set when node confirms that client read message.
     AnimistEvent public api;        // AnimistEvent contract instance
 
     function Message(){
         uuid = "A01D64E6-B...7-8338527B4E10";   
         message = "You are beautiful";             
         expires = 15756..21;                          
-        node = address(0x579f...aec);               
+        node = address(0x579f...aec);     
+        authorizedClient = address(0x757e..eda);          
         animistAddress = address(0xf802....cde); 
 
         // Instantiate AnimistEvent contract and request message publication  
         api = AnimistEvent(animistAddress);        
-        api.requestMessagePublication(node, uuid, message, expires);    
+        api.requestMessagePublication(node, uuid, message, expires, address(this));    
     }
+
+    // Constant method node will invoke to verify that client who connected to it is permitted to 
+    // read published message. (This is necessary to protect against spamming the contract ).
+    function isAuthorizedToReadMessage( address client, string uuid ) constant returns (bool result){
+
+        if (msg.sender == node && client == authorizedClient )
+            return true;
+        else
+            return false;
+    }
+
+    // Method node will invoke after it allows client to read message from characteristic.
+    function confirmMessageDelivery( address client, string uuid, uint64 time){
+        if (msg.sender == node && client == authorizedClient )
+            messageDelivered = true;
+    } 
+
 }
 ```
 
