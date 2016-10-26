@@ -30,9 +30,11 @@ const chaiAsPromised = require("chai-as-promised");
 // ----------------------------------- Setup -----------------------------------------
 
 const expect = chai.expect;
+const assert = chai.assert;
 chai.use(spies);
 chai.use(chaiAsPromised);
 chai.should();
+
 
 // ----------------------------------- Tests -----------------------------------------
 describe('Ethereum Contract Event Listeners', () => {
@@ -346,10 +348,19 @@ describe('Ethereum Contract Event Listeners', () => {
         });
     });
 
-    /*describe.only('pummel', () => {
-        it('should always work', ()=>{
-            events.fromRpcPummel("C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8");
-            try again . . .
+    /*describe.only('eth_sign bug', () => {
+        it('should work', ()=>{
+            var msg = "3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1";
+            var msgHash = util.bufferToHex( util.sha3(msg) );
+            var signed = web3.eth.sign( web3.eth.accounts[0], msgHash);
+            assert.equal(signed.length, 132 ) 
+        });
+
+        it('will fail', ()=> {
+            var msg = "558d2681eeb61e8bd3ee590aa624a6739caf9bef529a3f6e63dc54459be3ebd1"
+            var msgHash = util.bufferToHex( util.sha3(msg) );
+            var signed = web3.eth.sign( web3.eth.accounts[0], msgHash);
+            assert.equal(signed.length, 132 ) 
         })
     });*/
 

@@ -77,7 +77,7 @@ describe('BLE Request Handlers', () => {
         it('should respond w/ a newly generated pin', (done) => {
 
             let new_pin, 
-                old_pin = new Buffer(util.getPin(true)),
+                old_pin = new Buffer(util.getPinSafe(true)),
                 codes = config.codes;
            
             let callback = (code, pin) => {
@@ -99,7 +99,7 @@ describe('BLE Request Handlers', () => {
 
         let codes = config.codes;
         let expected_account = new Buffer(JSON.stringify(config.animistAccount));
-        let pin_to_buffer = new Buffer(util.getPin(true));
+        let pin_to_buffer = new Buffer(util.getPinSafe(true));
         let callback = (code, account) => {
             expect(bufferEqual(account, expected_account)).to.be.true;
             setTimeout(()=> { 
@@ -301,7 +301,7 @@ describe('BLE Request Handlers', () => {
         beforeEach(()=>{
 
             // Mock client signed pin (web3 style),
-            pin = util.getPin(true);
+            pin = util.getPinSafe(true);
             msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
             signedPin =  web3.eth.sign(client, msgHash); 
     
@@ -424,7 +424,7 @@ describe('BLE Request Handlers', () => {
             fns.callback = () => {};
 
             // Mock client signed pin (web3 style),
-            pin = util.getPin(true);
+            pin = util.getPinSafe(true);
             msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
             signed =  web3.eth.sign(client, msgHash); 
     
@@ -519,7 +519,7 @@ describe('BLE Request Handlers', () => {
             
             // Mock good pin sign, non-existent client.
             let non_client = web3.eth.accounts[3];
-            pin = util.getPin(true);
+            pin = util.getPinSafe(true);
             msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
             signed =  web3.eth.sign(non_client, msgHash); 
             input = JSON.stringify(signed);
@@ -544,7 +544,7 @@ describe('BLE Request Handlers', () => {
         beforeEach(()=>{
 
             // Mock client signed pin (web3 style),
-            pin = util.getPin(true);
+            pin = util.getPinSafe(true);
             msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
             signed =  web3.eth.sign(client, msgHash); 
 
@@ -673,7 +673,7 @@ describe('BLE Request Handlers', () => {
         beforeEach(()=>{
 
             // Mock client signed pin (web3 style),
-            pin = util.getPin(true);
+            pin = util.getPinSafe(true);
             msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
 
             signed =  web3.eth.sign(client, msgHash); 
@@ -787,7 +787,7 @@ describe('BLE Request Handlers', () => {
             fns.callback = () => {};
 
             // Mock client signed pin (web3 style),
-            pin = util.getPin(true);
+            pin = util.getPinSafe(true);
             msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
             signed =  web3.eth.sign(client, msgHash); 
             input = JSON.stringify(signed);
@@ -955,7 +955,7 @@ describe('BLE Request Handlers', () => {
 
         // Mocks
         before(()=>{
-            req = wallet.signing.signMsg( keystore, account.key, util.getPin(true), address); 
+            req = wallet.signing.signMsg( keystore, account.key, util.getPinSafe(true), address); 
             req = JSON.stringify(req);
             mock_contract = { _id: hexAddress, contractAddress: deployed.address };
         });
@@ -1054,7 +1054,7 @@ describe('BLE Request Handlers', () => {
         // Mocks
         before(()=>{
             
-            req = wallet.signing.signMsg( keystore, account.key, util.getPin(true), address); 
+            req = wallet.signing.signMsg( keystore, account.key, util.getPinSafe(true), address); 
             req = JSON.stringify(req);
 
             mock_contract = { _id: hexAddress, contractAddress: deployed.address };
