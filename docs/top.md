@@ -22,7 +22,7 @@ You can verify a contract participant's presence at a location by:
 
 + Making a presence verfication request through the deployed AnimistEvent contract at `0xf802....cde` **and**
 
-+ Implementing a public contract method with the following function signature: 
++ Implementing a public contract method for whale-island to invoke with the following function signature: 
   * `verifyPresence(address visitor, uint64 time)` 
 
 **Example**
@@ -57,8 +57,8 @@ contract Visit {
         }
     }
 
-    // Method mobile client could invoke on the contract by using the ethereumjs-tx library to compose 
-    // the transaction and transmitting the serialized result to whale-island's sendTx endpoint.
+    // Method mobile client could compose locally using the ethereumjs-tx library and invoke by 
+    // transmitting the serialized result to whale-island's sendTx endpoint.
     function rewardVisit() {
         if( msg.sender == client && visited == true){
             // Reward client
@@ -69,13 +69,13 @@ contract Visit {
 
 #### Beacon Broadcasting
 
-You can broadcast an arbitrary beacon signal from any whale-island node and implement delivery confirmation by:
+You can broadcast an arbitrary beacon signal from any whale-island node and confirm that a mobile client recieved it by:
 
 + Generating a new v4 uuid with [node-uuid](https://www.npmjs.com/package/node-uuid) **and**
 
 + Making a beacon broadcast request through the deployed AnimistEvent contract at `0xf802....cde` **and**
 
-+ Implementing a public contract method with the following function signature: 
++ Implementing a public contract method for whale-island to invoke with the following function signature: 
   * `submitSignedBeaconId( uint8 v, bytes32 r, bytes32 s)`
 
 This is useful if you want to coordinate the behavior of several mobile clients in the same place by firing a brief signal (like a starting shot) that all clients will hear simultaneously. The node broadcasts the requested beacon uuid with randomly generated values for its 2 byte major / minor components. It then signs a string with form `<uuid>:<major>:<minor>` and submits it to the clients' contract via `submitSignedBeaconId `. You can verify that a client was present when the signal was fired by asking them to use their received beacon values to extract the node's address from the signed copy stored in the contract using Solidity's `ecrecover` method. 
@@ -117,11 +117,10 @@ contract Beacon {
         signedBeacon.s = s;
     }
 
-    // Method which verifies that the beacon signal heard by the client is 
-    // identical to the one signed by the node. Param 'received' is a string with form:
-    // <uuid>:<major>:<minor> encoding the values the client heard when it captured
-    // the beacon signal. Param 'signingNode' is the address of the node the contract asked to
-    // fire the beacon. 
+    // Method client will invoke which verifies that the beacon signal they heard is 
+    // identical to the one signed by the node. 
+    // @param {String}  received  has form <uuid>:<major>:<minor>, encodes the transmitted beacon values. 
+    // @param {Address} signingNode' address of the node the contract asked to fire the beacon. 
     function receivedMatchesSigned( string received, address signingNode ) constant returns (bool result){
             
         var receivedHash = sha3(received);
@@ -138,13 +137,13 @@ contract Beacon {
 
 #### Message Publication
 
-You can publish a message to mobile clients on a contract-defined BLE characteristic at any whale-island node and receive delivery confirmation when the client reads it by: 
+You can publish a message to mobile clients on an arbitrary BLE characteristic at any whale-island node and have delivery confirmation printed to the contract when the client reads it by: 
 
 + Generating a new v4 uuid with [node-uuid](https://www.npmjs.com/package/node-uuid) **and**
 
 + Making a message publication request through the deployed AnimistEvent contract at `0xf802....cde` **and**
 
-+ Implementing two public contract methods with the following function signatures:
++ Implementing two public contract methods for whale-island to invoke with the following function signatures:
   * `isAuthorizedToReadMessage( address visitor, string uuid ) constant returns (bool result)`
   * `confirmMessageDelivery( address visitor, string uuid, uint64 time )`
 
@@ -187,7 +186,7 @@ contract Message {
             return false;
     }
 
-    // Method node will invoke after it allows client to read message from characteristic.
+    // Method node will invoke when it allows client to read message from characteristic.
     function confirmMessageDelivery( address visitor, string uuid, uint64 time){
         if (msg.sender == node && visitor == authorizedClient )
             messageDelivered = true;
