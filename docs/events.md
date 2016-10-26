@@ -1,6 +1,6 @@
 # addPresenceVerificationRequest
 
-[lib/events.js:137-143](https://github.com/animist-io/whale-island/blob/4bc6e83dc6c9566b34bfc8339639e2a4aefa4e6f/lib/events.js#L137-L143 "Source code on GitHub")
+[lib/events.js:137-143](https://github.com/animist-io/whale-island/blob/99883ba7fd1bbf657371d465106082fa9f77cc6f/lib/events.js#L137-L143 "Source code on GitHub")
 
 Adds account address to verify the presence of and the address of the contract requesting this service 
 to the proximityEvents db. Will not allow duplicate clients.
@@ -12,7 +12,7 @@ to the proximityEvents db. Will not allow duplicate clients.
 
 # generateBeaconSignature
 
-[lib/events.js:163-179](https://github.com/animist-io/whale-island/blob/4bc6e83dc6c9566b34bfc8339639e2a4aefa4e6f/lib/events.js#L163-L179 "Source code on GitHub")
+[lib/events.js:163-179](https://github.com/animist-io/whale-island/blob/99883ba7fd1bbf657371d465106082fa9f77cc6f/lib/events.js#L163-L179 "Source code on GitHub")
 
 Combines requested Beacon uuid and randomly generated major and minor
 values into a string with form: <uuid>:<major>:<minor>. 
@@ -29,7 +29,7 @@ Returns **Object** EC sig obj that Solidity will parse correctly
 
 # generateRandom2ByteInt
 
-[lib/events.js:149-151](https://github.com/animist-io/whale-island/blob/4bc6e83dc6c9566b34bfc8339639e2a4aefa4e6f/lib/events.js#L149-L151 "Source code on GitHub")
+[lib/events.js:149-151](https://github.com/animist-io/whale-island/blob/99883ba7fd1bbf657371d465106082fa9f77cc6f/lib/events.js#L149-L151 "Source code on GitHub")
 
 Generates a random value within the limits of allowed major and minor beacon values
 
@@ -37,7 +37,7 @@ Returns **Number** Number between 0 and 65535 inclusive
 
 # getLastSavedBlock
 
-[lib/events.js:109-114](https://github.com/animist-io/whale-island/blob/4bc6e83dc6c9566b34bfc8339639e2a4aefa4e6f/lib/events.js#L109-L114 "Source code on GitHub")
+[lib/events.js:109-114](https://github.com/animist-io/whale-island/blob/99883ba7fd1bbf657371d465106082fa9f77cc6f/lib/events.js#L109-L114 "Source code on GitHub")
 
 Retrieves last block for which an event was logged. This allows whale-island to synch its 
 events db to blockchain if it's been turned off without filtering for every event since
@@ -53,7 +53,7 @@ Returns **Promise** Result of db.get OR device genesis block if DB is new.
 
 # isValidExpirationDate
 
-[lib/events.js:56-65](https://github.com/animist-io/whale-island/blob/4bc6e83dc6c9566b34bfc8339639e2a4aefa4e6f/lib/events.js#L56-L65 "Source code on GitHub")
+[lib/events.js:56-65](https://github.com/animist-io/whale-island/blob/99883ba7fd1bbf657371d465106082fa9f77cc6f/lib/events.js#L56-L65 "Source code on GitHub")
 
 Validates `expires` arg of a message publication event log. Duration must at least 1 sec and 
 smaller than the max value of uint32. If expires is before now, this test will return false.
@@ -66,7 +66,7 @@ Returns **Boolean** True if duration valid, false otherwise.
 
 # isValidMessage
 
-[lib/events.js:73-75](https://github.com/animist-io/whale-island/blob/4bc6e83dc6c9566b34bfc8339639e2a4aefa4e6f/lib/events.js#L73-L75 "Source code on GitHub")
+[lib/events.js:73-75](https://github.com/animist-io/whale-island/blob/99883ba7fd1bbf657371d465106082fa9f77cc6f/lib/events.js#L73-L75 "Source code on GitHub")
 
 Validates message arg of a message publication event log. Message must be non-null and
 less than or equal to config.MAX_MESSAGE_LENGTH
@@ -79,7 +79,7 @@ Returns **Boolean** True if message is valid, false otherwise.
 
 # isValidMessagePublicationEvent
 
-[lib/events.js:83-88](https://github.com/animist-io/whale-island/blob/4bc6e83dc6c9566b34bfc8339639e2a4aefa4e6f/lib/events.js#L83-L88 "Source code on GitHub")
+[lib/events.js:83-88](https://github.com/animist-io/whale-island/blob/99883ba7fd1bbf657371d465106082fa9f77cc6f/lib/events.js#L83-L88 "Source code on GitHub")
 
 Validates message publication event data.
 
@@ -91,7 +91,7 @@ Returns **Boolean** True if data validates, false otherwise.
 
 # isValidPresenceVerificationEvent
 
-[lib/events.js:95-99](https://github.com/animist-io/whale-island/blob/4bc6e83dc6c9566b34bfc8339639e2a4aefa4e6f/lib/events.js#L95-L99 "Source code on GitHub")
+[lib/events.js:95-99](https://github.com/animist-io/whale-island/blob/99883ba7fd1bbf657371d465106082fa9f77cc6f/lib/events.js#L95-L99 "Source code on GitHub")
 
 Validates presence verification request event data
 
@@ -103,7 +103,7 @@ Returns **Boolean** True if data validates, false otherwise.
 
 # saveBlock
 
-[lib/events.js:123-129](https://github.com/animist-io/whale-island/blob/4bc6e83dc6c9566b34bfc8339639e2a4aefa4e6f/lib/events.js#L123-L129 "Source code on GitHub")
+[lib/events.js:123-129](https://github.com/animist-io/whale-island/blob/99883ba7fd1bbf657371d465106082fa9f77cc6f/lib/events.js#L123-L129 "Source code on GitHub")
 
 Saves blocknumber of most recently logged event. This value serves as a starting point for the 
 events filter in the start...EventFilter methods
@@ -115,7 +115,7 @@ events filter in the start...EventFilter methods
 
 # startBeaconBroadcastRequestsFilter
 
-[lib/events.js:262-296](https://github.com/animist-io/whale-island/blob/4bc6e83dc6c9566b34bfc8339639e2a4aefa4e6f/lib/events.js#L262-L296 "Source code on GitHub")
+[lib/events.js:262-296](https://github.com/animist-io/whale-island/blob/99883ba7fd1bbf657371d465106082fa9f77cc6f/lib/events.js#L262-L296 "Source code on GitHub")
 
 Starts listening for beacon broadcast request events on blockchain. Validates event data and invokes `server`'s 
 addPublication method for each event.
@@ -128,7 +128,7 @@ addPublication method for each event.
 
 # startMessagePublicationRequestsFilter
 
-[lib/events.js:228-251](https://github.com/animist-io/whale-island/blob/4bc6e83dc6c9566b34bfc8339639e2a4aefa4e6f/lib/events.js#L228-L251 "Source code on GitHub")
+[lib/events.js:228-251](https://github.com/animist-io/whale-island/blob/99883ba7fd1bbf657371d465106082fa9f77cc6f/lib/events.js#L228-L251 "Source code on GitHub")
 
 Starts listening for message publication request events on blockchain. Validates event data and invokes 
 `server`'s addPublication method for each event.
@@ -141,7 +141,7 @@ Starts listening for message publication request events on blockchain. Validates
 
 # startPresenceVerificationRequestsFilter
 
-[lib/events.js:190-217](https://github.com/animist-io/whale-island/blob/4bc6e83dc6c9566b34bfc8339639e2a4aefa4e6f/lib/events.js#L190-L217 "Source code on GitHub")
+[lib/events.js:190-217](https://github.com/animist-io/whale-island/blob/99883ba7fd1bbf657371d465106082fa9f77cc6f/lib/events.js#L190-L217 "Source code on GitHub")
 
 Starts listening for presence verfication request events on blockchain from proximityEvents DB's 
 `lastBlock` to 'latest'. Validates event data, saves it and updates 'lastBlock' value to the 

@@ -145,8 +145,8 @@ You can publish a message to mobile clients on a contract-defined BLE characteri
 + Making a message publication request through the deployed AnimistEvent contract at `0xf802....cde` **and**
 
 + Implementing two public contract methods with the following function signatures:
-  * `isAuthorizedToReadMessage( address client, string uuid ) constant returns (bool result)`
-  * `confirmMessageDelivery( address client, string uuid, uint64 time )`
+  * `isAuthorizedToReadMessage( address visitor, string uuid ) constant returns (bool result)`
+  * `confirmMessageDelivery( address visitor, string uuid, uint64 time )`
 
 
 **Example**
@@ -160,7 +160,7 @@ contract Message {
     uint32 public expires;          // Date (since Epoch ms) broadcast ends.
     address public node;            // Address of the broadcasting node (from IPFS)
     address public animistAddress;  // Address of deployed Animist contract for events.
-    address public authorizedClient // Address of client authorized to read message.
+    address public authorizedClient // Address of mobile client authorized to read message.
     bool public messageDelivered    // Flag set when node confirms that client read message.
     AnimistEvent public api;        // AnimistEvent contract instance
 
@@ -179,17 +179,17 @@ contract Message {
 
     // Constant method node will invoke to verify that client who connected to it is permitted to 
     // read published message. (This is necessary to protect against spamming the contract ).
-    function isAuthorizedToReadMessage( address client, string uuid ) constant returns (bool result){
+    function isAuthorizedToReadMessage( address visitor, string uuid ) constant returns (bool result){
 
-        if (msg.sender == node && client == authorizedClient )
+        if (msg.sender == node && visitor == authorizedClient )
             return true;
         else
             return false;
     }
 
     // Method node will invoke after it allows client to read message from characteristic.
-    function confirmMessageDelivery( address client, string uuid, uint64 time){
-        if (msg.sender == node && client == authorizedClient )
+    function confirmMessageDelivery( address visitor, string uuid, uint64 time){
+        if (msg.sender == node && visitor == authorizedClient )
             messageDelivered = true;
     } 
 
