@@ -34,7 +34,7 @@ contract Visit {
     address public client;          // Mobile client to verify presence of     
     address public node;            // Node that client should visit (from IPFS)
     address public animistAddress;  // Deployed Animist contract for events.          
-    bool public visited;            // Client state prior to proximity detection        
+    bool public visited;            // Flag to be set when node detects visiting client        
     uint64 public expires;          // Date (since Epoch ms) client must visit by  
     AnimistEvent public api;        // AnimistEvent contract instance.
 

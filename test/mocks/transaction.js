@@ -26,7 +26,7 @@ const caller = web3.eth.accounts[1];
 
 // Prints AnimistEvents contract ABI
 const eventsABI = module.exports.eventsABI = function(){
-    newContract( contracts.AnimistEvent, { from: client }).then( deployed => {
+    newContract( contracts.AnimistEvent, { from: client, gas: 3141592 }).then( deployed => {
         console.log('Events ABI:');
         console.log(JSON.stringify(deployed.abi));
     });
@@ -34,7 +34,7 @@ const eventsABI = module.exports.eventsABI = function(){
 
 // Prints AnimistMethods contract ABI
 const methodsABI = module.exports.methodsABI = function(){
-    newContract( contracts.AnimistMethods, { from: client }).then( deployed => {
+    newContract( contracts.AnimistMethods, { from: client, gas: 3141592  }).then( deployed => {
         console.log('Methods ABI:');
         console.log(JSON.stringify(deployed.abi));
     });
@@ -43,7 +43,7 @@ const methodsABI = module.exports.methodsABI = function(){
 // Deploys test contract. Generates and signs various success / fail transaction cases.
 const generate = module.exports.generate = function(){
   
-    return newContract( contracts.Test, { from: client }).then( deployed => {
+    return newContract( contracts.Test, { from: client, gas: 3141592  }).then( deployed => {
         
 
         let code = web3.eth.getCode(deployed.address); 

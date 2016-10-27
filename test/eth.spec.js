@@ -387,13 +387,13 @@ describe('Eth Client', function(){
 
             it('should mark contracts verifyPresence status as "failed" if verifyPresence throws', (done)=>{
                 
-                let gasLimit = 4712388; // Default test-rpc limit
+                let gasLimit = 90000; // Default test-rpc limit
 
                 // Speed up mine.
                 let original_mining = config.MINING_CHECK_INTERVAL;
                 eth.units.setMiningCheckInterval(1000); // 
 
-                // Mock an verifyPresenceTx that used gasLimit gas.
+                // Mock a verifyPresenceTx that used gasLimit gas.
                 let local_web3 = eth.units.getWeb3();
                 let original_getTx = local_web3.eth.getTransactionReceipt;
                 local_web3.eth.getTransactionReceipt = (hash) => { return { gasUsed: gasLimit }};
