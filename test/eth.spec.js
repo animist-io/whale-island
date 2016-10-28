@@ -89,7 +89,7 @@ describe('Eth Client', function(){
     // -----------------------------------------------------------------------------------
     // -----------------------------  Request Handlers -----------------------------------
     // -----------------------------------------------------------------------------------
-    describe( 'Request Handlers', () => {
+    describe( 'API', () => {
 
         let db;
 
@@ -416,16 +416,81 @@ describe('Eth Client', function(){
 
         describe('isAuthorizedToReadMessage', () => {
 
-            it('should return true if contract says client can read published message');
-            it('should return false if contract says client not authorized');
-            it('should return false if the contractAddress is bad');
+            let args;
+            let node = web3.eth.accounts[0];
+            let client = web3.eth.accounts[1];
+
+
+            it('should return true if contract says client can read published message', () => {
+                args = {
+                    node: node,
+                    uuid: 'abcd',
+                    message: 'hello',
+                    expires: 12345,
+                    contractAddress: deployed.address
+                }
+        
+                deployed.setAuthorizedClient(client, {from: node })
+                eth.isAuthorizedToReadMessage(args, client).should.be.true;
+                
+            });
+            it('should return false if client not authorized by contract', ()=>{
+                let unauthorizedClient = web3.eth.accounts[2];
+
+                args = {
+                    node: node,
+                    uuid: 'abcd',
+                    message: 'hello',
+                    expires: 12345,
+                    contractAddress: deployed.address
+                }
+        
+                deployed.setAuthorizedClient(client, {from: node })
+                client.should.not.equal(unauthorizedClient);
+                eth.isAuthorizedToReadMessage(args, unauthorizedClient).should.be.false;
+
+            });
+
+            it('should return false if the contractAddress is bad', () => {
+                args = {
+                    node: node,
+                    uuid: 'abcd',
+                    message: 'hello',
+                    expires: 12345,
+                    contractAddress: node // Not a contract address
+                }
+        
+                deployed.setAuthorizedClient(client, {from: node })
+                eth.isAuthorizedToReadMessage(args, client).should.be.false;
+            });
 
         });
 
-        describe('confirmMessageRead', () => {
+        describe('confirmMessageDelivery', () => {
 
-            it('should invoke the client contracts confirmMessageRead method successfully and return true');
-            it('should return false if the contract address is bad');
+            let node = web3.eth.accounts[0];
+            let client = web3.eth.accounts[1];
+
+            it('should invoke the client contracts confirmMessageDelivery method successfully and return true', ()=>{
+                
+                let returnVal;
+
+                let args = {
+                    node: node,
+                    uuid: 'abcd',
+                    message: 'hello',
+                    expires: 12345,
+                    contractAddress: deployed.address
+                };
+
+                deployed.setAuthorizedClient(client, {from: node });
+                deployed.setMessageDelivered(false, {from: node});
+
+                returnVal = eth.confirmMessageDelivery(args, client);
+                deployed.getMessageDelivered().should.be.true;
+                returnVal.should.be.true;
+
+            });
         })
     });  
 });

@@ -2,62 +2,68 @@ module.exports.Test = `
 
     contract Test {
 
-        struct SignedBeacon {           // EC signature of beacon-signal emitted by first node as a start signal. 
-            uint8 v;                    // (See submitSignedBeaconId and validateReceivedBeacon methods below)
+        struct SignedBeacon {           
+            uint8 v;                 
             bytes32 r;
             bytes32 s;
         }
 
         address public client;
+        address public authorizedClient;
         uint counter;
         uint public state;
-        bool public verified = true;
+        bool public verified;
+        bool messageDelivered;
         uint64 public timeVerified;
         SignedBeacon signedBeacon;
 
         function Test(){
-            signedBeacon.v = 1;
-            signedBeacon.r = bytes32(1);
-            signedBeacon.s = bytes32(1);
+            verified = true;
         }
-
+        
         function advanceBlock(){
             counter++;
         }
-
-        /*function getR() constant returns (bytes32 r){
-            bytes32 r = signedBeacon.r;
-            return r;
-        }*/
-
         function getState() constant returns (uint val){
             return state;
         }
+        function setState(uint val) public{
+            state = val;
+        }
+        
         function getVerified() constant returns (bool status){
             return verified;
         }
+        function setVerified(bool val) public {
+            verified = val;
+        }
+        
+        function getMessageDelivered() public constant returns (bool val){
+            return messageDelivered;
+        }
+        function setMessageDelivered(bool val) public {
+            messageDelivered = false;
+        }
+        
         function getTimeVerified() constant returns (uint time){
             return timeVerified;
+        }
+        function setTimeVerified(uint64 time) public {
+            timeVerified = time;
         }
 
         function getClient() constant returns (address client){
             return client;
         }
-        
-        function setVerified(bool val) public {
-            verified = val;
-        }
-        
-        function setState(uint val) public{
-            state = val;
-        }
-        
-        function setTimeVerified(uint64 time) public {
-            timeVerified = time;
+        function setClient(address client_) public {
+            client = client_;
         }
 
-        function setClient(address newClient) public {
-            client = newClient;
+        function getAuthorizedClient( address client_) constant returns (address val){
+            return authorizedClient;
+        }
+        function setAuthorizedClient( address client_) public{
+            authorizedClient = client_;
         }
         
         function resetAll() public{
@@ -90,6 +96,18 @@ module.exports.Test = `
             else
                 return false;
         }
+
+        function isAuthorizedToReadMessage( address visitor, string uuid ) constant returns (bool result){
+            if ( visitor == authorizedClient )
+                return true;
+            else
+                return false;
+        }
+
+        function confirmMessageDelivery( address visitor, string uuid, uint64 time){
+            if (visitor == authorizedClient )
+                messageDelivered = true;
+        }
     }`;
 
 module.exports.AnimistMethods = `
@@ -106,7 +124,7 @@ module.exports.AnimistEvent = `
     contract AnimistEvent {
 
         event LogPresenceVerificationRequest( address indexed node, address indexed account, address indexed contractAddress);
-        event LogMessagePublicationRequest( address indexed node, string uuid, string message, uint64 expires);
+        event LogMessagePublicationRequest( address indexed node, string uuid, string message, uint64 expires, address contractAddress );
         event LogBeaconBroadcastRequest( address indexed node, string uuid, address contractAddress );
 
         // ------------------------------------------  Event wrappers ------------------------------------------------------
@@ -115,9 +133,9 @@ module.exports.AnimistEvent = `
             LogPresenceVerificationRequest(node, account, contractAddress);
         }
 
-        function requestMessagePublication(address node, string uuid, string message, uint64 expires){
+        function requestMessagePublication(address node, string uuid, string message, uint64 expires, address contractAddress ){
 
-            LogMessagePublicationRequest(node, uuid, message, expires);
+            LogMessagePublicationRequest(node, uuid, message, expires, contractAddress );
         }
 
         function requestBeaconBroadcast(address node, string uuid, address contractAddress ){

@@ -111,7 +111,7 @@ describe('Contract Event Listeners', () => {
                 done();
             });
 
-            eventContract.requestMessagePublication( node, uuid, message, expires, {from: client})
+            eventContract.requestMessagePublication( node, uuid, message, expires, testContract.address,  {from: client})
 
         });
 
@@ -127,7 +127,7 @@ describe('Contract Event Listeners', () => {
                 done();
             });
 
-            eventContract.requestMessagePublication( node, bad_uuid, message, expires, {from: client})
+            eventContract.requestMessagePublication( node, bad_uuid, message, expires, testContract.address,{from: client})
 
         });
 
@@ -143,7 +143,7 @@ describe('Contract Event Listeners', () => {
                 done();
             });
 
-            eventContract.requestMessagePublication( node, uuid, bad_message, expires, {from: client, gas: 3141592})
+            eventContract.requestMessagePublication( node, uuid, bad_message, expires, testContract.address,{from: client, gas: 3141592})
 
         });
 
@@ -158,7 +158,7 @@ describe('Contract Event Listeners', () => {
                 done();
             });
 
-            eventContract.requestMessagePublication( node, uuid, message, expired, {from: client})
+            eventContract.requestMessagePublication( node, uuid, message, expired, testContract.address,{from: client})
         });
     });
 
