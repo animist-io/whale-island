@@ -45,7 +45,6 @@ const generate = module.exports.generate = function(){
   
     return newContract( contracts.Test, { from: client, gas: 3141592  }).then( deployed => {
         
-
         let code = web3.eth.getCode(deployed.address); 
         let abi = deployed.abi;
         let privKey = util.stripHexPrefix(keys[0]);
