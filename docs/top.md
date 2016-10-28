@@ -69,7 +69,7 @@ contract Visit {
 
 #### Beacon Broadcasting
 
-You can broadcast an arbitrary beacon signal from any whale-island node and confirm that a mobile client recieved it by:
+You can broadcast an arbitrary beacon signal from any whale-island node and confirm that a mobile client received it by:
 
 + Generating a new v4 uuid with [node-uuid](https://www.npmjs.com/package/node-uuid) **and**
 
