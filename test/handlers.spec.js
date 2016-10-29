@@ -1170,8 +1170,6 @@ describe('BLE Request Handlers', () => {
                 expect(bleno.disconnect).to.have.been.called();
                 done();
             }, 500) 
-
-            
         });
 
     });
@@ -1246,12 +1244,130 @@ describe('BLE Request Handlers', () => {
     });
 
     describe('generatePublicationHandler() [returned handler behavior tests] ', () => {
-        it('should respond w/ RESULT SUCCESS');
-        it('should invoke confirmMessageDelivery on the contract');
-        it('should send client the message and disconnect');
-        it('should work as expected: e2e');
-        it('should respond w/ INVALID_JSON_IN_REQUEST if signed pin is bad and disconnect');
-        it('should respond w/ NOT_AUTHORIZED if client not authorized by contract to read msg and disconnect');
-        it('should respond w/ NOT_AUTHORIZED if node cannot invoke confirmMessageDelivery and disconnect');
+        
+        let data, pin, msgHash, signed, args;
+        beforeEach(()=>{
+
+            // Mocks 
+            pin = util.getPinSafe(true);
+            msgHash = ethjs_util.addHexPrefix(ethjs_util.sha3(pin).toString('hex'));
+            signed =  web3.eth.sign(client, msgHash); 
+            data = JSON.stringify(signed);    
+            args = { message: 'hello'};
+        });
+
+        afterEach( () =>  ble._units.setEth(eth) );
+
+        it('should respond w/ RESULT_SUCCESS', (done)=>{
+            
+            let cb = (val) => expect(val).to.equal(config.codes.RESULT_SUCCESS);
+
+            let characteristic = { updateValueCallback: (sent) => { 
+                setTimeout(() => done(), 55); 
+            }};
+
+            let mockEth = {
+                isAuthorizedToReadMessage: (args, val) => true,
+                confirmMessageDelivery: (args, address) => {}
+            };
+            ble._units.setEth(mockEth);
+            
+            let handler = ble.generatePublicationHandler(args, characteristic);
+            handler(data, null, null, cb);    
+        });
+        
+        it('should invoke confirmMessageDelivery on the contract', (done) => {
+            
+            let cb = val => {};
+            let characteristic = { updateValueCallback: (sent) => {}};
+            
+            let mockEth = {
+                isAuthorizedToReadMessage: (args, val) => true,
+                confirmMessageDelivery: (args_, client_) => {
+                    args_.should.deep.equal(args);
+                    client_.should.equal(client);
+                    done();
+                }
+            };
+            ble._units.setEth(mockEth);
+            
+            let handler = ble.generatePublicationHandler(args, characteristic);
+            handler(data, null, null, cb); 
+            
+        });
+
+        it('should send client the message and disconnect', (done)=> {
+            chai.spy.on(bleno, 'disconnect');
+
+            let cb = val => {};
+            let characteristic = { updateValueCallback: (val) => { 
+                expect(Buffer.isBuffer(val)).to.be.true;
+                
+                val = JSON.parse(val);    
+                val.should.equal(args.message);
+                
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                }, 55)
+            }};
+
+            let mockEth = {
+                isAuthorizedToReadMessage: (args, val) => true,
+                confirmMessageDelivery: (args, address) => {}
+            };
+            ble._units.setEth(mockEth); 
+            let handler = ble.generatePublicationHandler(args, characteristic);
+            handler(data, null, null, cb); 
+        });
+
+        it('should respond w/ INVALID_JSON_IN_REQUEST if signed pin is bad and disconnect', (done)=>{
+            let badRequest = "dd5[w,r,0,,n,g";
+            let cb = (val) => {
+                expect(val).to.equal(config.codes.INVALID_JSON_IN_REQUEST);
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                }, 55)
+            }
+
+            let characteristic = { updateValueCallback: (sent) => {}};
+
+            let mockEth = {
+                isAuthorizedToReadMessage: (args, val) => true,
+                confirmMessageDelivery: (args, address) => {}
+            };
+            
+            ble._units.setEth(mockEth);
+            chai.spy.on(bleno, 'disconnect');
+
+            let handler = ble.generatePublicationHandler(args, characteristic);
+            handler(badRequest, null, null, cb);
+
+        });
+        it('should respond w/ NOT_AUTHORIZED if client not authorized by contract to read msg and disconnect', (done) => {
+
+            let cb = (val) => {
+                expect(val).to.equal(config.codes.NOT_AUTHORIZED);
+                setTimeout(()=> { 
+                    expect(bleno.disconnect).to.have.been.called();
+                    done();
+                }, 55)
+            }
+
+            let characteristic = { updateValueCallback: (sent) => {}};
+
+            let mockEth = {
+                isAuthorizedToReadMessage: (args, val) => false,
+                confirmMessageDelivery: (args, address) => {}
+            };
+            ble._units.setEth(mockEth);
+            chai.spy.on(bleno, 'disconnect');
+
+            let handler = ble.generatePublicationHandler(args, characteristic);
+            handler(data, null, null, cb);
+
+        });
+        it('should work as expected: e2e');     
     });
 });

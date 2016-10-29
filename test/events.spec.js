@@ -246,7 +246,6 @@ describe('Contract Event Listeners', () => {
                 .then( val => db.get(expectedID)
                 .then( doc => doc.contractAddress.should.equal(expectedContract) 
             ))
-
         });
     });
 
@@ -381,67 +380,92 @@ describe('Contract Event Listeners', () => {
 
         afterEach(() => { return db.destroy() });
 
-        it('should pass valid event data to "addPublication" callback')/*, (done)=>{
+        it('should pass valid event data to "addPublication" callback', (done)=>{
 
             let args = {
                 node: node,
                 uuid: "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8",
                 message: "hello",
-                expires: Date.now() + 5000
+                expires: Date.now() + 5000,
+                contractAddress: testContract.address
             }
-            
-            chai.spy.on( server, 'addPublication');
 
-            let cb = () => {
-                server.addPublication.should.have.been.called.with(args);
+            let cb = (cbArgs) => {
+                cbArgs.should.deep.equal(args)
                 done();
             }
 
-            events.startMessagePublicationRequestsFilter( eventContract.address, server.addPublication, cb );
-            eventContract.requestMessagePublication( node, args.uuid, args.message, args.expires, {from: client, gas: 3141592});
+            events.startMessagePublicationRequestsFilter( eventContract.address, cb );
+            eventContract.requestMessagePublication( 
+                node, 
+                args.uuid, 
+                args.message, 
+                args.expires, 
+                testContract.address, 
+                {from: client, gas: 3141592}
+            );
 
-        });*/
+        });
 
-        it('should NOT pass invalid event data to "addPublication" callback')/*, (done)=>{
+        it('should NOT pass invalid event data to "addPublication" callback', (done)=>{
 
             let args = {
                 node: node,
                 uuid: "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8",
                 message: "hello",
-                expires: 5000
+                expires: 5000,
+                contractAddress: testContract.address
             }
             
-            chai.spy.on( server, 'addPublication');
+            // Mock server
+            let mockServer = { addPublication: args => null };
 
             let cb = (err) => {
-                server.addPublication.should.not.have.been.called();
+                mockServer.addPublication.should.not.have.been.called();
                 err.should.equal(config.events.filters.validationError);
                 done();
             }
-            events.startMessagePublicationRequestsFilter( eventContract.address, server.addPublication, cb );
-            eventContract.requestMessagePublication( node, args.uuid, args.message, args.expires, {from: client, gas: 3141592});
 
-        });*/
+            chai.spy.on( mockServer, 'addPublication');
+            events.startMessagePublicationRequestsFilter( eventContract.address, mockServer.addPublication, cb );
+            eventContract.requestMessagePublication( 
+                node, 
+                args.uuid, 
+                args.message, 
+                args.expires, 
+                testContract.address,
+                {from: client, gas: 3141592
+            });
 
-        it('should update the "lastBlock" record the animistEvents DB after saving each request')/*, (done)=>{
+        });
+
+        it('should update the "lastBlock" record the animistEvents DB after saving each request', (done)=>{
 
             let currentBlock = web3.eth.blockNumber;
             let args = {
                 node: node,
                 uuid: "C6FEDFFF-87EA-405D-95D7-C8B19B6A85F8",
                 message: "hello",
-                expires: Date.now() + 5000
+                expires: Date.now() + 5000,
+                contractAddress: testContract.address
             };
-            
+        
             let cb = () => {
                 db.get('lastBlock')
                     .then( doc => { doc.val.should.be.gt(currentBlock); done() })
                     .catch( err => { true.should.be.false; done() });
             }
 
-            events.startMessagePublicationRequestsFilter( eventContract.address, server.addPublication, cb );
-            eventContract.requestMessagePublication( node, args.uuid, args.message, args.expires, {from: client, gas: 3141592});
-        });*/   
+            events.startMessagePublicationRequestsFilter( eventContract.address, cb );
+            eventContract.requestMessagePublication( 
+                node, 
+                args.uuid, 
+                args.message, 
+                args.expires, 
+                testContract.address, 
+                {from: client, gas: 3141592}
+            );
+        });   
     });
 
     
