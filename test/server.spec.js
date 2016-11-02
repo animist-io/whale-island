@@ -1,26 +1,99 @@
 'use strict'
 
+// Local
+let config = require('../lib/config');
+const server = require('../lib/server.js');
+
+// Mocks
+const transactions = require('../test/mocks/transaction');
+const bleno = require('../test/mocks/bleno.js');
+
+// DB
+const pouchdb = require('pouchdb');
+const upsert = require('pouchdb-upsert');
+pouchdb.plugin(upsert);
+
+// Testing
+const chai = require('chai');
+const spies = require('chai-spies');
+const chaiAsPromised = require("chai-as-promised");
+
 describe('BLE Server', ()=>{
 
     describe('prepPublicationsOnLaunch', () => {
 
-        it('should remove expired publications from the events DB');
+        let db;
+        beforeEach( () => { 
+            db = new pouchdb('animistEvents'); 
+            server._units.setDB(db);
+        });
 
-        it('should correctly schedule the removal of existing publications in the DB');
+        afterEach(() => { return db.destroy() });
+
+        it('should remove expired publications from the events DB', (done) => {
+            let list = [];
+            let charA = new bleno.Characteristic({ uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C'});
+            let charB = new bleno.Characteristic({ uuid: '22222222-A4F6-4E98-AA15-F9E070EB105C'});
+            
+            list.push({characteristic: charA, expires: Date.now() + 1000000 });
+            list.push({characteristic: charA, expires: Date.now() - 1000000 });
+            
+            db.put({ _id: 'publications', list: list })
+                .then( res => server.prepPublicationsOnLaunch()
+                .then( res => db.get('publications')
+                .then( doc => {
+                        doc.list.length.should.equal(1);
+                        doc.list[0].characteristic.uuid.should.equal(charA.uuid);
+                        done();
+                })))
+                .catch(err => console.log(err));
+        });
+
+        it('should correctly schedule the removal of existing publications in the DB', (done)=>{
+            let list = [];
+            let charA = new bleno.Characteristic({ uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C'});
+            let charB = new bleno.Characteristic({ uuid: '22222222-A4F6-4E98-AA15-F9E070EB105C'});
+            
+            list.push({characteristic: charA, expires: Date.now() + 500 });
+            list.push({characteristic: charB, expires: Date.now() + 1000000 });
+            
+            db.put({ _id: 'publications', list: list })
+                .then( res => server.prepPublicationsOnLaunch()
+                .then( res => 
+                    setTimeout(() => {
+                        db.get('publications').then( doc => {
+                            doc.list.length.should.equal(1);
+                            doc.list[0].characteristic.uuid.should.equal(charB.uuid);
+                            done();
+                        }).catch( err => console.log(err))
+                    }, 550)
+                ))
+                .catch(err => console.log(err));
+        });
 
         it('should ensure the publication set is correct: e2e');
     });
 
     describe('isUniqueUUID', ()=>{
 
-        it('should return false if theres already a publication w/ same uuid')
+        let characteristics = [];
+        before(() => {
 
-        /*
-            let uuid = mocks.broadcast_1.args.uuid;
-            events.addPublication(mocks.broadcast_1);
-            events.isValidUUID(uuid).should.be.false;
-        */
-        
+            let charA = new bleno.Characteristic({ uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C'});
+            let charB = new bleno.Characteristic({ uuid: '22222222-A4F6-4E98-AA15-F9E070EB105C'});
+            characteristics.push(charA);
+            characteristics.push(charB);
+        });
+
+        it('should return true if the uuid doesnt exist in the publication set', ()=>{
+            let uuid = '33333333-A4F6-4E98-AA15-F9E070EB105C';
+            server.isUniqueUUID( uuid, characteristics ).should.be.true;
+        });
+
+        it('should return false if theres already a publication w/ same uuid', ()=>{
+            let uuid = '22222222-A4F6-4E98-AA15-F9E070EB105C';
+            server.isUniqueUUID( uuid, characteristics).should.be.false;
+        });
     })
 
     describe('addPublication', () => {
@@ -61,12 +134,6 @@ describe('BLE Server', ()=>{
 
         it('should update the broadcast');
         
-    });
-
-    describe('scheduleRemoval', () => {
-
-        it( 'should delete the publication from the events DB');
-        it( 'should update the broadcast after removal');
     });
 
     describe('updateBroadcast', () => {
