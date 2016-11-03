@@ -2,7 +2,12 @@
 
 // Local
 let config = require('../lib/config');
-const server = require('../lib/server.js');
+const serverlib = require('../lib/server');
+const util = require('../lib/util');
+const handlers = require('../lib/handlers')
+
+// Ethereum 
+const ethjs_util = require("ethereumjs-util");
 
 // Mocks
 const transactions = require('../test/mocks/transaction');
@@ -20,119 +25,196 @@ const chaiAsPromised = require("chai-as-promised");
 
 describe('BLE Server', ()=>{
 
-    describe('prepPublicationsOnLaunch', () => {
-
-        let db;
-        beforeEach( () => { 
-            db = new pouchdb('animistEvents'); 
-            server._units.setDB(db);
-        });
-
-        afterEach(() => { return db.destroy() });
-
-        it('should remove expired publications from the events DB', (done) => {
-            let list = [];
-            let charA = new bleno.Characteristic({ uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C'});
-            let charB = new bleno.Characteristic({ uuid: '22222222-A4F6-4E98-AA15-F9E070EB105C'});
-            
-            list.push({characteristic: charA, expires: Date.now() + 1000000 });
-            list.push({characteristic: charA, expires: Date.now() - 1000000 });
-            
-            db.put({ _id: 'publications', list: list })
-                .then( res => server.prepPublicationsOnLaunch()
-                .then( res => db.get('publications')
-                .then( doc => {
-                        doc.list.length.should.equal(1);
-                        doc.list[0].characteristic.uuid.should.equal(charA.uuid);
-                        done();
-                })))
-                .catch(err => console.log(err));
-        });
-
-        it('should correctly schedule the removal of existing publications in the DB', (done)=>{
-            let list = [];
-            let charA = new bleno.Characteristic({ uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C'});
-            let charB = new bleno.Characteristic({ uuid: '22222222-A4F6-4E98-AA15-F9E070EB105C'});
-            
-            list.push({characteristic: charA, expires: Date.now() + 500 });
-            list.push({characteristic: charB, expires: Date.now() + 1000000 });
-            
-            db.put({ _id: 'publications', list: list })
-                .then( res => server.prepPublicationsOnLaunch()
-                .then( res => 
-                    setTimeout(() => {
-                        db.get('publications').then( doc => {
-                            doc.list.length.should.equal(1);
-                            doc.list[0].characteristic.uuid.should.equal(charB.uuid);
-                            done();
-                        }).catch( err => console.log(err))
-                    }, 550)
-                ))
-                .catch(err => console.log(err));
-        });
-
-        it('should ensure the publication set is correct: e2e');
-    });
-
     describe('isUniqueUUID', ()=>{
 
         let characteristics = [];
         before(() => {
 
-            let charA = new bleno.Characteristic({ uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C'});
-            let charB = new bleno.Characteristic({ uuid: '22222222-A4F6-4E98-AA15-F9E070EB105C'});
+            let charA = { uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C'};
+            let charB = { uuid: '22222222-A4F6-4E98-AA15-F9E070EB105C'};
             characteristics.push(charA);
             characteristics.push(charB);
         });
 
         it('should return true if the uuid doesnt exist in the publication set', ()=>{
             let uuid = '33333333-A4F6-4E98-AA15-F9E070EB105C';
-            server.isUniqueUUID( uuid, characteristics ).should.be.true;
+            serverlib.isUniqueUUID( uuid, characteristics ).should.be.true;
         });
 
         it('should return false if theres already a publication w/ same uuid', ()=>{
             let uuid = '22222222-A4F6-4E98-AA15-F9E070EB105C';
-            server.isUniqueUUID( uuid, characteristics).should.be.false;
+            serverlib.isUniqueUUID( uuid, characteristics).should.be.false;
         });
-    })
+    });
+
+    describe('prepPublicationsOnLaunch', () => {
+
+        let db;
+        beforeEach( () => { 
+
+            db = new pouchdb('animistEvents'); 
+            serverlib._units.setDB(db);
+        });
+
+        afterEach(() => { return db.destroy() });
+
+        it('should remove expired publications from the events DB', (done) => {
+            let list = [];
+            let charA = { uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C', expires: Date.now() + 1000000 };
+            let charB = { uuid: '22222222-A4F6-4E98-AA15-F9E070EB105C', expires: Date.now() - 1000000 };
+            
+            list.push(charA);
+            list.push(charB);
+            
+            db.put({ _id: 'publications', list: list })
+                .then( res => serverlib.prepPublicationsOnLaunch()
+                .then( res => db.get('publications')
+                .then( doc => {
+                        doc.list.length.should.equal(1);
+                        doc.list[0].uuid.should.equal(charA.uuid);
+                        done();
+                })))
+        });
+
+        it('should correctly schedule the removal of existing publications in the DB', (done)=>{
+            let list = [];
+            let charA = { uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C', expires: Date.now() + 500 };
+            let charB = { uuid: '22222222-A4F6-4E98-AA15-F9E070EB105C', expires: Date.now() + 1000000 };
+            
+            list.push(charA);
+            list.push(charB);
+            
+            db.put({ _id: 'publications', list: list })
+                .then( res => serverlib.prepPublicationsOnLaunch()
+                .then( res => 
+                    setTimeout(() => {
+                        db.get('publications').then( doc => {
+                            doc.list.length.should.equal(1);
+                            doc.list[0].uuid.should.equal(charB.uuid);
+                            done();
+                        })
+                    }, 550)
+                ))
+        });
+
+        it('should ensure the publication set is correct: e2e');
+    });
 
     describe('addPublication', () => {
 
-        it('should create a bleno characteristic and add it the DBs publications list');
-    
-            /*chai.spy.on(bleno, 'disconnect');
+        let db, server;
+        beforeEach( () => { 
+            server = new serverlib.AnimistServer();
+            db = new pouchdb('animistEvents'); 
+            serverlib._units.setDB(db);
+        });
+
+        afterEach(() => { return db.destroy() });
+
+        it('should add event to the DBs publications list (initializing)', (done)=>{
+            let args = {
+                uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C',
+                message: 'hello',
+                expires: Date.now() + 100000,
+                contractAddress: '0x1234567'
+            }
         
-            let expectedChannel = mocks.broadcast_1.args.uuid.replace(/-/g, '');
-            let expectedMessage = new Buffer(mocks.broadcast_1.args.message);
-            let broadcasts = events.addPublication(mocks.broadcast_1);
-    
-            let cb = (code, response) => {
-
-                code.should.equal(config.codes.RESULT_SUCCESS);
-                Buffer.isBuffer(response).should.be.true;
-                response.equals(expectedMessage).should.be.true;
-
-                setTimeout(() => {
-                    bleno.disconnect.should.have.been.called();
+            server.addPublication(args)
+                .then( res => db.get('publications')
+                .then( doc => {
+                    doc.list[0].should.deep.equal(args);
                     done();
-                }, 100 );
+                }))
+        });
+
+        it('should add event to the DBs publications list (initialized)', (done)=> {
+            let args1 = {
+                uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C',
+                message: 'hello',
+                expires: Date.now() + 100000,
+                contractAddress: '0x1234567'
             }
 
-            broadcasts[0].uuid.should.equal(expectedChannel); // Verify uuid
-            broadcasts[0].onReadRequest(null, cb);            // Test callback*/  
+            let args2 = {
+                uuid: '22222222-A4F6-4E98-AA15-F9E070EB105C',
+                message: 'hello again from a different uuid',
+                expires: Date.now() + 100000,
+                contractAddress: '0x1234567'
+            }
+        
+            server.addPublication(args1)
+            
+            .then( res => server.addPublication(args2)
+            .then( res => db.get('publications')
+            .then( doc => {
+                    doc.list.length.should.equal(2);
+                    doc.list[1].message.should.equal(args2.message);
+                    done();
+            })))
+        });
 
+        it('should should not add duplicate publications', (done)=>{
+            let args1 = {
+                uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C',
+                message: 'hello',
+                expires: Date.now() + 100000,
+                contractAddress: '0x1234567'
+            }
 
-        it('should schedule publication removal correctly');
-
-            /*events.addPublication(mocks.broadcast_1);
-            events._units.getBroadcasts().length.should.equal(1);
-
-            setTimeout(() => {
-                events._units.getBroadcasts().length.should.equal(0);
+            let args2 = {
+                uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C',
+                message: 'hello again from the SAME uuid',
+                expires: Date.now() + 100000,
+                contractAddress: '0x1234567'
+            }
+        
+            server.addPublication(args1)
+            
+            .then( res => server.addPublication(args2)
+            .then( res => db.get('publications')
+            .then( doc => {
+                doc.list.length.should.equal(1);
+                doc.list[0].message.should.equal(args1.message);
                 done();
-            }, 100)*/
+            })))
+        });
 
-        it('should update the broadcast');
+        it('should schedule publication removal correctly', (done) =>{
+            
+            let args = { 
+                uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C', 
+                message: 'hello',
+                expires: Date.now() + 500,
+                contractAddress: '0x1234567'
+            }
+            
+            server.addPublication(args).then( res => 
+                setTimeout(() => {
+                    db.get('publications').then( doc => {
+                        doc.list.length.should.equal(0);
+                        done();
+                    })
+                }, 550)
+            )   
+        });
+
+        it('should update the broadcast', (done) => {
+            
+            let args = {
+                uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C',
+                message: 'hello',
+                expires: Date.now() + 100000,
+                contractAddress: '0x1234567'
+            }
+        
+            //server.updateBroadcast = server._units.getUpdateBroadcast();
+            chai.spy.on(server, 'updateBroadcast');
+
+            server.addPublication(args).then( res => {
+                server.updateBroadcast.should.have.been.called();
+                done();
+            }).catch( err => console.log(err))
+        });
         
     });
 
