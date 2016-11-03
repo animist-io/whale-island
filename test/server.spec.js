@@ -271,7 +271,46 @@ describe('BLE Server', ()=>{
 
     describe('onAdvertisingStart', () => {
 
-        it('should set up the publications correctly, start broadcasting, and begin filtering for events');
+        let server, db;
+
+        beforeEach( () => { 
+            server = new serverlib.AnimistServer();
+            db = new pouchdb('animistEvents'); 
+            
+            serverlib._units.mockEventsModule();
+            serverlib._units.setDB(db);
+            serverlib._units.suppressTerminal();
+        });
+
+        afterEach(() => { return db.destroy() });
+
+        it('should begin broadcasting and include any ongoing publications from the DB', (done) => {
+            let list = [];
+            let args = { uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C', expires: Date.now() + 1000000 };
+            let exp_length = server.defaultCharacteristics.length + 1;
+
+            list.push(args);    
+            db.put({ _id: 'publications', list: list })
+                .then( res => server._units.onAdvertisingStart()
+                .then( res => {
+                    server.service.characteristics.length.should.equal(exp_length);
+                    server.service.characteristics[exp_length - 1].uuid.should.equal(args.uuid.replace(/-/g, ''));
+                    done();
+                }))
+        });
+
+
+        it('should begin filtering for events', (done)=>{
+            let events = serverlib._units.getEventsModule();
+            chai.spy.on(events, 'startMessagePublicationRequestsFilter');
+            chai.spy.on(events, 'startPresenceVerificationRequestsFilter');
+
+            server._units.onAdvertisingStart().then( res => {
+                events.startMessagePublicationRequestsFilter.should.have.been.called.with(config.eventsContractAddress, server.addPublication );
+                events.startPresenceVerificationRequestsFilter.should.have.been.called.with(config.eventsContractAddress); 
+                done();       
+            })
+        });
 
     });
 
