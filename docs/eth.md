@@ -1,6 +1,6 @@
 # callTx
 
-[lib/eth.js:122-124](https://github.com/animist-io/whale-island/blob/0381b6c59c82303ec4d361536fff019031c300e5/lib/eth.js#L122-L124 "Source code on GitHub")
+[lib/eth.js:122-124](https://github.com/animist-io/whale-island/blob/e7addeca31e0453ba80c85b9ef19f40df8088f39/lib/eth.js#L122-L124 "Source code on GitHub")
 
 Wraps web3.eth.call. Method should require no gas and no "from" parameter. See onCallTx
 
@@ -10,9 +10,9 @@ Wraps web3.eth.call. Method should require no gas and no "from" parameter. See o
 
 Returns **String** hex encoded value per web3
 
-# confirmMessageRead
+# confirmMessageDelivery
 
-[lib/eth.js:335-350](https://github.com/animist-io/whale-island/blob/0381b6c59c82303ec4d361536fff019031c300e5/lib/eth.js#L335-L350 "Source code on GitHub")
+[lib/eth.js:335-351](https://github.com/animist-io/whale-island/blob/e7addeca31e0453ba80c85b9ef19f40df8088f39/lib/eth.js#L335-L351 "Source code on GitHub")
 
 Invokes client contract method `confirmMessageDelivery` and returns boolean.
 
@@ -25,7 +25,7 @@ Returns **Boolean** True if it was possible to invoke method, false otherwise.
 
 # getAccountBalance
 
-[lib/eth.js:84-86](https://github.com/animist-io/whale-island/blob/0381b6c59c82303ec4d361536fff019031c300e5/lib/eth.js#L84-L86 "Source code on GitHub")
+[lib/eth.js:84-86](https://github.com/animist-io/whale-island/blob/e7addeca31e0453ba80c85b9ef19f40df8088f39/lib/eth.js#L84-L86 "Source code on GitHub")
 
 Wraps web3.eth.getBalance
 
@@ -37,7 +37,7 @@ Returns **String** representing amount of wei
 
 # getBlockNumber
 
-[lib/eth.js:75-77](https://github.com/animist-io/whale-island/blob/0381b6c59c82303ec4d361536fff019031c300e5/lib/eth.js#L75-L77 "Source code on GitHub")
+[lib/eth.js:75-77](https://github.com/animist-io/whale-island/blob/e7addeca31e0453ba80c85b9ef19f40df8088f39/lib/eth.js#L75-L77 "Source code on GitHub")
 
 Wraps web3.eth.blockNumber.
 
@@ -45,7 +45,7 @@ Returns **Number**
 
 # getContract
 
-[lib/eth.js:153-169](https://github.com/animist-io/whale-island/blob/0381b6c59c82303ec4d361536fff019031c300e5/lib/eth.js#L153-L169 "Source code on GitHub")
+[lib/eth.js:153-169](https://github.com/animist-io/whale-island/blob/e7addeca31e0453ba80c85b9ef19f40df8088f39/lib/eth.js#L153-L169 "Source code on GitHub")
 
 Extracts client address from signed pin and looks for record from eventsDB with that id. Returns object
 that contains contract address and contract's code.
@@ -61,7 +61,7 @@ Returns **Promise** Rejects with hex code: NO_TX_DB_ERR or NO_TX_ADDR_ERR
 
 # getContractAddress
 
-[lib/eth.js:178-189](https://github.com/animist-io/whale-island/blob/0381b6c59c82303ec4d361536fff019031c300e5/lib/eth.js#L178-L189 "Source code on GitHub")
+[lib/eth.js:178-189](https://github.com/animist-io/whale-island/blob/e7addeca31e0453ba80c85b9ef19f40df8088f39/lib/eth.js#L178-L189 "Source code on GitHub")
 
 Extracts client address from signed pin and looks for record from eventsDB with that id. Returns object
 that contains contract address and contract's code.
@@ -77,7 +77,7 @@ Returns **Promise** Rejects with hex code: NO_TX_DB_ERR or NO_TX_ADDR_ERR
 
 # getPresenceReceipt
 
-[lib/eth.js:97-115](https://github.com/animist-io/whale-island/blob/0381b6c59c82303ec4d361536fff019031c300e5/lib/eth.js#L97-L115 "Source code on GitHub")
+[lib/eth.js:97-115](https://github.com/animist-io/whale-island/blob/e7addeca31e0453ba80c85b9ef19f40df8088f39/lib/eth.js#L97-L115 "Source code on GitHub")
 
 Responds with data that can be used to authenticate clients presence near
 endpoint. (See onGetPresenceReceipt in lib/handlers.js)
@@ -93,7 +93,7 @@ Returns **Object** Null on error.
 
 # getTx
 
-[lib/eth.js:134-144](https://github.com/animist-io/whale-island/blob/0381b6c59c82303ec4d361536fff019031c300e5/lib/eth.js#L134-L144 "Source code on GitHub")
+[lib/eth.js:134-144](https://github.com/animist-io/whale-island/blob/e7addeca31e0453ba80c85b9ef19f40df8088f39/lib/eth.js#L134-L144 "Source code on GitHub")
 
 Queries blockchain for transaction receipt.
 
@@ -107,7 +107,7 @@ Returns **Promise** Rejects w/ hex code: NO_TX_DB_ERR
 
 # isAuthorizedToReadMessage
 
-[lib/eth.js:316-327](https://github.com/animist-io/whale-island/blob/0381b6c59c82303ec4d361536fff019031c300e5/lib/eth.js#L316-L327 "Source code on GitHub")
+[lib/eth.js:316-327](https://github.com/animist-io/whale-island/blob/e7addeca31e0453ba80c85b9ef19f40df8088f39/lib/eth.js#L316-L327 "Source code on GitHub")
 
 Invokes client contract method: `isAuthorizedToReadMessage` and returns boolean result.
 
@@ -120,7 +120,7 @@ Returns **Boolean** True if client can receive msg, false otherwise.
 
 # recover
 
-[lib/eth.js:48-66](https://github.com/animist-io/whale-island/blob/0381b6c59c82303ec4d361536fff019031c300e5/lib/eth.js#L48-L66 "Source code on GitHub")
+[lib/eth.js:48-66](https://github.com/animist-io/whale-island/blob/e7addeca31e0453ba80c85b9ef19f40df8088f39/lib/eth.js#L48-L66 "Source code on GitHub")
 
 Recovers address used to sign a message, which may be encoded in eth-lightwallet or web3.sign 
 formats. (Will generate non-existent address if data signed and 'rawMsg' are not identical.)
@@ -136,7 +136,7 @@ Returns **** undefined if ethereumjs-util throws an error during recovery.
 
 # sendTx
 
-[lib/eth.js:222-224](https://github.com/animist-io/whale-island/blob/0381b6c59c82303ec4d361536fff019031c300e5/lib/eth.js#L222-L224 "Source code on GitHub")
+[lib/eth.js:222-224](https://github.com/animist-io/whale-island/blob/e7addeca31e0453ba80c85b9ef19f40df8088f39/lib/eth.js#L222-L224 "Source code on GitHub")
 
 Prints client-signed tx to blockchain. A wrapper for web3 sendRawTransaction.
 
@@ -148,7 +148,7 @@ Returns **String** txHash of sendRawTransaction
 
 # sendTxWhenPresenceVerified
 
-[lib/eth.js:236-308](https://github.com/animist-io/whale-island/blob/0381b6c59c82303ec4d361536fff019031c300e5/lib/eth.js#L236-L308 "Source code on GitHub")
+[lib/eth.js:236-308](https://github.com/animist-io/whale-island/blob/e7addeca31e0453ba80c85b9ef19f40df8088f39/lib/eth.js#L236-L308 "Source code on GitHub")
 
 Waits for verifyPresence tx to be mined then sends tx. Updates client's contract record with 
 verifyPresenceTx's status when pending, successful, failed and saves signed client Tx transaction hash to 
@@ -163,7 +163,7 @@ record on success.
 
 # verifyPresence
 
-[lib/eth.js:198-214](https://github.com/animist-io/whale-island/blob/0381b6c59c82303ec4d361536fff019031c300e5/lib/eth.js#L198-L214 "Source code on GitHub")
+[lib/eth.js:198-214](https://github.com/animist-io/whale-island/blob/e7addeca31e0453ba80c85b9ef19f40df8088f39/lib/eth.js#L198-L214 "Source code on GitHub")
 
 Invokes verifyPresence on the contract discovered in the contractsDB. 
 verifyPresence prints caller was here, 'timestamped' now, to chain.

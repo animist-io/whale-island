@@ -301,6 +301,8 @@ Server endpoints respond immediately with a hex code indicating whether or not t
 
 [Event Detection Methods](https://github.com/animist-io/whale-island/blob/master/docs/events.md)
 
+[Server Interface](https://github.com/animist-io/whale-island/blob/master/docs/events.md)
+
 
 
 
