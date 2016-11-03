@@ -220,8 +220,53 @@ describe('BLE Server', ()=>{
 
     describe('updateBroadcast', () => {
 
-        it('should call Bleno setServices with the correct set of default/requested characteristics');
-        it('should call Bleno setServices with the default char set if eventsDB is empty');
+        let db, server;
+        beforeEach( () => { 
+            server = new serverlib.AnimistServer();
+            db = new pouchdb('animistEvents'); 
+            serverlib._units.setDB(db);
+        });
+
+        afterEach(() => { return db.destroy() });
+
+        it('should call Bleno setServices with the correct set of default/requested characteristics', (done)=>{
+            let args = {
+                uuid: '11111111-A4F6-4E98-AA15-F9E070EB105C',
+                message: 'hello',
+                expires: Date.now() + 100000,
+                contractAddress: '0x1234567'
+            }
+
+            let list = [], actual_fn;
+            let exp_length = server.defaultCharacteristics.length + 1;
+            let exp_char = new bleno.Characteristic({ uuid: args.uuid, properties: ['write']});
+            let exp_fn = handlers.generatePublicationHandler(args, exp_char).toString();
+
+            list.push(args);
+
+            db.put({_id: 'publications', list: list})
+                .then(res => server.updateBroadcast()
+                .then(res => {
+                    server.service.characteristics.length.should.equal(exp_length);
+                    server.service.characteristics[exp_length - 1].uuid.should.equal(args.uuid.replace(/-/g, ''));
+                    actual_fn = server.service.characteristics[exp_length - 1].onWriteRequest.toString()
+                    actual_fn.should.equal(exp_fn);
+                    done();
+                }))
+                .catch(err =>  console.log(err));
+        });
+
+        it('should call Bleno setServices with the default char set if eventsDB is empty', (done) => {
+            let exp_length = server.defaultCharacteristics.length;
+            let exp_uuid = server.defaultCharacteristics[0].uuid;
+
+            server.updateBroadcast().then(res => {
+                server.service.characteristics.length.should.equal(exp_length);
+                server.service.characteristics[0].uuid.should.equal(exp_uuid);
+                done();
+            })
+            .catch(err =>  console.log(err));
+        });
     });
 
     describe('onAdvertisingStart', () => {
