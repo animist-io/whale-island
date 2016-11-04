@@ -37,7 +37,7 @@ chai.should();
 
 
 // ----------------------------------- Tests -----------------------------------------
-describe.only('Contract Event Listeners', () => {
+describe('Contract Event Listeners', () => {
 
     var node = web3.eth.accounts[0];
     var client = web3.eth.accounts[1];
