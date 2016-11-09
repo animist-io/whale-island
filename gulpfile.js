@@ -45,6 +45,10 @@ gulp.task('documentation', function () {
     .pipe(documentation({ shallow: 'true', github: 'true', format: 'md', filename: 'server.md' }))
     .pipe(gulp.dest('docs'));
 
+  gulp.src('./lib/requestableBeacon.js')
+    .pipe(documentation({ shallow: 'true', github: 'true', format: 'md', filename: 'requestableBeacon.md' }))
+    .pipe(gulp.dest('docs'));
+
   gulp.src([
           './docs/top.md', 
           './docs/handlersDesc.md',

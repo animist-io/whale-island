@@ -268,9 +268,9 @@ Every animist node broadcasts a platform specific beacon uuid and provides acces
 |  getClientTxStatus       | 421522D1-C7EE-494C-A1E4-029BBE644E8D |
 |  getContract             | BFA15C55-ED8F-47B4-BD6A-31280E98C7BA |
 |  getContractAddress      | 007A62CC-068F-4E85-898E-7EA98AD4E31B |
+|  getPresenceReceipt      | BA2C3091-DAB8-4D51-BF92-3A6F023E9AD7 |
 |  verifyPresence          | 297E3B0A-F353-4531-9D44-3686CC8C4036 |
 |  verifyPresenceAndSendTx | 8D8577B9-E2F0-4750-BB82-421750D9BF86 |
-|  getPresenceReceipt      | BA2C3091-DAB8-4D51-BF92-3A6F023E9AD7 |
 |  sendTx                  | 3340BC2C-70AE-4E7A-BE24-8B2ED8E3ED06 | 
 |  callTx                  | 4506C117-0A27-4D90-94A1-08BB81B0738F |
 
@@ -302,6 +302,8 @@ Server endpoints respond immediately with a hex code indicating whether or not t
 [Event Detection Methods](https://github.com/animist-io/whale-island/blob/master/docs/events.md)
 
 [Server Interface](https://github.com/animist-io/whale-island/blob/master/docs/events.md)
+
+[Requestable Beacon](https://github.com/animist-io/whale-island/blob/master/docs/requestableBeacon.md)
 
 
 
