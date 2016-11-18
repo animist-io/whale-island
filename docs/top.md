@@ -8,6 +8,10 @@ Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that
 + Any game where the co-location of players is a key component. 
 + Path or place contingent reward programs.
 
+Whale-island is most appropriate for applications where distributed rewards are relatively small and uncertainties about the reliability of the oracle are outweighed by concerns about the integrity of contract counter-parties and the necessity of conducting an activity on a peer to peer basis. Consider for example an application that allows cyclists in NYC to race point-to-point within the city for virtual currency prizes: in such a case the smart-contract ensures that wager commitments can't be arbitrarily withdrawn mid-race and the peer-to-peer nature of the application is critical because no rational third-party would take on the liabilities implicit in facilitating such races, despite their legality as games of skill.  
+
+## Mobile Interface 
+
 Javascript libraries to help mobile Dapps interact with whale-island are in development at [animist-io/wowshuxkluh](https://github.com/animist-io/wowshuxkluh).
 
 ## Services
