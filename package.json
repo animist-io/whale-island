@@ -79,6 +79,6 @@
     "pouchdb-upsert": "^2.0.2",
     "randomstring": "^1.1.5",
     "validator": "^6.0.0",
-    "web3": "^0.16.0"
+    "web3": "^0.17.0-beta"
   }
 }
