@@ -18,27 +18,22 @@
     "ios",
     "android",
     "animist.io",
-    "IOT",
+    "IoT",
     "bluetooth"
   ],
   "devDependencies": {
     "babel-core": "^6.17.0",
-    "babel-eslint": "^4.1.8",
     "babel-preset-es2015": "^6.9.0",
     "buffer-equal": "^1.0.0",
     "chai": "^3.5.0",
     "chai-as-promised": "^5.3.0",
     "chai-spies": "^0.7.1",
     "del": "^2.0.2",
-    "eslint": "^2.1.0",
-    "eslint-config-xo-space": "^0.13.0",
-    "eslint-plugin-babel": "^3.1.0",
     "ethereumjs-util": "^4.5.0",
     "gulp": "^3.9.0",
     "gulp-babel": "^5.1.0",
     "gulp-concat": "^2.6.0",
     "gulp-documentation": "^2.2.0",
-    "gulp-eslint": "^2.0.0",
     "gulp-exclude-gitignore": "^1.0.0",
     "gulp-istanbul": "^0.10.3",
     "gulp-line-ending-corrector": "^1.0.1",
@@ -46,22 +41,14 @@
     "gulp-nsp": "^2.1.0",
     "gulp-plumber": "^1.0.0",
     "isparta": "^3.0.3",
-    "minimatch": "^3.0.2"
-  },
-  "eslintConfig": {
-    "extends": "xo-space",
-    "env": {
-      "mocha": true
-    }
+    "minimatch": "^3.0.2",
+    "standard": "^8.5.0"
   },
   "repository": "https://github.com/animist-io/whale-island.git",
   "scripts": {
     "prepublish": "gulp prepublish",
-    "test": "gulp",
-    "docs:eth": "documentation --config documentation.yml --github -f md ./lib/eth.js > ./eth.md",
-    "docs:handlers": "documentation --github -f md ./lib/handlers.js > ./docs/handlers.md",
-    "docs:util": "documentation --github -f md ./lib/util.js > ./docs/util.md",
-    "build:docs": "npm run -s docs:eth & npm run -s docs:handlers & npm run -s docs:util"
+    "lint": "standard --fix 'lib/handlers.js'",
+    "test": "gulp"
   },
   "private": true,
   "dependencies": {
