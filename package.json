@@ -47,7 +47,7 @@
   "repository": "https://github.com/animist-io/whale-island.git",
   "scripts": {
     "prepublish": "gulp prepublish",
-    "lint": "standard --fix 'lib/handlers.js'",
+    "lint": "standard --fix 'lib/*.js'",
     "test": "gulp"
   },
   "private": true,

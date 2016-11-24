@@ -73,15 +73,15 @@ describe('Eth Client', function(){
                 
             });
 
-            it('should return undefined if the rawMsg is null', () => {
+            it('should return null if the rawMsg is null', () => {
                 let msg = 'message', rawMsg = null, signed, result;
                 signed = wallet.signing.signMsg( keystore, account.key, msg, address);         
-                expect(eth.recover(rawMsg, signed)).to.be.undefined;
+                expect(eth.recover(rawMsg, signed)).to.equal(null);
             })
 
             it('should return undefined if address unrecoverable (ethjs-util throws error)', () => {
                 let err = eth.recover('a message', 'kfdlskdlf')
-                expect(err).to.be.undefined;
+                expect(err).to.equal(null)
             })  
         });
     });

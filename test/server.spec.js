@@ -309,7 +309,7 @@ describe('BLE Server', ()=>{
                 events.startMessagePublicationRequestsFilter.should.have.been.called.with(config.eventsContractAddress, server.addPublication );
                 events.startPresenceVerificationRequestsFilter.should.have.been.called.with(config.eventsContractAddress); 
                 done();       
-            })
+            }).catch( e => console.log('error at spec: ' + e))
         });
 
     });

@@ -63,7 +63,6 @@ describe('BLE Request Handlers', () => {
         
         // Deploy TestContract, compose some signed transactions for rawTx submission.
         return transactions.generate().then( mock => {   
-
             deployed = mock.deployed;                // TestContract.sol deployed to test-rpc                            
             goodTx = mock.goodTx;                    // raw: TestContract.set(2, {from: client})
             badTx = mock.badTx;                      // raw: goodTx but sent with 0 gas.
@@ -762,7 +761,6 @@ describe('BLE Request Handlers', () => {
             eth_db.get(client).then(doc => {
                 doc.verifyPresenceStatus = "pending";
                 eth_db.put(doc).then( doc => {
-
                     util.encrypt(data).then( encrypted => {
                         ble.onSendTx(encrypted, null, null, cb );
                     })
