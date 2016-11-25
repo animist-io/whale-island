@@ -59,7 +59,7 @@
   "repository": "https://github.com/animist-io/whale-island.git",
   "scripts": {
     "prepublish": "gulp prepublish",
-    "lint": "standard --fix 'test/events.spec.js'",
+    "lint": "standard --fix 'test/handlers.spec.js'",
     "test": "mocha --timeout 5s"
   },
   "private": true,
