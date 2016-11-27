@@ -36,7 +36,7 @@ const web3 = new Web3(provider)
 
 // --------------------------------------- Tests ---------------------------------------------------
 
-describe.only('BLE Request Handlers', () => {
+describe('BLE Request Handlers', () => {
   let keystore
   let address
   let hexAddress
@@ -642,15 +642,20 @@ describe.only('BLE Request Handlers', () => {
       })
     })
 
-    /*it('should response with DECRYPTION_FAILED if input is unencrypted', (done) => {
+    it('should response with DECRYPTION_FAILED if input is unencrypted', (done) => {
       let data = JSON.stringify({pin: signed, tx: goodTx})
       // Test
-      let cb = (val) => expect(val).to.equal(config.codes.DECRYPTION_FAILED)
-      let updateValueCallback = (sent) => done()
+      let cb = (code) => {
+        expect(code).to.equal(config.codes.DECRYPTION_FAILED)
+        setTimeout(() => {
+          expect(bleno.disconnect).to.have.been.called()
+          done()
+        }, 500)
+      }
       // Call
-      defs.sendTxCharacteristic.updateValueCallback = updateValueCallback
+      chai.spy.on(bleno, 'disconnect')
       ble.onSendTx(data, null, null, cb)
-    })*/
+    })
 
     it('should respond with TX_PENDING if caller cant send a tx and disconnect', (done) => {
       let data = JSON.stringify({pin: signed, tx: goodTx})
