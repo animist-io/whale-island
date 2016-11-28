@@ -1,5 +1,5 @@
 # whale-island
-[![Build Status](https://travis-ci.org/animist-io/whale-island.svg?branch=master)](https://travis-ci.org/animist-io/whale-island) **This project is in early development. Under construction.**
+[![Build Status](https://travis-ci.org/animist-io/whale-island.svg?branch=master)](https://travis-ci.org/animist-io/whale-island)[![Coverage Status](https://coveralls.io/repos/github/animist-io/whale-island/badge.svg?branch=master)](https://coveralls.io/github/animist-io/whale-island?branch=master) **This project is in early development. Under construction.**
 
 [![Standard - JavaScript Style Guide](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 

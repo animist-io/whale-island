@@ -2,7 +2,7 @@
 
 # isValidExpirationDate
 
-[lib/events.js:49-62](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/events.js#L49-L62 "Source code on GitHub")
+[lib/events.js:49-62](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/events.js#L49-L62 "Source code on GitHub")
 
 Validates `expires` arg of a message publication event log. Duration must at least 1 sec and
 smaller than the max value of uint32. Returns false if `expires` is before `Date.now()`.
@@ -15,7 +15,7 @@ Returns **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 # isValidMessage
 
-[lib/events.js:70-72](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/events.js#L70-L72 "Source code on GitHub")
+[lib/events.js:70-72](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/events.js#L70-L72 "Source code on GitHub")
 
 Validates message arg of a message publication event log. Message must be non-null and
 less than or equal to `config.MAX_MESSAGE_LENGTH`
@@ -28,7 +28,7 @@ Returns **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 # isValidMessagePublicationEvent
 
-[lib/events.js:79-85](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/events.js#L79-L85 "Source code on GitHub")
+[lib/events.js:79-85](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/events.js#L79-L85 "Source code on GitHub")
 
 Validates message publication event data.
 
@@ -40,7 +40,7 @@ Returns **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 # isValidPresenceVerificationEvent
 
-[lib/events.js:92-97](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/events.js#L92-L97 "Source code on GitHub")
+[lib/events.js:92-97](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/events.js#L92-L97 "Source code on GitHub")
 
 Validates presence verification request event data
 
@@ -52,7 +52,7 @@ Returns **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 # getLastSavedBlock
 
-[lib/events.js:107-111](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/events.js#L107-L111 "Source code on GitHub")
+[lib/events.js:107-111](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/events.js#L107-L111 "Source code on GitHub")
 
 Retrieves last block for which an event was logged. This allows whale-island to synch its
 events db to blockchain if it's been turned off without filtering for every event since
@@ -68,7 +68,7 @@ Returns **[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 # saveBlock
 
-[lib/events.js:119-124](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/events.js#L119-L124 "Source code on GitHub")
+[lib/events.js:119-124](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/events.js#L119-L124 "Source code on GitHub")
 
 Saves blocknumber of most recently logged event. This value serves as a starting point for the
 events logs filters run by the `start. . .EventFilter` methods
@@ -80,7 +80,7 @@ events logs filters run by the `start. . .EventFilter` methods
 
 # addPresenceVerificationRequest
 
-[lib/events.js:130-135](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/events.js#L130-L135 "Source code on GitHub")
+[lib/events.js:130-135](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/events.js#L130-L135 "Source code on GitHub")
 
 Adds a presenceVerification request to the animistEvents db. Does not allow duplicate clients.
 
@@ -90,7 +90,7 @@ Adds a presenceVerification request to the animistEvents db. Does not allow dupl
 
 # generateRandom2ByteInt
 
-[lib/events.js:141-143](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/events.js#L141-L143 "Source code on GitHub")
+[lib/events.js:141-143](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/events.js#L141-L143 "Source code on GitHub")
 
 Generates a random value within the limits of allowed major and minor beacon values
 
@@ -98,7 +98,7 @@ Returns **[Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refer
 
 # generateBeaconSignature
 
-[lib/events.js:155-173](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/events.js#L155-L173 "Source code on GitHub")
+[lib/events.js:155-173](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/events.js#L155-L173 "Source code on GitHub")
 
 Combines requested beacon uuid and randomly generated major and minor
 values into a string with form: `<uuid>:<major>:<minor>`.
@@ -115,7 +115,7 @@ Returns **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refer
 
 # startPresenceVerificationRequestsFilter
 
-[lib/events.js:184-208](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/events.js#L184-L208 "Source code on GitHub")
+[lib/events.js:184-208](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/events.js#L184-L208 "Source code on GitHub")
 
 Starts filtering for presence verfication request events, from proximityEvents DB's
 `lastBlock` to 'latest'. Validates event data, saves it and updates 'lastBlock' value to the
@@ -128,7 +128,7 @@ event's blockNumber.
 
 # startMessagePublicationRequestsFilter
 
-[lib/events.js:218-236](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/events.js#L218-L236 "Source code on GitHub")
+[lib/events.js:218-236](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/events.js#L218-L236 "Source code on GitHub")
 
 Starts filtering for message publication request events. Validates event data and invokes
 `server`'s addPublication method for each event.
@@ -141,7 +141,7 @@ Starts filtering for message publication request events. Validates event data an
 
 # startBeaconBroadcastRequestsFilter
 
-[lib/events.js:246-274](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/events.js#L246-L274 "Source code on GitHub")
+[lib/events.js:246-274](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/events.js#L246-L274 "Source code on GitHub")
 
 Starts filtering for beacon broadcast request events. Validates event data and invokes `server`'s
 `addPublication` method for each event.

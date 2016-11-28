@@ -2,7 +2,7 @@
 
 # onStateChange
 
-[lib/requestableBeacon.js:22-29](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/requestableBeacon.js#L22-L29 "Source code on GitHub")
+[lib/requestableBeacon.js:22-29](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/requestableBeacon.js#L22-L29 "Source code on GitHub")
 
 Sets poweredOn flag (which must be true for a beacon to be added to queue )
 
@@ -12,7 +12,7 @@ Sets poweredOn flag (which must be true for a beacon to be added to queue )
 
 # onAdvertisingError
 
-[lib/requestableBeacon.js:35-38](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/requestableBeacon.js#L35-L38 "Source code on GitHub")
+[lib/requestableBeacon.js:35-38](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/requestableBeacon.js#L35-L38 "Source code on GitHub")
 
 Prints error to terminal, sets advertising flag to false
 
@@ -22,7 +22,7 @@ Prints error to terminal, sets advertising flag to false
 
 # onAdvertisingStart
 
-[lib/requestableBeacon.js:45-49](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/requestableBeacon.js#L45-L49 "Source code on GitHub")
+[lib/requestableBeacon.js:45-49](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/requestableBeacon.js#L45-L49 "Source code on GitHub")
 
 Sets a timeout to stop advertising beacon after `config.beaconBroadcastInterval` ms.
 If there is an error, tries to initiate next queued beacon transmission.
@@ -33,13 +33,13 @@ If there is an error, tries to initiate next queued beacon transmission.
 
 # onAdvertisingStop
 
-[lib/requestableBeacon.js:54-57](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/requestableBeacon.js#L54-L57 "Source code on GitHub")
+[lib/requestableBeacon.js:54-57](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/requestableBeacon.js#L54-L57 "Source code on GitHub")
 
 Initiates next queued beacon transmission.
 
 # addBeacon
 
-[lib/requestableBeacon.js:67-75](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/requestableBeacon.js#L67-L75 "Source code on GitHub")
+[lib/requestableBeacon.js:67-75](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/requestableBeacon.js#L67-L75 "Source code on GitHub")
 
 Adds beacon to queue. If queue was empty, initiates beacon transmission.
 
@@ -51,6 +51,6 @@ Adds beacon to queue. If queue was empty, initiates beacon transmission.
 
 # startAdvertisingNextBeacon
 
-[lib/requestableBeacon.js:80-93](https://github.com/animist-io/whale-island/blob/0576cd0bf65829288361c57cca80f0f6285f93f2/lib/requestableBeacon.js#L80-L93 "Source code on GitHub")
+[lib/requestableBeacon.js:80-93](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/requestableBeacon.js#L80-L93 "Source code on GitHub")
 
 De-queues requested beacon data and starts advertising it

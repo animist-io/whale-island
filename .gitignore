@@ -3,4 +3,5 @@ orig
 node_modules
 coverage
 dist
+.coveralls.yml
 .DS_Store
