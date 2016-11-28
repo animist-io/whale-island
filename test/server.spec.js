@@ -85,8 +85,8 @@ describe('BLE Server', () => {
               doc.list.length.should.equal(1)
               doc.list[0].uuid.should.equal(charB.uuid)
               done()
-            })
-          }, 550)
+            }).catch( (err) =>{console.log(err); done()})
+          }, 1000)
         ))
     })
 
@@ -182,8 +182,8 @@ describe('BLE Server', () => {
           db.get('publications').then(doc => {
             doc.list.length.should.equal(0)
             done()
-          })
-        }, 550)
+          }).catch((err) => {console.log(err); done()})
+        }, 1000)
       )
     })
 

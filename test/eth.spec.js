@@ -429,13 +429,26 @@ describe('Eth Client', function () {
         eth.isAuthorizedToReadMessage(args, unauthorizedClient).should.be.false
       })
 
-      it('should return false if the contractAddress is bad', () => {
+      it('should return false if contractAddress is not a contract address', () => {
         args = {
           node: node,
           uuid: 'abcd',
           message: 'hello',
           expires: 12345,
           contractAddress: node // Not a contract address
+        }
+
+        deployed.setAuthorizedClient(client, { from: node })
+        eth.isAuthorizedToReadMessage(args, client).should.be.false
+      })
+
+      it('should return false if web3 throws', () => {
+        args = {
+          node: node,
+          uuid: 'abcd',
+          message: 'hello',
+          expires: 12345,
+          contractAddress: '0x12345' // Malformed
         }
 
         deployed.setAuthorizedClient(client, { from: node })
@@ -462,6 +475,19 @@ describe('Eth Client', function () {
         let returnVal = eth.confirmMessageDelivery(args, client)
         deployed.getMessageDelivered().should.be.true
         returnVal.should.be.true
+      })
+
+      it('should return false if web3 throws', () => {
+        let args = {
+            node: node,
+            uuid: 'abcd',
+            message: 'hello',
+            expires: 12345,
+            contractAddress: '0x12345'
+        }
+        deployed.setAuthorizedClient(client, { from: node })
+        deployed.setMessageDelivered(false, { from: node })
+        eth.confirmMessageDelivery(args, client).should.be.false
       })
     })
   })
