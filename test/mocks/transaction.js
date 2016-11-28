@@ -48,6 +48,7 @@ const generate = module.exports.generate = function(){
         let code = web3.eth.getCode(deployed.address); 
         let abi = deployed.abi;
         let privKey = util.stripHexPrefix(keys[0]);
+        let privKeyNonClient = util.stripHexPrefix(keys[3]);
         let brokeKey = util.stripHexPrefix(keys[0]);
         
         let goodTxOptions = { gasPrice: 1, gasLimit: 3000000, data: util.stripHexPrefix(code)};
@@ -67,23 +68,27 @@ const generate = module.exports.generate = function(){
         callTxSet = util.stripHexPrefix(callTxSet);
         
         let goodTx = new Transaction(new Buffer(goodTxSet, 'hex'));
+        let goodTxNonClient = new Transaction(new Buffer(goodTxSet, 'hex'));
         let badTx = new Transaction(new Buffer(badTxSet, 'hex'));
         let brokeTx = new Transaction(new Buffer(goodTxSet, 'hex'));
         let callTx = new Transaction(new Buffer(callTxSet, 'hex'));
 
         goodTx.sign(new Buffer(privKey, 'hex'));
-        badTx.sign(new Buffer(privKey, 'hex'));
+        goodTxNonClient.sign(new Buffer(privKeyNonClient, 'hex'));
+        badTx.sign(new Buffer(privKey, 'hex')); 
         brokeTx.sign(new Buffer(brokeKey, 'hex'));
         //callTx.sign(new Buffer(privKey, 'hex'));
         callTx = callTx.toJSON();
         
         goodTx = goodTx.serialize().toString('hex');
+        goodTxNonClient = goodTxNonClient.serialize().toString('hex');
         badTx = badTx.serialize().toString('hex');
         brokeTx = brokeTx.serialize().toString('hex');
         
         return { 
             deployed: deployed, 
             goodTx: goodTx, 
+            goodTxNonClient: goodTxNonClient,
             badTx: badTx, 
             brokeTx: brokeTx, 
             abi: abi, 

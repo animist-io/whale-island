@@ -36,12 +36,13 @@ const web3 = new Web3(provider)
 
 // --------------------------------------- Tests ---------------------------------------------------
 
-describe('BLE Request Handlers', () => {
+describe.only('BLE Request Handlers', () => {
   let keystore
   let address
   let hexAddress
   let deployed
   let goodTx
+  let goodTxNonClient
   let badTx
   let callGetVerified
   let client = web3.eth.accounts[0]
@@ -66,6 +67,7 @@ describe('BLE Request Handlers', () => {
     return transactions.generate().then(mock => {
       deployed = mock.deployed                // TestContract.sol deployed to test-rpc
       goodTx = mock.goodTx                    // raw: TestContract.set(2, {from: client})
+      goodTxNonClient = mock.goodTxNonClient  // raw: goodTx signed by web3.accounts[3]
       badTx = mock.badTx                      // raw: goodTx but sent with 0 gas.
       callGetVerified = mock.callGetVerified  // array vals: call getVerified
     })
@@ -453,24 +455,24 @@ describe('BLE Request Handlers', () => {
       })
     })
 
-    it('should send "null" if unable to find tx', (done) => {
-      let expected = new Buffer(JSON.stringify(null)) // Expecting 'null'
-      let nonClient = web3.eth.accounts[3]            // Mock good pin sign, non-existent client.
+    it('should respond w/ NO_TX_DB_ERR if unable to find client contract', (done) => {
+      let nonClient = web3.eth.accounts[3]    // Mock good pin sign, non-existent client.
       let pin = util.getPinSafe(true)
       let msgHash = web3.sha3(pin)
       let signed = web3.eth.sign(nonClient, msgHash)
-
       // Test
-      let updateValueCallback = (val) => {
-        expect(JSON.parse(val)).to.be.a('null')
-        expect(bufferEqual(val, expected)).to.be.true
-        done()
+      let cb = (code) => {
+        expect(code).to.equal(config.codes.NO_TX_DB_ERR)
+        setTimeout(() => {
+          expect(bleno.disconnect).to.have.been.called()
+          done()
+        }, 500)
       }
       // Call
+      chai.spy.on(bleno, 'disconnect')
       input = JSON.stringify(signed)
-      defs.verifyPresenceCharacteristic.updateValueCallback = updateValueCallback
       util.encrypt(input).then(encrypted => {
-        ble.onVerifyPresence(encrypted, null, null, nullFn)
+        ble.onVerifyPresence(encrypted, null, null, cb)
       })
     })
   })
@@ -563,6 +565,28 @@ describe('BLE Request Handlers', () => {
       // Test
       let cb = (val) => {
         expect(val).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST)
+        setTimeout(() => {
+          expect(bleno.disconnect).to.have.been.called()
+          done()
+        }, 500)
+      }
+      // Call
+      chai.spy.on(bleno, 'disconnect')
+      util.encrypt(data).then(encrypted => {
+        ble.onVerifyPresenceAndSendTx(encrypted, null, null, cb)
+      })
+    })
+
+    it('should respond w/ NO_TX_DB_ERR if unable to find client contract', (done) => {
+      let nonClient = web3.eth.accounts[3]      // Mock good pin sign, non-existent client.
+      let pin = util.getPinSafe(true)
+      let msgHash = web3.sha3(pin)
+      let signed = web3.eth.sign(nonClient, msgHash)
+      let data = JSON.stringify({pin: signed, tx: goodTxNonClient}) 
+      
+      // Test
+      let cb = (code) => {
+        expect(code).to.equal(config.codes.NO_TX_DB_ERR)
         setTimeout(() => {
           expect(bleno.disconnect).to.have.been.called()
           done()
@@ -683,6 +707,40 @@ describe('BLE Request Handlers', () => {
             ble.onSendTx(encrypted, null, null, cb)
           })
         })
+      })
+    })
+
+    it('should respond w/ correct error if sent pin is bad and disconnect', (done) => {
+      let data = JSON.stringify({pin: 'dd5[w,r,0,,n,g', tx: badTx})
+      // Test
+      let cb = (val) => {
+        expect(val).to.equal(config.codes.NO_SIGNED_MSG_IN_REQUEST)
+        setTimeout(() => {
+          expect(bleno.disconnect).to.have.been.called()
+          done()
+        }, 500)
+      }
+      // Call
+      chai.spy.on(bleno, 'disconnect')
+      util.encrypt(data).then(encrypted => {
+        ble.onSendTx(encrypted, null, null, cb)
+      })
+    })
+
+    it('should respond w/ correct error if sent tx is bad and disconnect', (done) => {
+      let data = JSON.stringify({pin: signed, tx: badTx})
+      // Test
+      let cb = (val) => {
+        expect(val).to.equal(config.codes.INSUFFICIENT_GAS)
+        setTimeout(() => {
+          expect(bleno.disconnect).to.have.been.called()
+          done()
+        }, 500)
+      }
+      // Call
+      chai.spy.on(bleno, 'disconnect')
+      util.encrypt(data).then(encrypted => {
+        ble.onSendTx(encrypted, null, null, cb)
       })
     })
   })
