@@ -40,6 +40,7 @@
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
     "chai-spies": "^0.7.1",
+    "coveralls": "^2.11.15",
     "del": "^2.0.2",
     "ethereumjs-util": "^5.0.1",
     "gulp": "^3.9.0",
@@ -54,10 +55,13 @@
     "gulp-plumber": "^1.0.0",
     "isparta": "^4.0.0",
     "minimatch": "^3.0.2",
+    "mocha-lcov-reporter": "^1.2.0",
     "standard": "^8.5.0"
   },
   "repository": "https://github.com/animist-io/whale-island.git",
   "scripts": {
+    "coverage": "istanbul cover _mocha -- --timeout 5s",
+    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "prepublish": "gulp prepublish",
     "standard": "standard --fix 'test/*.js' 'lib/*.js'",
     "test": "mocha --timeout 5s"
