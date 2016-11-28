@@ -76,7 +76,7 @@ describe('BLE Request Handlers', () => {
   // --------------------------------- onGetPin ----------------------------------------------------
   describe('onGetPin', () => {
     it('should respond w/ a newly generated pin', (done) => {
-      let oldPin = new Buffer(util.getPinSafe(true))
+      let oldPin = new Buffer(util.getPin(true))
       let cb = (code, pin) => {
         let newPin = new Buffer(util.getPin())
         expect(code).to.equal(config.codes.RESULT_SUCCESS)
@@ -271,7 +271,7 @@ describe('BLE Request Handlers', () => {
 
     beforeEach(() => {
       // Mock client signed pin (web3 style),
-      let pin = util.getPinSafe(true)
+      let pin = util.getPin(true)
       let msgHash = web3.sha3(pin)
       signedPin = web3.eth.sign(client, msgHash)
     })
@@ -380,7 +380,7 @@ describe('BLE Request Handlers', () => {
 
     // Mock client signed pin (web3 style) & load contract record into contractsDB.
     beforeEach((done) => {
-      let pin = util.getPinSafe(true)
+      let pin = util.getPin(true)
       let msgHash = web3.sha3(pin)
       let signed = web3.eth.sign(client, msgHash)
       let record = { _id: client, authority: client, contractAddress: deployed.address }
@@ -457,7 +457,7 @@ describe('BLE Request Handlers', () => {
 
     it('should respond w/ NO_TX_DB_ERR if unable to find client contract', (done) => {
       let nonClient = web3.eth.accounts[3]    // Mock good pin sign, non-existent client.
-      let pin = util.getPinSafe(true)
+      let pin = util.getPin(true)
       let msgHash = web3.sha3(pin)
       let signed = web3.eth.sign(nonClient, msgHash)
       // Test
@@ -484,7 +484,7 @@ describe('BLE Request Handlers', () => {
 
     beforeEach(() => {
       // Mock client signed pin (web3 style),
-      let pin = util.getPinSafe(true)
+      let pin = util.getPin(true)
       let msgHash = web3.sha3(pin)
       let record = { _id: client, authority: client, contractAddress: deployed.address }
 
@@ -579,7 +579,7 @@ describe('BLE Request Handlers', () => {
 
     it('should respond w/ NO_TX_DB_ERR if unable to find client contract', (done) => {
       let nonClient = web3.eth.accounts[3]      // Mock good pin sign, non-existent client.
-      let pin = util.getPinSafe(true)
+      let pin = util.getPin(true)
       let msgHash = web3.sha3(pin)
       let signed = web3.eth.sign(nonClient, msgHash)
       let data = JSON.stringify({pin: signed, tx: goodTxNonClient}) 
@@ -624,7 +624,7 @@ describe('BLE Request Handlers', () => {
 
     beforeEach(() => {
       // Mock client signed pin (web3 style) / Prime db w/ mock record
-      let pin = util.getPinSafe(true)
+      let pin = util.getPin(true)
       let msgHash = web3.sha3(pin)
       let record = { _id: client, authority: client, contractAddress: deployed.address }
       signed = web3.eth.sign(client, msgHash)
@@ -758,7 +758,7 @@ describe('BLE Request Handlers', () => {
     })
     // Mock client signed pin (web3 style) & initialize db.
     beforeEach(() => {
-      let pin = util.getPinSafe(true)
+      let pin = util.getPin(true)
       let msgHash = web3.sha3(pin)
       signed = web3.eth.sign(client, msgHash)
       input = JSON.stringify(signed)
@@ -902,7 +902,7 @@ describe('BLE Request Handlers', () => {
 
     // Mocks
     before(() => {
-      req = wallet.signing.signMsg(keystore, account.key, util.getPinSafe(true), address)
+      req = wallet.signing.signMsg(keystore, account.key, util.getPin(true), address)
       req = JSON.stringify(req)
       mockContract = { _id: hexAddress, contractAddress: deployed.address }
     })
@@ -981,7 +981,7 @@ describe('BLE Request Handlers', () => {
     let mockContract
 
     before(() => {
-      req = wallet.signing.signMsg(keystore, account.key, util.getPinSafe(true), address)
+      req = wallet.signing.signMsg(keystore, account.key, util.getPin(true), address)
       req = JSON.stringify(req)
       mockContract = { _id: hexAddress, contractAddress: deployed.address }
     })
@@ -1128,7 +1128,7 @@ describe('BLE Request Handlers', () => {
 
     beforeEach(() => {
       // Mocks
-      let pin = util.getPinSafe(true)
+      let pin = util.getPin(true)
       let msgHash = web3.sha3(pin)
       let signed = web3.eth.sign(client, msgHash)
       data = JSON.stringify(signed)
