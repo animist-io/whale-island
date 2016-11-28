@@ -270,7 +270,7 @@ describe('BLE Request Handlers', () => {
     beforeEach(() => {
       // Mock client signed pin (web3 style),
       let pin = util.getPinSafe(true)
-      let msgHash = ethJsUtil.addHexPrefix(ethJsUtil.sha3(pin).toString('hex'))
+      let msgHash = web3.sha3(pin)
       signedPin = web3.eth.sign(client, msgHash)
     })
 
@@ -288,11 +288,11 @@ describe('BLE Request Handlers', () => {
       // Test
       let updateValueCallback = (_val) => {
         let val = JSON.parse(_val)
-        let unsignedTime = eth.recover(val.time, val.signedTime)
-        let unsignedAddress = eth.recover(client, val.signedAddress)
+        let recoveredFromTime = eth.recover(val.time, val.signedTime)
+        let recoveredFromAddress = eth.recover(client, val.signedAddress)
         expect(Buffer.isBuffer(_val)).to.be.true
-        expect(unsignedTime).to.equal(config.animistAccount)
-        expect(unsignedAddress).to.equal(config.animistAccount)
+        expect(recoveredFromTime).to.equal(config.animistAccount)
+        expect(recoveredFromAddress).to.equal(config.animistAccount)
         setTimeout(() => {
           expect(bleno.disconnect).to.have.been.called()
           done()
@@ -379,7 +379,7 @@ describe('BLE Request Handlers', () => {
     // Mock client signed pin (web3 style) & load contract record into contractsDB.
     beforeEach((done) => {
       let pin = util.getPinSafe(true)
-      let msgHash = ethJsUtil.addHexPrefix(ethJsUtil.sha3(pin).toString('hex'))
+      let msgHash = web3.sha3(pin)
       let signed = web3.eth.sign(client, msgHash)
       let record = { _id: client, authority: client, contractAddress: deployed.address }
 
@@ -457,7 +457,7 @@ describe('BLE Request Handlers', () => {
       let expected = new Buffer(JSON.stringify(null)) // Expecting 'null'
       let nonClient = web3.eth.accounts[3]            // Mock good pin sign, non-existent client.
       let pin = util.getPinSafe(true)
-      let msgHash = ethJsUtil.addHexPrefix(ethJsUtil.sha3(pin).toString('hex'))
+      let msgHash = web3.sha3(pin)
       let signed = web3.eth.sign(nonClient, msgHash)
 
       // Test
@@ -483,7 +483,7 @@ describe('BLE Request Handlers', () => {
     beforeEach(() => {
       // Mock client signed pin (web3 style),
       let pin = util.getPinSafe(true)
-      let msgHash = ethJsUtil.addHexPrefix(ethJsUtil.sha3(pin).toString('hex'))
+      let msgHash = web3.sha3(pin)
       let record = { _id: client, authority: client, contractAddress: deployed.address }
 
       signed = web3.eth.sign(client, msgHash)
@@ -601,7 +601,7 @@ describe('BLE Request Handlers', () => {
     beforeEach(() => {
       // Mock client signed pin (web3 style) / Prime db w/ mock record
       let pin = util.getPinSafe(true)
-      let msgHash = ethJsUtil.addHexPrefix(ethJsUtil.sha3(pin).toString('hex'))
+      let msgHash = web3.sha3(pin)
       let record = { _id: client, authority: client, contractAddress: deployed.address }
       signed = web3.eth.sign(client, msgHash)
       ethDb = new Pouchdb('animistEvents')
@@ -701,7 +701,7 @@ describe('BLE Request Handlers', () => {
     // Mock client signed pin (web3 style) & initialize db.
     beforeEach(() => {
       let pin = util.getPinSafe(true)
-      let msgHash = ethJsUtil.addHexPrefix(ethJsUtil.sha3(pin).toString('hex'))
+      let msgHash = web3.sha3(pin)
       signed = web3.eth.sign(client, msgHash)
       input = JSON.stringify(signed)
       ethDb = new Pouchdb('animistEvents')
@@ -1071,7 +1071,7 @@ describe('BLE Request Handlers', () => {
     beforeEach(() => {
       // Mocks
       let pin = util.getPinSafe(true)
-      let msgHash = ethJsUtil.addHexPrefix(ethJsUtil.sha3(pin).toString('hex'))
+      let msgHash = web3.sha3(pin)
       let signed = web3.eth.sign(client, msgHash)
       data = JSON.stringify(signed)
       args = {message: 'hello'}

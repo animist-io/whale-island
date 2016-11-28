@@ -231,7 +231,7 @@ describe('Eth Client', function () {
       // Sign a pin using web3 signing methods.
       before(() => {
         pin = '1234'
-        msgHash = util.addHexPrefix(util.sha3(pin).toString('hex'))
+        msgHash = web3.sha3(pin)
         signed = web3.eth.sign(client, msgHash)
       })
 
@@ -282,7 +282,7 @@ describe('Eth Client', function () {
       beforeEach(() => {
         // Sign a pin using web3 signing methods.
         pin = '1234'
-        msgHash = util.addHexPrefix(util.sha3(pin).toString('hex'))
+        msgHash = web3.sha3(pin)
         signed = web3.eth.sign(client, msgHash)
 
         // verifyPresence, get verifyPresenceTxHash.
