@@ -1,7 +1,7 @@
 {
   "name": "whale-island",
   "version": "0.0.0",
-  "description": "Bluetooth and Ethereum Web3 server for Animist IOT node",
+  "description": "Bluetooth and Ethereum Web3 server for Animist IoT node",
   "homepage": "https://github.com/animist-io/whale-island",
   "author": {
     "name": "cgewecke",
@@ -59,13 +59,12 @@
   "repository": "https://github.com/animist-io/whale-island.git",
   "scripts": {
     "prepublish": "gulp prepublish",
-    "lint": "standard --fix 'test/handlers.spec.js'",
+    "standard": "standard --fix 'test/*.js' 'lib/*.js'",
     "test": "mocha --timeout 5s"
   },
   "private": true,
   "dependencies": {
     "bleno": "^0.4.0",
-    "bluebird": "^3.4.1",
     "cli-color": "^1.1.0",
     "eth-lightwallet": "^2.4.3",
     "eth-new-contract": "^0.2.2",
