@@ -17,27 +17,27 @@ require('babel-core/register');
 
 gulp.task('documentation', function () {
   gulp.src('./lib/eth.js')
-    .pipe(documentation({ shallow: 'true', github: 'true', format: 'md', filename: 'eth.md' }))
+    .pipe(documentation( 'md', { shallow: 'true', github: 'true', filename: 'eth.md' }))
     .pipe(gulp.dest('docs'));
 
   gulp.src('./lib/handlers.js')
-    .pipe(documentation({ shallow: 'true', github: 'true', format: 'md', filename: 'handlers.md' }))
+    .pipe(documentation('md', { shallow: 'true', github: 'true', filename: 'handlers.md' }))
     .pipe(gulp.dest('docs'));
 
   gulp.src('./lib/util.js')
-    .pipe(documentation({ shallow: 'true', github: 'true', format: 'md', filename: 'util.md' }))
+    .pipe(documentation('md', { shallow: 'true', github: 'true', filename: 'util.md' }))
     .pipe(gulp.dest('docs'));
 
   gulp.src('./lib/events.js')
-    .pipe(documentation({ shallow: 'true', github: 'true', format: 'md', filename: 'events.md' }))
+    .pipe(documentation('md', { shallow: 'true', github: 'true', filename: 'events.md' }))
     .pipe(gulp.dest('docs'));
 
   gulp.src('./lib/server.js')
-    .pipe(documentation({ shallow: 'true', github: 'true', format: 'md', filename: 'server.md' }))
+    .pipe(documentation('md', { shallow: 'true', github: 'true', filename: 'server.md' }))
     .pipe(gulp.dest('docs'));
 
   gulp.src('./lib/requestableBeacon.js')
-    .pipe(documentation({ shallow: 'true', github: 'true', format: 'md', filename: 'requestableBeacon.md' }))
+    .pipe(documentation('md', { shallow: 'true', github: 'true', filename: 'requestableBeacon.md' }))
     .pipe(gulp.dest('docs'));
 
   gulp.src([
