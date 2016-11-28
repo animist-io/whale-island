@@ -266,7 +266,7 @@ describe('BLE Request Handlers', () => {
   })
 
   // ------------------------------ onGetPresenceReceipt -------------------------------------------
-  describe('onGetPresenceReceipt', () => {
+  describe.only('onGetPresenceReceipt', () => {
     let signedPin
 
     beforeEach(() => {
