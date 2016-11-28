@@ -36,7 +36,7 @@ const web3 = new Web3(provider)
 
 // --------------------------------------- Tests ---------------------------------------------------
 
-describe.only('BLE Request Handlers', () => {
+describe('BLE Request Handlers', () => {
   let keystore
   let address
   let hexAddress
