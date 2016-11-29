@@ -122,7 +122,7 @@ describe('BLE Utilites', () => {
       }, 15)
 
       let pin = util.getPin(true) // Get initial pin w/ generate flag set to true
-      util.getPin()                // Emulate a method requesting the current pin
+      util.getPin()               // Emulate a method requesting the current pin
     })
   })
 
@@ -205,6 +205,13 @@ describe('BLE Utilites', () => {
       expect(output.ok).to.equal(false)
       expect(output.val).to.equal(config.codes.INVALID_JSON_IN_REQUEST)
     })
+
+    it('should return error if input parses as non-string', ()=>{
+      let req = JSON.stringify(0x4dea71bde50f23d347d6b21e18c50f02221c50ad)
+      let output = util.parseSignedPin(req)
+      expect(output.ok).to.equal(false)
+      expect(output.val).to.equal(config.codes.INVALID_JSON_IN_REQUEST)
+    })
   })
 
   // ------------------------------------ parseSignedTx --------------------------------------------
@@ -226,7 +233,14 @@ describe('BLE Utilites', () => {
       expect(output.val).to.equal(config.codes.INVALID_TX_SENDER_ADDRESS)
     })
 
-    it('should error w/ INVALID_JSON_IN_REQUEST if data is not parse-able as object', () => {
+    it('should error w/INVALID_JSON_IN_REQUEST if input not parseable as JSON', () => {
+      let data = 'dd5[w,r,0,,n,g'
+      let output = util.parseSignedTx(data, client)
+      expect(output.ok).to.equal(false)
+      expect(output.val).to.equal(config.codes.INVALID_JSON_IN_REQUEST)
+    })
+
+    it('should error w/ INVALID_JSON_IN_REQUEST if data is not parseable as object', () => {
       let data = JSON.stringify('not an object')
       let output = util.parseSignedTx(data, client)
       expect(output.ok).to.be.false
@@ -281,6 +295,13 @@ describe('BLE Utilites', () => {
       expect(output.val).to.equal(hash)
     })
 
+    it('should error w/INVALID_JSON_IN_REQUEST if input not parseable as JSON', () => {
+      let input = 'dd5[w,r,0,,n,g'
+      let output = util.parseTxHash(input)
+      expect(output.ok).to.equal(false)
+      expect(output.val).to.equal(config.codes.INVALID_JSON_IN_REQUEST)
+    })
+
     it('should error w/ INVALID_TX_HASH if input is not a string', () => {
       let hash = '{ hello: "I am not a string" }'
       let input = JSON.stringify(hash)
@@ -316,7 +337,14 @@ describe('BLE Utilites', () => {
       expect(output).to.deep.equal(expected)
     })
 
-    it('should return err if account address malformed', () => {
+    it('should error w/INVALID_JSON_IN_REQUEST if input not parseable as JSON', () => {
+      let input = 'dd5[w,r,0,,n,g'
+      let output = util.parseAddress(input)
+      expect(output.ok).to.equal(false)
+      expect(output.val).to.equal(config.codes.INVALID_JSON_IN_REQUEST)
+    })
+
+    it('should error w/NO_TX_ADDR_ERR if account address malformed', () => {
       let address = '4dea71bde50f23d347d6b21e18c50f02221c50ad'
       let input = JSON.stringify(address)
       let expected = {ok: false, val: config.codes.NO_TX_ADDR_ERR}
