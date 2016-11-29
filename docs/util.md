@@ -2,11 +2,11 @@
 
 # queueActive
 
-[lib/util.js:30-30](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L30-L30 "Source code on GitHub")
+[lib/util.js:31-31](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L31-L31 "Source code on GitHub")
 
 # decrypt
 
-[lib/util.js:48-55](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L48-L55 "Source code on GitHub")
+[lib/util.js:49-56](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L49-L56 "Source code on GitHub")
 
 Decrypts a PGP encrypted message
 
@@ -18,7 +18,7 @@ Returns **[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 # encrypt
 
-[lib/util.js:63-73](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L63-L73 "Source code on GitHub")
+[lib/util.js:64-70](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L64-L70 "Source code on GitHub")
 
 Encrypts a plaintext message with whale-island's public key. (for unit tests)
 
@@ -31,7 +31,7 @@ Returns **[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 # getPin
 
-[lib/util.js:88-99](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L88-L99 "Source code on GitHub")
+[lib/util.js:85-96](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L85-L96 "Source code on GitHub")
 
 Gets pin. Blockchain writes and presence verifications require the mobile client to
 sign this value w/the account they're executing txs with. Pin is generated anew for
@@ -49,13 +49,13 @@ Returns **[String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refer
 
 # resetPin
 
-[lib/util.js:105-108](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L105-L108 "Source code on GitHub")
+[lib/util.js:102-105](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L102-L105 "Source code on GitHub")
 
 Generates a new pin. Keeps track of old pin until next reset.
 
 # deQueue
 
-[lib/util.js:118-118](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L118-L118 "Source code on GitHub")
+[lib/util.js:115-115](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L115-L115 "Source code on GitHub")
 
 DeQueues a packet from the send queue. Used when transmitting
 messages like contract code which exceed the maximum msg length for BLE for
@@ -65,7 +65,7 @@ Returns **[Buffer](https://nodejs.org/api/buffer.html)** packet: Part of a queue
 
 # isQueueActive
 
-[lib/util.js:123-123](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L123-L123 "Source code on GitHub")
+[lib/util.js:120-120](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L120-L120 "Source code on GitHub")
 
 Gets queue state
 
@@ -73,7 +73,7 @@ Returns **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 # queueLength
 
-[lib/util.js:129-129](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L129-L129 "Source code on GitHub")
+[lib/util.js:126-126](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L126-L126 "Source code on GitHub")
 
 Gets number of packets remaining to send.
 
@@ -81,19 +81,19 @@ Returns **[Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refer
 
 # activateQueue
 
-[lib/util.js:134-134](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L134-L134 "Source code on GitHub")
+[lib/util.js:131-131](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L131-L131 "Source code on GitHub")
 
 Sets flag to begin multi-packet message send
 
 # deactivateQueue
 
-[lib/util.js:139-139](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L139-L139 "Source code on GitHub")
+[lib/util.js:136-136](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L136-L136 "Source code on GitHub")
 
 Unsets multi-packet message send flag
 
 # queueContract
 
-[lib/util.js:147-165](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L147-L165 "Source code on GitHub")
+[lib/util.js:144-162](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L144-L162 "Source code on GitHub")
 
 Converts a tx object into an array of buffers whose largest size is MAX_SEND
 
@@ -106,7 +106,7 @@ Converts a tx object into an array of buffers whose largest size is MAX_SEND
 
 # extractPinFromJSON
 
-[lib/util.js:175-194](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L175-L194 "Source code on GitHub")
+[lib/util.js:172-193](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L172-L193 "Source code on GitHub")
 
 Retrieves pin from incoming data as string or eth-lightwallet object.
 
@@ -118,7 +118,7 @@ Returns **([String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 # parseSignedPin
 
-[lib/util.js:202-223](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L202-L223 "Source code on GitHub")
+[lib/util.js:201-222](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L201-L222 "Source code on GitHub")
 
 Validates format of signedPin
 
@@ -130,7 +130,7 @@ Returns **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refer
 
 # parseSignedTx
 
-[lib/util.js:233-257](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L233-L257 "Source code on GitHub")
+[lib/util.js:232-256](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L232-L256 "Source code on GitHub")
 
 Checks that signed tx object is valid - i.e. that it was signed by the same sender
 that signed the pin, that the signature verifies and tx's gas limit is sufficient.
@@ -144,7 +144,7 @@ Returns **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refer
 
 # parseTxHash
 
-[lib/util.js:264-273](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L264-L273 "Source code on GitHub")
+[lib/util.js:263-272](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L263-L272 "Source code on GitHub")
 
 Verifies that JSON input has minimum formal properties of tx hash and returns hash as string.
 
@@ -156,7 +156,7 @@ Returns **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refer
 
 # parseCall
 
-[lib/util.js:282-293](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L282-L293 "Source code on GitHub")
+[lib/util.js:281-291](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L281-L291 "Source code on GitHub")
 
 Parses call data string into object that can be given as param to web3.eth.call
 
@@ -170,7 +170,7 @@ Returns **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refer
 
 # parseAddress
 
-[lib/util.js:302-312](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L302-L312 "Source code on GitHub")
+[lib/util.js:300-310](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L300-L310 "Source code on GitHub")
 
 Parses call data string into object that can be given as param to web3.eth.call
 
@@ -184,7 +184,7 @@ Returns **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refer
 
 # canSendTx
 
-[lib/util.js:321-331](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L321-L331 "Source code on GitHub")
+[lib/util.js:319-329](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/util.js#L319-L329 "Source code on GitHub")
 
 Checks that client does NOT have a pending presenceVerification request.
 
@@ -196,14 +196,3 @@ Checks that client does NOT have a pending presenceVerification request.
 Returns **[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Resolves
 
 Returns **[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Rejects w/  `{ok: false, val: <hex error code> }`
-
-# getPinSafe
-
-[lib/util.js:345-363](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/util.js#L345-L363 "Source code on GitHub")
-
-getPin that returns a fixed value - pending resolution of testrpc bug documented at
-`https://github.com/ethereumjs/testrpc/issues/190` (For unit testing).
-
-**Parameters**
-
--   `generateNew`  

@@ -2,7 +2,7 @@
 
 # isUniqueUUID
 
-[lib/server.js:72-75](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/server.js#L72-L75 "Source code on GitHub")
+[lib/server.js:72-75](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/server.js#L72-L75 "Source code on GitHub")
 
 Verifies that this uuid is NOT already being published.
 
@@ -15,7 +15,7 @@ Returns **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 # prepPublicationsOnLaunch
 
-[lib/server.js:83-93](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/server.js#L83-L93 "Source code on GitHub")
+[lib/server.js:83-93](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/server.js#L83-L93 "Source code on GitHub")
 
 Goes through publications in the animistEvents db on startup to remove any that have expired while
 node was down. Sets new timeouts to remove publications as they expire while
@@ -25,7 +25,7 @@ Returns **[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 # addPublication
 
-[lib/server.js:102-124](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/server.js#L102-L124 "Source code on GitHub")
+[lib/server.js:102-124](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/server.js#L102-L124 "Source code on GitHub")
 
 Updates servers characteristics to include an endpoint which checks client authorization
 to read message, responds with `message`, writes confirmation of the transmission to client contract
@@ -39,7 +39,7 @@ Returns **[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 # scheduleRemoval
 
-[lib/server.js:131-142](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/server.js#L131-L142 "Source code on GitHub")
+[lib/server.js:131-142](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/server.js#L131-L142 "Source code on GitHub")
 
 Removes an expired publication and updates the current broadcast
 
@@ -50,6 +50,6 @@ Removes an expired publication and updates the current broadcast
 
 # updateBroadcast
 
-[lib/server.js:147-173](https://github.com/animist-io/whale-island/blob/be435563d87277baa7d9fdf4245832be236625a3/lib/server.js#L147-L173 "Source code on GitHub")
+[lib/server.js:147-173](https://github.com/animist-io/whale-island/blob/49deb5b57c83e787ef1f2e54d9ad6f7506d77ff0/lib/server.js#L147-L173 "Source code on GitHub")
 
 Resets service to include a new publication

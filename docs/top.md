@@ -1,7 +1,9 @@
 # whale-island
-[![Build Status](https://travis-ci.org/animist-io/whale-island.svg?branch=master)](https://travis-ci.org/animist-io/whale-island)[![Coverage Status](https://coveralls.io/repos/github/animist-io/whale-island/badge.svg?branch=master)](https://coveralls.io/github/animist-io/whale-island?branch=master) **This project is in early development. Under construction.**
+[![Build Status](https://travis-ci.org/animist-io/whale-island.svg?branch=master)](https://travis-ci.org/animist-io/whale-island)  [![Coverage Status](https://coveralls.io/repos/github/animist-io/whale-island/badge.svg?branch=master)](https://coveralls.io/github/animist-io/whale-island?branch=master)  [![Dependencies Status](https://david-dm.org/animist-io/whale-island.svg)](https://david-dm.org/animist-io/whale-island.svg)
 
 [![Standard - JavaScript Style Guide](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
+
+:construction: **This project is in early development. Under construction.** :construction:
 
 ## Overview
 Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that connects to mobile devices via BLE server. Its API targets smart-contract logic about the physical location of mobile Dapp users but it also has Bluetooth endpoints to process transactions and provides general access to some web3 methods. Use cases for whale-island's services include:
