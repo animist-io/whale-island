@@ -284,7 +284,7 @@ Every animist node broadcasts a platform specific beacon uuid and provides acces
 
 
 
-### Hex Response Codes
+### [Hex Response Codes](#hex-response-codes)
 
 Server endpoints respond immediately with a hex code indicating whether or not the request is valid. For subscription requests, data (if available) follows after a min. 50ms delay. 
 
