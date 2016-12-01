@@ -47,6 +47,7 @@
     "gulp-babel": "^6.1.2",
     "gulp-concat": "^2.6.0",
     "gulp-documentation": "^3.0.0",
+    "gulp-documentation-bleno": "git+https://github.com/cgewecke/gulp-documentation-bleno.git",
     "gulp-exclude-gitignore": "^1.0.0",
     "gulp-istanbul": "^1.1.1",
     "gulp-line-ending-corrector": "^1.0.1",

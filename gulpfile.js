@@ -7,6 +7,7 @@ var nsp = require('gulp-nsp');
 var plumber = require('gulp-plumber');
 var babel = require('gulp-babel');
 var documentation = require('gulp-documentation');
+var docsBleno = require('gulp-documentation-bleno');
 var concat = require('gulp-concat');
 var del = require('del');
 var isparta = require('isparta');
@@ -21,7 +22,7 @@ gulp.task('documentation', function () {
     .pipe(gulp.dest('docs'));
 
   gulp.src('./lib/handlers.js')
-    .pipe(documentation('md', { shallow: 'true', github: 'true', filename: 'handlers.md' }))
+    .pipe(docsBleno('md', { shallow: 'true', github: 'true', filename: 'handlers.md' }))
     .pipe(gulp.dest('docs'));
 
   gulp.src('./lib/util.js')
