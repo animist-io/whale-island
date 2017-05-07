@@ -55,7 +55,7 @@
     "gulp-nsp": "^2.1.0",
     "gulp-plumber": "^1.0.0",
     "isparta": "^4.0.0",
-    "minimatch": "^3.0.2",
+    "minimatch": "^3.0.4",
     "mocha-lcov-reporter": "^1.2.0",
     "standard": "^8.5.0"
   },
