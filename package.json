@@ -41,7 +41,7 @@
     "chai-as-promised": "^6.0.0",
     "chai-spies": "^0.7.1",
     "coveralls": "^2.11.15",
-    "del": "^2.0.2",
+    "del": "^3.0.0",
     "ethereumjs-util": "^5.0.1",
     "gulp": "^3.9.0",
     "gulp-babel": "^6.1.2",
