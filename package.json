@@ -72,7 +72,7 @@
     "bleno": "^0.4.0",
     "cli-color": "^1.1.0",
     "eth-lightwallet": "^2.4.3",
-    "eth-new-contract": "^0.2.2",
+    "eth-new-contract": "^0.3.0",
     "ethereumjs-util": "^5.0.1",
     "lodash": "^4.16.4",
     "minimatch": "^3.0.2",
