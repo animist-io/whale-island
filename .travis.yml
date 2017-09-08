@@ -11,7 +11,6 @@ addons:
     - g++-4.8
 script: mocha --timeout 60s
 before_script:
-  - npm install -g ethereumjs-testrpc
   - npm install
   - ./rpc.sh > /dev/null & 
   - sleep 3
