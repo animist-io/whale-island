@@ -63,7 +63,6 @@
   "scripts": {
     "coverage": "istanbul cover _mocha -- --timeout 5s",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
-    "prepublish": "gulp prepublish",
     "standard": "standard --fix 'test/*.js' 'lib/*.js'",
     "test": "mocha --timeout 5s"
   },
