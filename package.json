@@ -81,7 +81,7 @@
     "pouchdb": "6.0.7",
     "pouchdb-upsert": "2.0.2",
     "randomstring": "1.1.5",
-    "validator": "7.0.0",
+    "validator": "8.2.0",
     "web3": "0.17.0-beta"
   }
 }
