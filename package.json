@@ -65,7 +65,7 @@
     "coverage": "istanbul cover _mocha -- --timeout 5s",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "standard": "standard --fix 'test/*.js' 'lib/*.js'",
-    "test": "mocha --timeout 5s"
+    "test": "mocha --timeout 10s"
   },
   "private": true,
   "dependencies": {

@@ -128,11 +128,11 @@ describe('Eth Client', function () {
         expect(Boolean(result)).to.be.true
       })
 
-      it('should return "0x" if the eth.call fails', () => {
+      it('should return error string if the eth.call throws', () => {
         // Corrupt 'data'
         let data = { to: callGetVerified[0], data: callGetVerified[0] }
         let result = eth.callTx(data)
-        expect(result).to.equal('0x')
+        expect(result).to.equal('Error: Error: VM Exception while executing eth_call: invalid opcode')
       })
     })
 
