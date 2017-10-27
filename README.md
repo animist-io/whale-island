@@ -6,13 +6,13 @@
 :construction: **This project is in early development. Under construction.** :construction:
 
 ## Overview
-Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that connects to mobile devices via BLE server. Its API targets smart-contract logic about the physical location of mobile Dapp users but it also has Bluetooth endpoints to process transactions and provides general access to some web3 methods. Use cases for whale-island's services include:
+Whale-island is a micro-computer based Ethereum client and Bluetooth beacon that connects to mobile devices via BLE server. Its API targets smart-contract logic about the physical location of mobile Dapp users and provides encrypted Bluetooth endpoints for a small subset of web3 methods. Use cases for whale-island's services include:
 
 + Competitive wagered races
 + Any game where the co-location of players is a key component. 
 + Path or place contingent reward programs.
 
-Whale-island is intended for applications where distributed rewards are relatively small and uncertainty about the oracle's reliability is outweighed by concerns about the integrity of contract participants and the necessity of conducting an activity on a peer to peer basis. For example: an application that allowed cyclists in NYC to race point-to-point within the city for prizes would need a way to lock wager commitments in escrow pending an outcome and might *only* be viable as a peer-to-peer enterprise because no rational company would take on the liabilities implicit in facilitating such races, despite their legality as games of skill.  
+Whale-island is intended for applications where transaction sizes are small and uncertainty about the oracle's reliability is outweighed by the necessity of conducting an activity on a peer to peer basis. For example: an application that allowed cyclists in NYC to race point-to-point within the city for prizes would need a way to lock wager commitments in escrow pending an outcome and might only be viable as a peer-to-peer enterprise because of the liabilities implicit in facilitating such races.  
 
 ## Mobile Interface 
 
