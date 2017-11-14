@@ -42,7 +42,7 @@
     "chai-spies": "0.7.1",
     "coveralls": "2.11.15",
     "del": "2.0.2",
-    "ethereumjs-testrpc": "3.0.3",
+    "ethereumjs-testrpc": "6.0.2",
     "ethereumjs-util": "5.0.1",
     "gulp": "3.9.0",
     "gulp-babel": "6.1.2",
