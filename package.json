@@ -71,7 +71,7 @@
   "dependencies": {
     "bleno": "0.4.0",
     "cli-color": "1.1.0",
-    "eth-lightwallet": "2.5.6",
+    "eth-lightwallet": "3.0.0",
     "eth-new-contract": "0.3.0",
     "ethereumjs-util": "5.0.1",
     "lodash": "4.16.4",
