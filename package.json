@@ -78,7 +78,7 @@
     "minimatch": "3.0.2",
     "node-uuid": "1.4.7",
     "openpgp": "2.5.11",
-    "pouchdb": "6.3.4",
+    "pouchdb": "6.4.0",
     "pouchdb-upsert": "2.0.2",
     "randomstring": "1.1.5",
     "validator": "8.2.0",
