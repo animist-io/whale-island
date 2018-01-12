@@ -39,7 +39,7 @@
     "buffer-equal": "1.0.0",
     "chai": "3.5.0",
     "chai-as-promised": "6.0.0",
-    "chai-spies": "0.7.1",
+    "chai-spies": "1.0.0",
     "coveralls": "2.11.15",
     "del": "2.0.2",
     "ethereumjs-testrpc": "3.0.3",
