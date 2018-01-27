@@ -45,7 +45,7 @@
     "ethereumjs-testrpc": "3.0.3",
     "ethereumjs-util": "5.0.1",
     "gulp": "3.9.0",
-    "gulp-babel": "6.1.2",
+    "gulp-babel": "7.0.1",
     "gulp-concat": "2.6.0",
     "gulp-documentation": "3.0.0",
     "gulp-documentation-bleno": "git+https://github.com/cgewecke/gulp-documentation-bleno.git",
