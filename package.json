@@ -73,7 +73,7 @@
     "cli-color": "1.1.0",
     "eth-lightwallet": "2.5.6",
     "eth-new-contract": "0.3.0",
-    "ethereumjs-util": "5.0.1",
+    "ethereumjs-util": "6.0.0",
     "lodash": "4.16.4",
     "minimatch": "3.0.2",
     "node-uuid": "1.4.7",
