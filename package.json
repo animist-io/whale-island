@@ -44,7 +44,7 @@
     "del": "2.0.2",
     "ethereumjs-testrpc": "3.0.3",
     "ethereumjs-util": "5.0.1",
-    "gulp": "3.9.0",
+    "gulp": "4.0.1",
     "gulp-babel": "6.1.2",
     "gulp-concat": "2.6.0",
     "gulp-documentation": "3.0.0",
